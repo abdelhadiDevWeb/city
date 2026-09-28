@@ -4,6 +4,8 @@ import { env } from "../config/env";
 export async function connectMongo(): Promise<void> {
   // Mongoose has safe defaults in v7+; we still set a couple of explicit ones.
   mongoose.set("strictQuery", true);
+  // Query filters must not use `$` operators unless wrapped with `mongoose.trusted()`.
+  mongoose.set("sanitizeFilter", true);
   await mongoose.connect(env.mongoUri, {
     autoIndex: env.nodeEnv !== "production",
   });

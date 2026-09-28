@@ -1,30 +1,43 @@
-import type { ErrorRequestHandler, RequestHandler } from "express";
-import csurf from "csurf";
+import type { Request, RequestHandler } from "express";
+import { doubleCsrf } from "csrf-csrf";
+import { cookieNames, sessionCookieOptions } from "../config/cookies";
 import { env } from "../config/env";
+import { generateOpaqueToken } from "../services/token.service";
 
-export function csrfProtection(): RequestHandler {
-  // Only applies to cookie-based auth flows.
-  // For pure Bearer/JWT APIs, keep CSRF disabled.
-  if (!env.csrfEnabled) {
-    return (req, res, next) => next();
-  }
+// Signed double-submit cookie pattern (OWASP). Required on every route that relies on
+// cookies for authentication (refresh / logout), and on login/register to stop login CSRF.
 
-  return csurf({
-    cookie: {
-      key: "csrf",
-      httpOnly: true,
-      sameSite: "lax",
-      secure: env.isProd,
-      signed: true,
-    },
-  });
+function getSessionId(req: Request): string | undefined {
+  const sid = req.signedCookies?.[cookieNames.session];
+  return typeof sid === "string" && sid.length > 0 ? sid : undefined;
 }
 
-export const csrfErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
-  // csurf throws EBADCSRFTOKEN
-  if (err && typeof err === "object" && "code" in err && (err as any).code === "EBADCSRFTOKEN") {
-    return res.status(403).json({ ok: false, message: "Invalid CSRF token" });
+const { generateCsrfToken, doubleCsrfProtection } = doubleCsrf({
+  getSecret: () => env.csrfSecret,
+  getSessionIdentifier: (req) => getSessionId(req) ?? "",
+  cookieName: cookieNames.csrf,
+  cookieOptions: {
+    httpOnly: true,
+    sameSite: "strict",
+    secure: env.isProd,
+    path: "/",
+  },
+  getCsrfTokenFromRequest: (req) => req.headers["x-csrf-token"],
+});
+
+export const issueCsrfToken: RequestHandler = (req, res) => {
+  if (!getSessionId(req)) {
+    const sid = generateOpaqueToken(32);
+    res.cookie(cookieNames.session, sid, sessionCookieOptions);
+    req.signedCookies[cookieNames.session] = sid;
   }
-  return next(err);
+  const csrfToken = generateCsrfToken(req, res, { overwrite: true });
+  res.status(200).json({ ok: true, csrfToken });
 };
 
+export const csrfProtection: RequestHandler = (req, res, next) => {
+  if (req.method !== "GET" && req.method !== "HEAD" && req.method !== "OPTIONS" && !getSessionId(req)) {
+    return res.status(403).json({ ok: false, message: "Invalid CSRF token" });
+  }
+  return doubleCsrfProtection(req, res, next);
+};

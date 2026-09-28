@@ -1,11 +1,5 @@
 import type { RequestHandler } from "express";
-import jwt from "jsonwebtoken";
-import { env } from "../config/env";
-
-export type JwtUser = {
-  sub: string;
-  roles?: string[];
-};
+import { verifyAccessToken, type JwtUser } from "../services/token.service";
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -29,13 +23,7 @@ export const requireAuth: RequestHandler = (req, res, next) => {
   if (!token) return res.status(401).json({ ok: false, message: "Missing token" });
 
   try {
-    const decoded = jwt.verify(token, env.jwt.accessSecret, {
-      issuer: env.jwt.issuer,
-      audience: env.jwt.audience,
-    }) as jwt.JwtPayload;
-
-    if (!decoded.sub) return res.status(401).json({ ok: false, message: "Invalid token" });
-    req.user = { sub: decoded.sub, roles: Array.isArray(decoded.roles) ? (decoded.roles as string[]) : undefined };
+    req.user = verifyAccessToken(token);
     return next();
   } catch {
     return res.status(401).json({ ok: false, message: "Invalid token" });
@@ -49,4 +37,3 @@ export function requireRole(role: string): RequestHandler {
     return next();
   };
 }
-

@@ -1,4 +1,3 @@
-import crypto from "node:crypto";
 import http from "node:http";
 
 import compression from "compression";
@@ -10,76 +9,53 @@ import helmet from "helmet";
 import hpp from "hpp";
 
 import { env } from "./config/env";
-import { connectMongo } from "./db/mongoose";
+import { connectMongo, disconnectMongo } from "./db/mongoose";
 import { connectRedis, disconnectRedis } from "./db/redis";
-import { disconnectMongo } from "./db/mongoose";
-import { csrfErrorHandler, csrfProtection } from "./middleware/csrf";
+import { errorHandler, notFoundHandler } from "./middleware/errorHandler";
 import { httpLogger } from "./middleware/logger";
 import { globalLimiter } from "./middleware/rateLimiters";
+import { Admin } from "./models/Admin";
+import { RefreshToken } from "./models/RefreshToken";
+import { SuperAdmin } from "./models/SuperAdmin";
+import { User } from "./models/User";
 import { apiRouter } from "./routes";
+import { ensureDefaultAccounts } from "./scripts_for_superadmin_and_admin";
 import { initSocket } from "./socket";
-// import session from "express-session";
-// import { SessionEntity } from "./entity/Session";
-// import { TypeormStore } from "connect-typeorm";
-
+import { AppError } from "./utils/AppError";
 
 const app = express();
 app.set("trust proxy", env.trustProxy);
-
 
 const corsOptions: cors.CorsOptions = {
   origin(origin, callback) {
     // allow same-origin / server-to-server / curl
     if (!origin) return callback(null, true);
     if (env.corsOrigins.includes(origin)) return callback(null, true);
-    return callback(new Error("Not allowed by CORS"));
+    return callback(new AppError(403, "Origin not allowed"));
   },
   credentials: true,
 };
 
-app.use(cors(corsOptions));
-app.options("*", cors(corsOptions));
-
-app.use(compression());
-app.use(express.json({ limit: "64kb" }));
-app.use(express.urlencoded({ extended: true, limit: "64kb" }));
-app.use(cookieParser(env.cookieSecret));
-
 app.use(httpLogger);
-app.use(globalLimiter);
-app.use(hpp());
-app.use(
-  mongoSanitize({
-    replaceWith: "_",
-  })
-);
-
-
-
-
-
-app.use(helmet());
-
 // For an API-only server, Helmet's defaults are generally sufficient.
 // If you later serve HTML, add a full CSP policy (with default-src) at that time.
+app.use(helmet());
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
+app.use(globalLimiter);
 
-
-
-
-app.use(csrfProtection());
-
-
+// Responses under /api/auth carry secrets (tokens); compressing them exposes them to BREACH.
+app.use(compression({ filter: (req, res) => !req.path.startsWith("/api/auth") && compression.filter(req, res) }));
+app.use(express.json({ limit: "64kb" }));
+app.use(express.urlencoded({ extended: false, limit: "64kb" }));
+app.use(cookieParser(env.cookieSecret));
+app.use(hpp());
+app.use(mongoSanitize({ replaceWith: "_" }));
 
 app.use("/api", apiRouter);
 
-app.use(csrfErrorHandler);
-
-
-app.use((err: unknown, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  if (!err) return next();
-  const message = env.isProd ? "Internal Server Error" : (err instanceof Error ? err.message : String(err));
-  res.status(500).json({ ok: false, message });
-});
+app.use(notFoundHandler);
+app.use(errorHandler);
 
 const server = http.createServer(app);
 // Reasonable defaults for high-throughput proxies/load balancers.
@@ -90,6 +66,14 @@ initSocket(server);
 async function start(): Promise<void> {
   await connectRedis();
   await connectMongo();
+  // `autoIndex` is off in production, but the unique indexes are security-relevant.
+  await Promise.all([
+    SuperAdmin.createIndexes(),
+    Admin.createIndexes(),
+    User.createIndexes(),
+    RefreshToken.createIndexes(),
+  ]);
+  await ensureDefaultAccounts();
   server.listen(env.port, () => {
     // eslint-disable-next-line no-console
     console.log(`server running on port ${env.port}`);
