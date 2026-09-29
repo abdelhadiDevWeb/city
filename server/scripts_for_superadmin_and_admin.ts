@@ -1,10 +1,11 @@
-// Makes sure the platform always has at least one super admin and one admin.
+// Makes sure the platform always has at least one super admin and one admin
+// (plus one sub admin when DEFAULT_SUB_ADMIN_* is filled in).
 // Runs automatically on server startup, or manually with: bun run seed:accounts
 // Credentials come from the DEFAULT_* variables in .env, never from code.
-import { env } from "./config/env";
+import { env, type AdminDefaults } from "./config/env";
 import { connectMongo, disconnectMongo } from "./db/mongoose";
 import { httpLogger } from "./middleware/logger";
-import { Admin } from "./models/Admin";
+import { Admin, type AdminRole } from "./models/Admin";
 import { SuperAdmin } from "./models/SuperAdmin";
 import { isLoginEmailTaken } from "./services/account.service";
 import { hashPassword } from "./services/auth.service";
@@ -32,27 +33,27 @@ async function ensureSuperAdmin(): Promise<void> {
   log.info({ email: defaults.email }, "Default super admin created");
 }
 
-async function ensureAdmin(): Promise<void> {
-  if (await Admin.exists({ role: "admin" })) return;
+async function ensureAdminWithRole(role: AdminRole, defaults: AdminDefaults | null, envPrefix: string, required: boolean): Promise<void> {
+  if (await Admin.exists({ role })) return;
 
-  const defaults = env.defaultAccounts.admin;
   if (!defaults?.password) {
-    log.warn("No admin exists and DEFAULT_ADMIN_* (with password) is not set in .env; skipping");
+    if (required) log.warn(`No ${role} exists and ${envPrefix}_* (with password) is not set in .env; skipping`);
     return;
   }
   if (await isLoginEmailTaken(defaults.email)) {
-    log.warn({ email: defaults.email }, "Cannot create default admin: email already used by another account");
+    log.warn({ email: defaults.email }, `Cannot create default ${role}: email already used by another account`);
     return;
   }
 
   const { password, ...profile } = defaults;
-  await Admin.create({ ...profile, role: "admin", motDePasseHash: await hashPassword(password) });
-  log.info({ email: defaults.email }, "Default admin created");
+  await Admin.create({ ...profile, role, motDePasseHash: await hashPassword(password) });
+  log.info({ email: defaults.email }, `Default ${role} created`);
 }
 
 export async function ensureDefaultAccounts(): Promise<void> {
   await ensureSuperAdmin();
-  await ensureAdmin();
+  await ensureAdminWithRole("admin", env.defaultAccounts.admin, "DEFAULT_ADMIN", true);
+  await ensureAdminWithRole("sub_admin", env.defaultAccounts.subAdmin, "DEFAULT_SUB_ADMIN", false);
 }
 
 if (import.meta.main) {

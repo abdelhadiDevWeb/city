@@ -11,6 +11,7 @@ import {
   updateAccount,
   type Account,
 } from "./account.service";
+import { INACTIVE_ACCOUNT_MESSAGE, isAccountActive } from "./accountStatus.service";
 import { generateOpaqueToken, hashToken, signAccessToken } from "./token.service";
 
 const MAX_FAILED_LOGINS = 5;
@@ -65,7 +66,21 @@ export async function login(email: string, password: string): Promise<Account> {
     await updateAccount(account, { $set: { tentativesEchouees: 0, verrouilleJusqua: null } });
   }
 
+  // Checked only after the password, so the status can't be used to probe which emails exist.
+  await assertActive(account);
   return account;
+}
+
+export async function assertActive(account: Account): Promise<void> {
+  if (account.type === "Admin" && !(await isAccountActive(account.doc))) throw new AppError(403, INACTIVE_ACCOUNT_MESSAGE);
+}
+
+// For admin / sub_admin routes: the token may outlive the subscription, so the status is rechecked.
+export async function loadActiveAdmin(id: string): Promise<AdminDocument> {
+  const account = await findAccountById("Admin", id);
+  if (!account || account.type !== "Admin") throw new AppError(401, "Invalid token");
+  await assertActive(account);
+  return account.doc;
 }
 
 async function issueRefreshToken(account: Account, family: string, meta: ClientMeta): Promise<string> {
@@ -119,6 +134,13 @@ export async function rotateSession(rawRefreshToken: string, meta: ClientMeta): 
   if (!account) {
     await revokeFamily(current.family);
     throw new AppError(401, "Invalid session");
+  }
+
+  try {
+    await assertActive(account);
+  } catch (err) {
+    await revokeFamily(current.family);
+    throw err;
   }
 
   const refreshToken = await issueRefreshToken(account, current.family, meta);

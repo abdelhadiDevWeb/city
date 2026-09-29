@@ -6,9 +6,10 @@ export interface IUser {
   nom: string;
   email: string;
   telephone: string;
-  // The Appartement / Batiment collections don't exist yet, so these references are optional for now.
-  idAppartement?: Types.ObjectId | null;
+  nin: string;
+  idResidence?: Types.ObjectId | null;
   idBatiment?: Types.ObjectId | null;
+  idAppartement?: Types.ObjectId | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -21,10 +22,15 @@ const userSchema = new Schema<IUser>(
     nom: nameField,
     email: emailField,
     telephone: telephoneField,
-    idAppartement: { type: Schema.Types.ObjectId, ref: "Appartement", default: null, index: true },
+    // Numéro d'identification nationale: 18 digits on the Algerian biometric ID card.
+    nin: { type: String, required: true, trim: true, match: /^[0-9]{18}$/ },
+    idResidence: { type: Schema.Types.ObjectId, ref: "Residence", default: null, index: true },
     idBatiment: { type: Schema.Types.ObjectId, ref: "Batiment", default: null, index: true },
+    idAppartement: { type: Schema.Types.ObjectId, ref: "Appartement", default: null, index: true },
   },
   { timestamps: true, toJSON: publicJson },
 );
+
+userSchema.index({ nin: 1 }, { unique: true, partialFilterExpression: { nin: { $type: "string" } } });
 
 export const User = model<IUser>("User", userSchema);

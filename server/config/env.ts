@@ -9,6 +9,23 @@ const optionalEmail = Joi.string().trim().lowercase().email().max(254).empty("")
 const optionalPassword = Joi.string().min(12).max(128).empty("");
 const optionalTelephone = Joi.string().trim().pattern(/^\+?[0-9]{8,15}$/).empty("");
 
+const ADMIN_PROFILE_FIELDS = ["PRENOM", "NOM", "EMAIL", "TELEPHONE", "WILAYA", "DAIRA", "BALADIA"] as const;
+
+function adminDefaultsSchema(prefix: string): Record<string, Joi.Schema> {
+  return {
+    [`${prefix}_PRENOM`]: optionalText(60),
+    [`${prefix}_NOM`]: optionalText(60),
+    [`${prefix}_EMAIL`]: optionalEmail,
+    [`${prefix}_TELEPHONE`]: optionalTelephone,
+    [`${prefix}_WILAYA`]: optionalText(80),
+    [`${prefix}_DAIRA`]: optionalText(80),
+    [`${prefix}_BALADIA`]: optionalText(80),
+    [`${prefix}_PASSWORD`]: optionalPassword,
+  };
+}
+
+const adminProfileKeys = (prefix: string) => ADMIN_PROFILE_FIELDS.map((field) => `${prefix}_${field}`);
+
 const envSchema = Joi.object({
   NODE_ENV: Joi.string().valid("development", "test", "production").default("development"),
   PORT: Joi.number().port().default(4000),
@@ -49,26 +66,14 @@ const envSchema = Joi.object({
   DEFAULT_SUPER_ADMIN_EMAIL: optionalEmail,
   DEFAULT_SUPER_ADMIN_PASSWORD: optionalPassword,
 
-  DEFAULT_ADMIN_PRENOM: optionalText(60),
-  DEFAULT_ADMIN_NOM: optionalText(60),
-  DEFAULT_ADMIN_EMAIL: optionalEmail,
-  DEFAULT_ADMIN_TELEPHONE: optionalTelephone,
-  DEFAULT_ADMIN_WILAYA: optionalText(80),
-  DEFAULT_ADMIN_DAIRA: optionalText(80),
-  DEFAULT_ADMIN_BALADIA: optionalText(80),
-  DEFAULT_ADMIN_PASSWORD: optionalPassword,
+  ...adminDefaultsSchema("DEFAULT_ADMIN"),
+  // Optional: a sub admin is only created when this block is filled in.
+  ...adminDefaultsSchema("DEFAULT_SUB_ADMIN"),
 })
   // Passwords are left out so they can be deleted from .env once the accounts exist.
   .and("DEFAULT_SUPER_ADMIN_NOM_COMPLET", "DEFAULT_SUPER_ADMIN_EMAIL")
-  .and(
-    "DEFAULT_ADMIN_PRENOM",
-    "DEFAULT_ADMIN_NOM",
-    "DEFAULT_ADMIN_EMAIL",
-    "DEFAULT_ADMIN_TELEPHONE",
-    "DEFAULT_ADMIN_WILAYA",
-    "DEFAULT_ADMIN_DAIRA",
-    "DEFAULT_ADMIN_BALADIA",
-  )
+  .and(...adminProfileKeys("DEFAULT_ADMIN"))
+  .and(...adminProfileKeys("DEFAULT_SUB_ADMIN"))
   .unknown(true);
 
 const { value, error } = envSchema.validate(process.env, {
@@ -98,8 +103,9 @@ if (new Set(secrets).size !== secrets.length) {
   problems.push("JWT_ACCESS_SECRET, COOKIE_SECRET and CSRF_SECRET must all be different");
 }
 
-if (value.DEFAULT_SUPER_ADMIN_EMAIL && value.DEFAULT_SUPER_ADMIN_EMAIL === value.DEFAULT_ADMIN_EMAIL) {
-  problems.push("DEFAULT_SUPER_ADMIN_EMAIL and DEFAULT_ADMIN_EMAIL must be different");
+const defaultEmails = [value.DEFAULT_SUPER_ADMIN_EMAIL, value.DEFAULT_ADMIN_EMAIL, value.DEFAULT_SUB_ADMIN_EMAIL].filter(Boolean);
+if (new Set(defaultEmails).size !== defaultEmails.length) {
+  problems.push("DEFAULT_SUPER_ADMIN_EMAIL, DEFAULT_ADMIN_EMAIL and DEFAULT_SUB_ADMIN_EMAIL must all be different");
 }
 
 if (value.REDIS_ENABLED && !value.REDIS_URL) {
@@ -155,17 +161,32 @@ export const env = {
           password: value.DEFAULT_SUPER_ADMIN_PASSWORD as string | undefined,
         }
       : null,
-    admin: value.DEFAULT_ADMIN_EMAIL
-      ? {
-          prenom: value.DEFAULT_ADMIN_PRENOM as string,
-          nom: value.DEFAULT_ADMIN_NOM as string,
-          email: value.DEFAULT_ADMIN_EMAIL as string,
-          telephone: value.DEFAULT_ADMIN_TELEPHONE as string,
-          wilaya: value.DEFAULT_ADMIN_WILAYA as string,
-          daira: value.DEFAULT_ADMIN_DAIRA as string,
-          baladia: value.DEFAULT_ADMIN_BALADIA as string,
-          password: value.DEFAULT_ADMIN_PASSWORD as string | undefined,
-        }
-      : null,
+    admin: readAdminDefaults("DEFAULT_ADMIN"),
+    subAdmin: readAdminDefaults("DEFAULT_SUB_ADMIN"),
   },
 };
+
+export type AdminDefaults = {
+  prenom: string;
+  nom: string;
+  email: string;
+  telephone: string;
+  wilaya: string;
+  daira: string;
+  baladia: string;
+  password: string | undefined;
+};
+
+function readAdminDefaults(prefix: string): AdminDefaults | null {
+  if (!value[`${prefix}_EMAIL`]) return null;
+  return {
+    prenom: value[`${prefix}_PRENOM`] as string,
+    nom: value[`${prefix}_NOM`] as string,
+    email: value[`${prefix}_EMAIL`] as string,
+    telephone: value[`${prefix}_TELEPHONE`] as string,
+    wilaya: value[`${prefix}_WILAYA`] as string,
+    daira: value[`${prefix}_DAIRA`] as string,
+    baladia: value[`${prefix}_BALADIA`] as string,
+    password: value[`${prefix}_PASSWORD`] as string | undefined,
+  };
+}

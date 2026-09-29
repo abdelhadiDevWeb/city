@@ -30,10 +30,10 @@ export const requireAuth: RequestHandler = (req, res, next) => {
   }
 };
 
-export function requireRole(role: string): RequestHandler {
+export function requireRole(...allowed: string[]): RequestHandler {
   return (req, res, next) => {
     const roles = req.user?.roles ?? [];
-    if (!roles.includes(role)) return res.status(403).json({ ok: false, message: "Forbidden" });
+    if (!allowed.some((role) => roles.includes(role))) return res.status(403).json({ ok: false, message: "Forbidden" });
     return next();
   };
 }

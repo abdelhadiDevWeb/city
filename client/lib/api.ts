@@ -20,6 +20,7 @@ export type Account =
       baladia: string;
       role: "admin" | "sub_admin";
       idResidence: string | null;
+      idBatiment: string | null;
     });
 
 type ApiBody = { ok: boolean; message?: string; details?: string[] } & Record<string, unknown>;

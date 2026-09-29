@@ -6,6 +6,12 @@ export const ROLE_LABELS: Record<Role, string> = {
   sub_admin: "Sub Admin",
 };
 
+export const ROLE_BADGE: Record<Role, string> = {
+  super_admin: "bg-brand text-ink",
+  admin: "bg-ink text-white",
+  sub_admin: "bg-stone-200 text-stone-800",
+};
+
 export function primaryRole(account: Account): Role {
   return account.roles[0] ?? (account.type === "SuperAdmin" ? "super_admin" : account.role);
 }

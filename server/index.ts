@@ -14,8 +14,13 @@ import { connectRedis, disconnectRedis } from "./db/redis";
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler";
 import { httpLogger } from "./middleware/logger";
 import { globalLimiter } from "./middleware/rateLimiters";
+import { Abonnement } from "./models/Abonnement";
+import { AbonnementUser } from "./models/AbonnementUser";
 import { Admin } from "./models/Admin";
+import { Appartement } from "./models/Appartement";
+import { Batiment } from "./models/Batiment";
 import { RefreshToken } from "./models/RefreshToken";
+import { Residence } from "./models/Residence";
 import { SuperAdmin } from "./models/SuperAdmin";
 import { User } from "./models/User";
 import { apiRouter } from "./routes";
@@ -71,6 +76,11 @@ async function start(): Promise<void> {
     SuperAdmin.createIndexes(),
     Admin.createIndexes(),
     User.createIndexes(),
+    Residence.createIndexes(),
+    Batiment.createIndexes(),
+    Appartement.createIndexes(),
+    Abonnement.createIndexes(),
+    AbonnementUser.createIndexes(),
     RefreshToken.createIndexes(),
   ]);
   await ensureDefaultAccounts();
