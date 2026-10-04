@@ -1,8 +1,10 @@
+import { router } from 'expo-router';
 import { useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CityLogo } from '@/components/city-logo';
+import { Icon } from '@/components/icon';
 import { Button, TextField } from '@/components/ui';
 import { Brand, Ink, Radius, Spacing } from '@/constants/theme';
 import { useAppState } from '@/context/app-state';
@@ -19,9 +21,11 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [generalError, setGeneralError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   async function submit() {
+    setGeneralError(null);
     const next: typeof errors = {};
     if (!EMAIL_PATTERN.test(email.trim())) next.email = 'Entrez une adresse email valide.';
     if (!password) next.password = 'Entrez votre mot de passe.';
@@ -31,6 +35,13 @@ export default function LoginScreen() {
     setSubmitting(true);
     try {
       await signIn(email, password);
+      router.replace('/(tabs)');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Identifiants incorrects.';
+      setGeneralError(msg);
+      if (Platform.OS !== 'web') {
+        Alert.alert('Erreur de connexion', msg);
+      }
     } finally {
       setSubmitting(false);
     }
@@ -62,6 +73,12 @@ export default function LoginScreen() {
           <Text style={[styles.subtitle, { color: theme.textSecondary }]}>Connectez-vous avec le compte fourni par votre syndic.</Text>
 
           <View style={styles.form}>
+            {generalError && (
+              <View style={styles.errorBanner}>
+                <Icon name="error" size={18} color="#DC2626" />
+                <Text style={styles.errorBannerText}>{generalError}</Text>
+              </View>
+            )}
             <TextField
               label="Adresse email"
               icon="mail"
@@ -192,6 +209,24 @@ const styles = StyleSheet.create({
   form: {
     gap: Spacing.three,
     marginTop: Spacing.four,
+  },
+  errorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: '#FEE2E2',
+    borderColor: '#FCA5A5',
+    borderWidth: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: Radius.md,
+  },
+  errorBannerText: {
+    flex: 1,
+    color: '#991B1B',
+    fontSize: 13,
+    fontWeight: '600',
+    lineHeight: 18,
   },
   forgot: {
     alignSelf: 'flex-end',

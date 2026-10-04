@@ -94,7 +94,7 @@ export default function PaymentsScreen() {
   const [filter, setFilter] = useState<Filter>('tous');
   const [expanded, setExpanded] = useState<string | null>(null);
 
-  const latest = new Date(Math.max(...paiements.map((p) => new Date(p.date).getTime())));
+  const latest = paiements.length > 0 ? new Date(Math.max(...paiements.map((p) => new Date(p.date).getTime()))) : new Date();
   const year = latest.getFullYear();
   const paidThisYear = paiements.filter((p) => p.statut === 'paye' && new Date(p.date).getFullYear() === year).reduce((s, p) => s + p.montant, 0);
   const toSettle = paiements.filter((p) => p.statut !== 'paye');

@@ -3,6 +3,7 @@ import { env } from "../config/env";
 
 export const httpLogger = pinoHttp({
   enabled: env.nodeEnv !== "test",
+  autoLogging: false,
   level: env.isProd ? "info" : "debug",
   redact: {
     paths: [

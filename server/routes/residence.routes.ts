@@ -27,9 +27,10 @@ const createBatimentSchema = Joi.object({
 
 export const residenceRouter = Router();
 
-residenceRouter.use(requireAuth, requireRole("super_admin"), csrfProtection);
+residenceRouter.use(requireAuth, csrfProtection);
 
-residenceRouter.get("/", residences.list);
-residenceRouter.post("/", validate(createResidenceSchema), residences.create);
-residenceRouter.get("/:id", validate(Joi.object({ params: idParams })), residences.details);
-residenceRouter.post("/:id/batiments", validate(createBatimentSchema), residences.createBatiment);
+residenceRouter.get("/", requireRole("super_admin"), residences.list);
+residenceRouter.post("/", requireRole("super_admin"), validate(createResidenceSchema), residences.create);
+residenceRouter.get("/:id", requireRole("super_admin", "admin"), validate(Joi.object({ params: idParams })), residences.details);
+residenceRouter.post("/:id/batiments", requireRole("super_admin", "admin"), validate(createBatimentSchema), residences.createBatiment);
+

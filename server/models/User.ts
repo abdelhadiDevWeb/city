@@ -7,6 +7,9 @@ export interface IUser {
   email: string;
   telephone: string;
   nin: string;
+  motDePasseHash?: string;
+  tentativesEchouees?: number;
+  verrouilleJusqua?: Date | null;
   idResidence?: Types.ObjectId | null;
   idBatiment?: Types.ObjectId | null;
   idAppartement?: Types.ObjectId | null;
@@ -24,6 +27,9 @@ const userSchema = new Schema<IUser>(
     telephone: telephoneField,
     // Numéro d'identification nationale: 18 digits on the Algerian biometric ID card.
     nin: { type: String, required: true, trim: true, match: /^[0-9]{18}$/ },
+    motDePasseHash: { type: String, select: false },
+    tentativesEchouees: { type: Number, default: 0, select: false },
+    verrouilleJusqua: { type: Date, default: null, select: false },
     idResidence: { type: Schema.Types.ObjectId, ref: "Residence", default: null, index: true },
     idBatiment: { type: Schema.Types.ObjectId, ref: "Batiment", default: null, index: true },
     idAppartement: { type: Schema.Types.ObjectId, ref: "Appartement", default: null, index: true },

@@ -9,7 +9,9 @@ export type Resident = {
   telephone: string;
   idAppartement: string | null;
   idBatiment: string | null;
+  idResidence?: string | null;
   createdAt: string;
+  logement?: Logement;
 };
 
 export type Logement = {
@@ -83,7 +85,7 @@ export type ChatMessage = {
   createdAt: string;
 };
 
-export type NotificationKind = 'like' | 'comment' | 'annonce' | 'paiement' | 'chat' | 'abonnement';
+export type NotificationKind = 'like' | 'comment' | 'annonce' | 'alerte' | 'paiement' | 'chat' | 'abonnement';
 
 export type AppNotification = {
   id: string;

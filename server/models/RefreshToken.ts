@@ -1,6 +1,6 @@
 import { Schema, model, type Types } from "mongoose";
 
-export const ACCOUNT_TYPES = ["SuperAdmin", "Admin"] as const;
+export const ACCOUNT_TYPES = ["SuperAdmin", "Admin", "User"] as const;
 export type AccountType = (typeof ACCOUNT_TYPES)[number];
 
 export interface IRefreshToken {

@@ -1,41 +1,68 @@
 "use client";
 
 import { CreditCard, Pencil, Plus, Receipt, SlidersHorizontal, Wrench } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import {
-  formatDZD,
-  modesPaiement,
-  typesCharges,
-  typesIncidents,
+  addChargeType,
+  getConfig,
+  toggleChargeType,
+  type ConfigData,
   type ModePaiement,
   type TypeCharge,
   type TypeIncident,
-} from "@/lib/demo-data";
-import { DEMO_NOTICE, DataTable, Mono, PageHeader, Pill, Tabs, button, useToast, type Column, type TabItem } from "../ui";
+} from "@/lib/config-api";
+import { formatDZD } from "@/lib/format";
+import { ModalActions, formText, useSubmit } from "../forms";
+import { DataTable, Field, FormError, Modal, Mono, PageHeader, Pill, Tabs, button, card, describeError, useToast, type Column, type TabItem } from "../ui";
 
 type TabId = "charges" | "incidents" | "paiements";
 
-const TABS: TabItem<TabId>[] = [
-  { id: "charges", label: "Types de charges", icon: Receipt, count: typesCharges.length },
-  { id: "incidents", label: "Types d'incidents", icon: Wrench, count: typesIncidents.length },
-  { id: "paiements", label: "Modes de paiement", icon: CreditCard, count: modesPaiement.length },
-];
-
 function StatusPill({ actif }: { actif: boolean }) {
-  return actif ? <Pill tone="success">Actif</Pill> : <Pill>Inactif</Pill>;
+  return actif ? <Pill tone="success">Actif</Pill> : <Pill tone="neutral">Inactif</Pill>;
 }
 
 export default function ConfigurationPage() {
   const notify = useToast();
+  const [data, setData] = useState<ConfigData | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [version, setVersion] = useState(0);
   const [tab, setTab] = useState<TabId>("charges");
+  const [addingCharge, setAddingCharge] = useState(false);
 
-  function editAction(name: string) {
-    return (
-      <button type="button" onClick={() => notify(`Modifier « ${name} » — ${DEMO_NOTICE}`)} className={button("secondary", "sm")}>
-        <Pencil className="h-3.5 w-3.5" aria-hidden />
-        Modifier
-      </button>
-    );
+  useEffect(() => {
+    let active = true;
+    getConfig()
+      .then((res) => {
+        if (!active) return;
+        setData(res);
+        setError(null);
+      })
+      .catch((err) => {
+        if (active) setError(describeError(err).message);
+      });
+    return () => {
+      active = false;
+    };
+  }, [version]);
+
+  const typesCharges = data?.typesCharges ?? [];
+  const typesIncidents = data?.typesIncidents ?? [];
+  const modesPaiement = data?.modesPaiement ?? [];
+
+  const tabs: TabItem<TabId>[] = [
+    { id: "charges", label: "Types de charges", icon: Receipt, count: typesCharges.length },
+    { id: "incidents", label: "Types d'incidents", icon: Wrench, count: typesIncidents.length },
+    { id: "paiements", label: "Modes de paiement", icon: CreditCard, count: modesPaiement.length },
+  ];
+
+  async function handleToggleCharge(c: TypeCharge) {
+    try {
+      await toggleChargeType(c.id);
+      notify(`Statut de « ${c.nom} » mis à jour.`);
+      setVersion((v) => v + 1);
+    } catch (err) {
+      notify(describeError(err).message);
+    }
   }
 
   const chargeColumns: Column<TypeCharge>[] = [
@@ -43,7 +70,20 @@ export default function ConfigurationPage() {
     { header: "Montant mensuel", cell: (c) => <Mono strong>{formatDZD(c.montantMensuel)}</Mono> },
     { header: "Appliqué à", cell: (c) => c.appliqueA },
     { header: "Statut", cell: (c) => <StatusPill actif={c.actif} /> },
-    { header: "Action", align: "right", cell: (c) => editAction(c.nom) },
+    {
+      header: "Action",
+      align: "right",
+      cell: (c) => (
+        <button
+          type="button"
+          onClick={() => void handleToggleCharge(c)}
+          className={button("secondary", "sm")}
+        >
+          <Pencil className="h-3.5 w-3.5" aria-hidden />
+          {c.actif ? "Désactiver" : "Activer"}
+        </button>
+      ),
+    },
   ];
 
   const incidentColumns: Column<TypeIncident>[] = [
@@ -51,14 +91,12 @@ export default function ConfigurationPage() {
     { header: "Délai d'intervention", cell: (i) => <Pill tone="brand">{i.delaiIntervention}</Pill> },
     { header: "Prestataire par défaut", cell: (i) => i.prestataire },
     { header: "Statut", cell: (i) => <StatusPill actif={i.actif} /> },
-    { header: "Action", align: "right", cell: (i) => editAction(i.nom) },
   ];
 
   const paiementColumns: Column<ModePaiement>[] = [
     { header: "Mode de paiement", cell: (m) => <span className="font-semibold text-ink">{m.nom}</span> },
     { header: "Frais", cell: (m) => m.frais },
     { header: "Statut", cell: (m) => <StatusPill actif={m.actif} /> },
-    { header: "Action", align: "right", cell: (m) => editAction(m.nom) },
   ];
 
   return (
@@ -68,18 +106,74 @@ export default function ConfigurationPage() {
         title="Configuration & Types"
         subtitle="Paramètres de la résidence : charges, catégories d'incidents et moyens de paiement acceptés"
         actions={
-          <button type="button" onClick={() => notify(DEMO_NOTICE)} className={button("primary")}>
+          <button type="button" onClick={() => setAddingCharge(true)} className={button("primary")}>
             <Plus className="h-4 w-4" aria-hidden />
             Nouveau Type
           </button>
         }
       />
 
-      <Tabs tabs={TABS} active={tab} onChange={setTab} />
+      {error && <FormError error={{ message: error, details: [] }} />}
 
-      {tab === "charges" && <DataTable columns={chargeColumns} rows={typesCharges} rowKey={(c) => c.id} />}
-      {tab === "incidents" && <DataTable columns={incidentColumns} rows={typesIncidents} rowKey={(i) => i.id} />}
-      {tab === "paiements" && <DataTable columns={paiementColumns} rows={modesPaiement} rowKey={(m) => m.id} />}
+      {!data && !error ? (
+        <div className={`${card} flex items-center justify-center p-16`}>
+          <span aria-label="Chargement" className="h-7 w-7 animate-spin rounded-full border-2 border-stone-300 border-t-brand" />
+        </div>
+      ) : (
+        <>
+          <Tabs tabs={tabs} active={tab} onChange={setTab} />
+
+          {tab === "charges" && <DataTable columns={chargeColumns} rows={typesCharges} rowKey={(c) => c.id} />}
+          {tab === "incidents" && <DataTable columns={incidentColumns} rows={typesIncidents} rowKey={(i) => i.id} />}
+          {tab === "paiements" && <DataTable columns={paiementColumns} rows={modesPaiement} rowKey={(m) => m.id} />}
+        </>
+      )}
+
+      {addingCharge && (
+        <NouveauTypeChargeModal
+          onClose={() => setAddingCharge(false)}
+          onCreated={() => {
+            setAddingCharge(false);
+            setVersion((v) => v + 1);
+            notify("Type de charge ajouté avec succès.");
+          }}
+        />
+      )}
     </div>
+  );
+}
+
+function NouveauTypeChargeModal({
+  onClose,
+  onCreated,
+}: {
+  onClose: () => void;
+  onCreated: () => void;
+}) {
+  const { submitting, error, run } = useSubmit();
+
+  function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    void run(async () => {
+      await addChargeType({
+        nom: formText(form, "nom"),
+        montantMensuel: Number(form.get("montantMensuel") ?? 1000),
+        appliqueA: formText(form, "appliqueA") || "Tous les logements",
+      });
+      onCreated();
+    });
+  }
+
+  return (
+    <Modal title="Nouveau Type de Charge" description="Ajouter une ligne de charge pour la résidence" onClose={onClose}>
+      <form onSubmit={onSubmit} className="space-y-4">
+        <Field label="Nom de la charge" name="nom" required placeholder="Ex: Forfait gardiennage, Climatisation" autoFocus />
+        <Field label="Montant mensuel (DZD)" name="montantMensuel" type="number" required defaultValue={1000} min={0} />
+        <Field label="Appliqué à" name="appliqueA" defaultValue="Tous les logements" placeholder="Ex: Tous les logements, Réservé" />
+        <FormError error={error} />
+        <ModalActions submitting={submitting} label="Ajouter le type" onCancel={onClose} />
+      </form>
+    </Modal>
   );
 }

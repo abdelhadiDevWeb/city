@@ -5,6 +5,8 @@ import { Batiment, type BatimentDocument } from "../models/Batiment";
 import { User, type UserDocument } from "../models/User";
 import { AppError } from "../utils/AppError";
 import { isDuplicateKeyError } from "../utils/mongo";
+import { isLoginEmailTaken } from "./account.service";
+import { hashPassword } from "./auth.service";
 
 // `sanitizeFilter` rejects raw `$` operators in filters; these ids come from our own queries.
 const inIds = (ids: Types.ObjectId[]) => mongoose.trusted({ $in: ids });
@@ -19,6 +21,7 @@ export type NewResident = {
   idBatiment: string;
   etage: number;
   appartement: string;
+  password?: string;
 };
 
 const etageLabel = (etage: number) => (etage === 0 ? "rez-de-chaussée" : etage === 1 ? "1er étage" : `${etage}e étage`);
@@ -95,11 +98,14 @@ export async function createResident(actor: AdminDocument, input: NewResident) {
     throw new AppError(400, `Le bâtiment ${batiment.nom} a ${batiment.etages} étage(s) : choisissez un étage entre 0 (rez-de-chaussée) et ${batiment.etages}`);
   }
 
-  const [emailTaken, ninTaken] = await Promise.all([User.exists({ email: input.email }), User.exists({ nin: input.nin })]);
-  if (emailTaken) throw new AppError(409, "Cet email est déjà utilisé par un autre résident");
+  const [emailTaken, ninTaken] = await Promise.all([isLoginEmailTaken(input.email), User.exists({ nin: input.nin })]);
+  if (emailTaken) throw new AppError(409, "Cet email est déjà utilisé par un compte (résident ou administrateur)");
   if (ninTaken) throw new AppError(409, "Ce NIN est déjà enregistré pour un autre résident");
 
   const appartement = await findOrCreateFlat(batiment, input.appartement, input.etage);
+
+  const initialPassword = input.password?.trim() || "City@2026";
+  const motDePasseHash = await hashPassword(initialPassword);
 
   let user: UserDocument;
   try {
@@ -109,6 +115,7 @@ export async function createResident(actor: AdminDocument, input: NewResident) {
       email: input.email,
       telephone: input.telephone,
       nin: input.nin,
+      motDePasseHash,
       idResidence: batiment.idResidence,
       idBatiment: batiment._id,
       idAppartement: appartement._id,
@@ -129,5 +136,8 @@ export async function createResident(actor: AdminDocument, input: NewResident) {
     throw new AppError(409, `L'appartement ${appartement.nom} vient d'être attribué à un autre propriétaire`);
   }
 
-  return residentJson(user, batiment, claimed);
+  return {
+    ...residentJson(user, batiment, claimed),
+    temporaryPassword: initialPassword,
+  };
 }

@@ -17,11 +17,12 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
-import { alertes } from "@/lib/demo-data";
+import { useEffect, useState } from "react";
+import { getAnnonces, type Alerte } from "@/lib/annonces-api";
+import { getSocket, refreshSocketAuth, type RealtimeNotification } from "@/lib/socket";
 import { ROLE_BADGE, ROLE_LABELS, displayName, initials, primaryRole } from "@/lib/roles";
 import { useSession } from "./session";
-import { ALERT_STYLES, Menu, button, menuItem } from "./ui";
+import { ALERT_STYLES, Menu, button, menuItem, useToast } from "./ui";
 
 type QuickAction = { href: string; label: string; icon: LucideIcon };
 
@@ -41,8 +42,49 @@ const MANAGER_ACTIONS: QuickAction[] = [
 
 export function Header({ onOpenMenu }: { onOpenMenu: () => void }) {
   const { account, logout } = useSession();
+  const notify = useToast();
   const [signingOut, setSigningOut] = useState(false);
+  const [alertes, setAlertes] = useState<Alerte[]>([]);
   const role = primaryRole(account);
+
+  useEffect(() => {
+    let active = true;
+    getAnnonces()
+      .then((res) => {
+        if (active && res?.alertes) {
+          setAlertes(res.alertes);
+        }
+      })
+      .catch(() => {
+        // Silently ignore if unauthenticated or error
+      });
+
+    const socket = getSocket();
+    refreshSocketAuth();
+    if (account && "idResidence" in account && account.idResidence) {
+      socket.emit("join_residence", account.idResidence);
+    }
+
+    const onNotification = (notif: RealtimeNotification) => {
+      if (!active) return;
+      const newAlerte: Alerte = {
+        id: notif.id,
+        titre: notif.titre,
+        detail: notif.detail,
+        niveau: notif.niveau || "info",
+        date: notif.date || "À l'instant",
+      };
+      setAlertes((prev) => [newAlerte, ...prev.filter((a) => a.id !== notif.id)]);
+      notify(`📢 ${notif.titre} : ${notif.detail}`);
+    };
+
+    socket.on("new_notification", onNotification);
+
+    return () => {
+      active = false;
+      socket.off("new_notification", onNotification);
+    };
+  }, [account, notify]);
 
   async function handleLogout() {
     setSigningOut(true);
@@ -98,21 +140,25 @@ export function Header({ onOpenMenu }: { onOpenMenu: () => void }) {
             {(close) => (
               <>
                 <p className="px-3 pb-2 pt-1.5 text-[11px] font-bold uppercase tracking-wider text-stone-400">Notifications</p>
-                {alertes.map((alerte) => {
-                  const { icon: Icon, className } = ALERT_STYLES[alerte.niveau];
-                  return (
-                    <Link key={alerte.id} href="/dashboard/annonces" role="menuitem" onClick={close} className={`${menuItem} items-start`}>
-                      <span className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${className}`}>
-                        <Icon className="h-4 w-4" aria-hidden />
-                      </span>
-                      <span className="min-w-0">
-                        <span className="block font-semibold text-ink">{alerte.titre}</span>
-                        <span className="block text-xs text-stone-500">{alerte.detail}</span>
-                        <span className="mt-0.5 block text-[11px] text-stone-400">{alerte.date}</span>
-                      </span>
-                    </Link>
-                  );
-                })}
+                {alertes.length === 0 ? (
+                  <p className="px-3 py-6 text-center text-xs text-stone-500">Aucune notification pour le moment.</p>
+                ) : (
+                  alertes.map((alerte) => {
+                    const { icon: Icon, className } = ALERT_STYLES[alerte.niveau];
+                    return (
+                      <Link key={alerte.id} href="/dashboard/annonces" role="menuitem" onClick={close} className={`${menuItem} items-start`}>
+                        <span className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${className}`}>
+                          <Icon className="h-4 w-4" aria-hidden />
+                        </span>
+                        <span className="min-w-0">
+                          <span className="block font-semibold text-ink">{alerte.titre}</span>
+                          <span className="block text-xs text-stone-500">{alerte.detail}</span>
+                          <span className="mt-0.5 block text-[11px] text-stone-400">{alerte.date}</span>
+                        </span>
+                      </Link>
+                    );
+                  })
+                )}
               </>
             )}
           </Menu>

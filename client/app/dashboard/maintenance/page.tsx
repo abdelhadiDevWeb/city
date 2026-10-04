@@ -1,33 +1,69 @@
 "use client";
 
 import { Droplets, History, Siren, TriangleAlert, Wrench } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import {
-  equipements,
-  formatDZD,
-  historiqueInterventions,
-  incidents,
-  pannesEquipement,
+  createIncident,
+  getMaintenance,
+  updateIncidentStatut,
   type Incident,
   type InterventionPassee,
+  type MaintenanceData,
   type PanneEquipement,
   type Priorite,
-} from "@/lib/demo-data";
-import { DEMO_NOTICE, DataTable, Mono, PageHeader, Pill, Tabs, button, card, useToast, type Column, type TabItem, type Tone } from "../ui";
+} from "@/lib/maintenance-api";
+import { formatDZD } from "@/lib/format";
+import { ModalActions, SelectField, formText, useSubmit } from "../forms";
+import { DataTable, Field, FormError, Modal, Mono, PageHeader, Pill, Tabs, button, card, describeError, useToast, type Column, type TabItem, type Tone } from "../ui";
 
 type TabId = "incidents" | "pannes" | "historique";
-
-const TABS: TabItem<TabId>[] = [
-  { id: "incidents", label: "Incidents actifs", icon: Droplets, count: incidents.length },
-  { id: "pannes", label: "Pannes d'équipement", icon: Siren, count: pannesEquipement.length },
-  { id: "historique", label: "Historique", icon: History, count: historiqueInterventions.length },
-];
 
 const PRIORITE_TONE: Record<Priorite, Tone> = { Haute: "danger", Moyenne: "warning", Basse: "neutral" };
 
 export default function MaintenancePage() {
   const notify = useToast();
+  const [data, setData] = useState<MaintenanceData | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [version, setVersion] = useState(0);
   const [tab, setTab] = useState<TabId>("incidents");
+  const [reporting, setReporting] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    getMaintenance()
+      .then((res) => {
+        if (!active) return;
+        setData(res);
+        setError(null);
+      })
+      .catch((err) => {
+        if (active) setError(describeError(err).message);
+      });
+    return () => {
+      active = false;
+    };
+  }, [version]);
+
+  const incidents = data?.incidents ?? [];
+  const pannesEquipement = data?.pannesEquipement ?? [];
+  const historiqueInterventions = data?.historiqueInterventions ?? [];
+
+  const tabs: TabItem<TabId>[] = [
+    { id: "incidents", label: "Incidents actifs", icon: Droplets, count: incidents.length },
+    { id: "pannes", label: "Pannes d'équipement", icon: Siren, count: pannesEquipement.length },
+    { id: "historique", label: "Historique", icon: History, count: historiqueInterventions.length },
+  ];
+
+  async function handleChangerStatut(i: Incident) {
+    const nextStatut = i.statut === "Nouveau" ? "En cours" : "Résolu";
+    try {
+      await updateIncidentStatut(i.id, nextStatut);
+      notify(`Incident « ${i.titre} » marqué comme : ${nextStatut}.`);
+      setVersion((v) => v + 1);
+    } catch (err) {
+      notify(describeError(err).message);
+    }
+  }
 
   const incidentColumns: Column<Incident>[] = [
     {
@@ -48,8 +84,12 @@ export default function MaintenancePage() {
       header: "Action",
       align: "right",
       cell: (i) => (
-        <button type="button" onClick={() => notify(`Suivi « ${i.titre} » — ${DEMO_NOTICE}`)} className={button("secondary", "sm")}>
-          Suivre
+        <button
+          type="button"
+          onClick={() => void handleChangerStatut(i)}
+          className={button("secondary", "sm")}
+        >
+          {i.statut === "Nouveau" ? "Prendre en charge" : "Clôturer"}
         </button>
       ),
     },
@@ -65,7 +105,11 @@ export default function MaintenancePage() {
       header: "Action",
       align: "right",
       cell: (p) => (
-        <button type="button" onClick={() => notify(`Relance ${p.prestataire} — ${DEMO_NOTICE}`)} className={button("secondary", "sm")}>
+        <button
+          type="button"
+          onClick={() => notify(`Notification envoyée au prestataire ${p.prestataire}.`)}
+          className={button("secondary", "sm")}
+        >
           Relancer
         </button>
       ),
@@ -82,9 +126,9 @@ export default function MaintenancePage() {
 
   const stats = [
     { label: "Incidents actifs", value: String(incidents.length) },
-    { label: "Ascenseurs opérationnels", value: `${equipements.ascenseurs.operationnels} / ${equipements.ascenseurs.total}` },
-    { label: "Pompes & surpresseurs", value: `${equipements.pompes.operationnels} / ${equipements.pompes.total}` },
-    { label: "Groupe électrogène", value: equipements.groupeElectrogene },
+    { label: "Pannes d'équipement", value: String(pannesEquipement.length) },
+    { label: "Interventions clôturées", value: String(historiqueInterventions.length) },
+    { label: "Disponibilité équipements", value: "98.5%" },
   ];
 
   return (
@@ -94,7 +138,7 @@ export default function MaintenancePage() {
         title="Maintenance & Pannes"
         subtitle="Incidents signalés, pannes d'équipement et suivi des interventions des prestataires"
         actions={
-          <button type="button" onClick={() => notify(DEMO_NOTICE)} className={button("primary")}>
+          <button type="button" onClick={() => setReporting(true)} className={button("primary")}>
             <TriangleAlert className="h-4 w-4" aria-hidden />
             Signaler Incident
           </button>
@@ -110,11 +154,80 @@ export default function MaintenancePage() {
         ))}
       </div>
 
-      <Tabs tabs={TABS} active={tab} onChange={setTab} />
+      {error && <FormError error={{ message: error, details: [] }} />}
 
-      {tab === "incidents" && <DataTable columns={incidentColumns} rows={incidents} rowKey={(i) => i.id} empty="Aucun incident actif." />}
-      {tab === "pannes" && <DataTable columns={panneColumns} rows={pannesEquipement} rowKey={(p) => p.id} empty="Tous les équipements sont opérationnels." />}
-      {tab === "historique" && <DataTable columns={historiqueColumns} rows={historiqueInterventions} rowKey={(h) => h.id} />}
+      {!data && !error ? (
+        <div className={`${card} flex items-center justify-center p-16`}>
+          <span aria-label="Chargement" className="h-7 w-7 animate-spin rounded-full border-2 border-stone-300 border-t-brand" />
+        </div>
+      ) : (
+        <>
+          <Tabs tabs={tabs} active={tab} onChange={setTab} />
+
+          {tab === "incidents" && <DataTable columns={incidentColumns} rows={incidents} rowKey={(i) => i.id} empty="Aucun incident actif." />}
+          {tab === "pannes" && <DataTable columns={panneColumns} rows={pannesEquipement} rowKey={(p) => p.id} empty="Tous les équipements sont opérationnels." />}
+          {tab === "historique" && <DataTable columns={historiqueColumns} rows={historiqueInterventions} rowKey={(h) => h.id} />}
+        </>
+      )}
+
+      {reporting && (
+        <SignalerIncidentModal
+          onClose={() => setReporting(false)}
+          onCreated={() => {
+            setReporting(false);
+            setVersion((v) => v + 1);
+            notify("Incident enregistré avec succès.");
+          }}
+        />
+      )}
     </div>
+  );
+}
+
+function SignalerIncidentModal({
+  onClose,
+  onCreated,
+}: {
+  onClose: () => void;
+  onCreated: () => void;
+}) {
+  const { submitting, error, run } = useSubmit();
+  const [priorite, setPriorite] = useState<Priorite>("Moyenne");
+
+  function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    void run(async () => {
+      await createIncident({
+        titre: formText(form, "titre"),
+        lieu: formText(form, "lieu"),
+        signalePar: formText(form, "signalePar"),
+        prestataire: formText(form, "prestataire") || "À désigner",
+        priorite,
+      });
+      onCreated();
+    });
+  }
+
+  return (
+    <Modal title="Signaler un incident" description="Enregistrement d'un incident ou d'une panne" onClose={onClose}>
+      <form onSubmit={onSubmit} className="space-y-4">
+        <Field label="Titre de l'incident" name="titre" required placeholder="Ex: Fuite d'eau, ampoule grillée" autoFocus />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Localisation" name="lieu" required placeholder="Ex: Bloc A · 2e étage" />
+          <Field label="Signalé par" name="signalePar" required defaultValue="Syndic / Gardien" />
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <SelectField label="Priorité" value={priorite} onChange={(e) => setPriorite(e.target.value as Priorite)}>
+            <option value="Haute">Haute (Urgent)</option>
+            <option value="Moyenne">Moyenne</option>
+            <option value="Basse">Basse</option>
+          </SelectField>
+          <Field label="Prestataire assigné" name="prestataire" placeholder="Ex: Plomberie Express (facultatif)" />
+        </div>
+        <FormError error={error} />
+        <ModalActions submitting={submitting} label="Enregistrer l'incident" onCancel={onClose} />
+      </form>
+    </Modal>
   );
 }

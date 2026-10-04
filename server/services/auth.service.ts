@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 import { env } from "../config/env";
 import { httpLogger } from "../middleware/logger";
 import { RefreshToken } from "../models/RefreshToken";
+import type { AdminDocument } from "../models/Admin";
 import { AppError } from "../utils/AppError";
 import {
   findAccountByEmail,
@@ -47,6 +48,11 @@ export async function login(email: string, password: string): Promise<Account> {
   }
 
   const { motDePasseHash, tentativesEchouees, verrouilleJusqua } = account.doc;
+  if (!motDePasseHash) {
+    await Bun.password.verify(password, await getDummyHash());
+    throw new AppError(401, INVALID_CREDENTIALS);
+  }
+
   const passwordOk = await Bun.password.verify(password, motDePasseHash);
   const isLocked = !!verrouilleJusqua && verrouilleJusqua.getTime() > Date.now();
 
@@ -62,7 +68,7 @@ export async function login(email: string, password: string): Promise<Account> {
     throw new AppError(401, INVALID_CREDENTIALS);
   }
 
-  if (tentativesEchouees > 0 || verrouilleJusqua) {
+  if ((tentativesEchouees ?? 0) > 0 || verrouilleJusqua) {
     await updateAccount(account, { $set: { tentativesEchouees: 0, verrouilleJusqua: null } });
   }
 
@@ -98,7 +104,11 @@ async function issueRefreshToken(account: Account, family: string, meta: ClientM
 }
 
 function accessTokenFor(account: Account): string {
-  return signAccessToken(account.doc.id, rolesOf(account));
+  let idResidence: string | undefined;
+  if ("idResidence" in account.doc && account.doc.idResidence) {
+    idResidence = String(account.doc.idResidence);
+  }
+  return signAccessToken(account.doc.id, rolesOf(account), idResidence);
 }
 
 export async function createSession(account: Account, meta: ClientMeta): Promise<Session> {

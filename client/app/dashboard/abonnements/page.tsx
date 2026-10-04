@@ -2,7 +2,7 @@
 
 import { BadgeCheck, CalendarRange, CircleDollarSign, CreditCard, Plus, Receipt, ShieldCheck } from "lucide-react";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
-import { formatDZD } from "@/lib/demo-data";
+import { formatDZD } from "@/lib/format";
 import {
   createFormule,
   createSouscription,

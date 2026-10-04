@@ -2,7 +2,7 @@
 
 import { BadgeCheck, Building, Building2, KeyRound, Layers, MapPin, ShieldCheck, UserRound, type LucideIcon } from "lucide-react";
 import { useEffect, useState } from "react";
-import { getMonEspace, type BatimentDetail, type MonEspace as Espace, type Responsable } from "@/lib/residences-api";
+import { etageLabel, getMonEspace, type BatimentDetail, type MonEspace as Espace, type Responsable } from "@/lib/residences-api";
 import { ROLE_BADGE, ROLE_LABELS, displayName, primaryRole } from "@/lib/roles";
 import { useSession } from "./session";
 import { AccountStatusPill, DataTable, FormError, Pill, card, describeError, type Column } from "./ui";

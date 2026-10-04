@@ -1,4 +1,5 @@
 import { router, type Href } from 'expo-router';
+import { useState } from 'react';
 import { Alert, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -7,7 +8,6 @@ import { Icon, type IconName } from '@/components/icon';
 import { Button, Card, Pill, SectionTitle } from '@/components/ui';
 import { Brand, Ink, MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 import { useAppState } from '@/context/app-state';
-import { logement } from '@/data/mock';
 import { useTheme } from '@/hooks/use-theme';
 import { formatDate, formatDZD, fullName } from '@/utils/format';
 
@@ -55,12 +55,17 @@ export default function ProfileScreen() {
   const { resident, souscription, posts, unreadCount, signOut } = useAppState();
 
   const { abonnement } = souscription;
-  const start = new Date(souscription.debut).getTime();
-  const end = new Date(souscription.fin).getTime();
-  const now = Date.now();
-  const elapsed = Math.min(Math.max((now - start) / (end - start), 0), 1);
-  const daysLeft = Math.max(Math.ceil((end - now) / DAY_MS), 0);
-  const active = now >= start && now < end;
+  const [subStats] = useState(() => {
+    const start = new Date(souscription.debut).getTime();
+    const end = new Date(souscription.fin).getTime();
+    const now = Date.now();
+    const elapsed = Math.min(Math.max((now - start) / (end - start), 0), 1);
+    const daysLeft = Math.max(Math.ceil((end - now) / DAY_MS), 0);
+    const active = now >= start && now < end;
+    const isPending = now < start;
+    return { elapsed, daysLeft, active, isPending };
+  });
+  const { elapsed, daysLeft, active, isPending } = subStats;
 
   const myPosts = posts.filter((p) => p.author.id === resident.id);
   const likesReceived = myPosts.reduce((sum, p) => sum + p.likes, 0);
@@ -95,10 +100,10 @@ export default function ProfileScreen() {
           </View>
           <Text style={[styles.name, { color: theme.text }]}>{fullName(resident)}</Text>
           <Text style={[styles.role, { color: theme.textSecondary }]}>
-            Résident · {logement.batiment} · Appt {logement.appartement}
+            Résident · {resident.logement?.batiment || 'Bâtiment'} · Appt {resident.logement?.appartement || '—'}
           </Text>
           <View style={styles.identityPills}>
-            <Pill label={logement.residence} tone="neutral" icon="location" />
+            <Pill label={resident.logement?.residence || 'Ma Résidence'} tone="neutral" icon="location" />
             {active && <Pill label={abonnement.nom} tone="brand" icon="premium" />}
           </View>
         </View>
@@ -152,7 +157,7 @@ export default function ProfileScreen() {
             <View style={styles.track}>
               <View style={[styles.trackFill, { width: `${elapsed * 100}%` }]} />
             </View>
-            <Text style={styles.daysLeft}>{active ? `${daysLeft} jours restants` : now < start ? 'Pas encore commencé' : 'Abonnement expiré'}</Text>
+            <Text style={styles.daysLeft}>{active ? `${daysLeft} jours restants` : isPending ? 'Pas encore commencé' : 'Abonnement expiré'}</Text>
 
             <View style={styles.perks}>
               {abonnement.avantages.map((a) => (
@@ -176,10 +181,22 @@ export default function ProfileScreen() {
             }
           />
           <Card style={styles.listCard}>
-            <InfoRow icon="mail" label="Email" value={resident.email} />
-            <InfoRow icon="phone" label="Téléphone" value={resident.telephone} />
-            <InfoRow icon="building" label="Résidence" value={`${logement.residence} · ${logement.localisation}`} />
-            <InfoRow icon="home" label="Logement" value={`${logement.batiment} · ${logement.etage}e étage · Appt ${logement.appartement}`} />
+            <InfoRow icon="mail" label="Email" value={resident.email || '—'} />
+            <InfoRow icon="phone" label="Téléphone" value={resident.telephone || '—'} />
+            <InfoRow
+              icon="building"
+              label="Résidence"
+              value={
+                resident.logement?.localisation
+                  ? `${resident.logement.residence} · ${resident.logement.localisation}`
+                  : (resident.logement?.residence || 'Ma Résidence')
+              }
+            />
+            <InfoRow
+              icon="home"
+              label="Logement"
+              value={`${resident.logement?.batiment || 'Bâtiment'} · ${resident.logement?.etage ?? 0}e étage · Appt ${resident.logement?.appartement || '—'}`}
+            />
             <InfoRow icon="calendar" label="Membre depuis" value={formatDate(resident.createdAt)} last />
           </Card>
         </View>

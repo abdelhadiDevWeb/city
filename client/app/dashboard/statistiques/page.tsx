@@ -2,7 +2,7 @@
 
 import { BadgeCheck, Building, Building2, ChartLine, CircleDollarSign, KeyRound, RefreshCw, Receipt, ShieldCheck, Users, type LucideIcon } from "lucide-react";
 import { useEffect, useState } from "react";
-import { formatDZD } from "@/lib/demo-data";
+import { formatDZD } from "@/lib/format";
 import { getStats, type Stats } from "@/lib/platform-api";
 import { BarList, ColumnChart, DonutChart, LineChart } from "../charts";
 import { FormError, PageHeader, Panel, button, card, describeError } from "../ui";

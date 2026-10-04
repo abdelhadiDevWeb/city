@@ -7,7 +7,6 @@ import { Icon } from '@/components/icon';
 import { Pill } from '@/components/ui';
 import { Brand, MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 import { useAppState } from '@/context/app-state';
-import { chatMembers, chatOnline, logement } from '@/data/mock';
 import type { ChatMessage } from '@/data/types';
 import { useTheme } from '@/hooks/use-theme';
 import { dayLabel, formatTime, fullName } from '@/utils/format';
@@ -93,7 +92,7 @@ export default function ChatScreen() {
             <View style={styles.presence}>
               <View style={[styles.onlineDot, { backgroundColor: theme.success }]} />
               <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
-                {chatMembers} membres · {chatOnline} en ligne
+                Résidents connectés · En direct
               </Text>
             </View>
           </View>
@@ -107,7 +106,7 @@ export default function ChatScreen() {
             <Icon name="megaphone" size={16} color={theme.brand} />
             <Text style={[styles.pinnedText, { color: theme.textSecondary }]} numberOfLines={2}>
               <Text style={{ fontWeight: '800', color: theme.text }}>Épinglé · </Text>
-              Espace réservé aux résidents de {logement.residence}. Restez courtois 🙏
+              Espace réservé aux résidents de {resident.logement?.residence || 'la résidence'}. Restez courtois 🙏
             </Text>
             <Pressable accessibilityLabel="Masquer le message épinglé" onPress={() => setShowRules(false)} hitSlop={10}>
               <Icon name="close" size={16} color={theme.textMuted} />
@@ -128,6 +127,14 @@ export default function ChatScreen() {
           ) : (
             <Bubble row={item} />
           )
+        }
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Text style={[styles.emptyTitle, { color: theme.text }]}>Aucun message pour le moment</Text>
+            <Text style={[styles.emptySub, { color: theme.textSecondary }]}>
+              Envoyez un message pour échanger avec les autres résidents de votre immeuble.
+            </Text>
+          </View>
         }
         contentContainerStyle={styles.list}
         keyboardShouldPersistTaps="handled"
@@ -303,5 +310,23 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  emptyContainer: {
+    padding: Spacing.five,
+    alignItems: 'center',
+    textAlign: 'center',
+    gap: 8,
+    transform: [{ scaleY: -1 }],
+  },
+  emptyTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+  emptySub: {
+    fontSize: 13,
+    textAlign: 'center',
+    lineHeight: 18,
+    maxWidth: 280,
   },
 });

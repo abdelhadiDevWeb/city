@@ -11,7 +11,6 @@ import { PostCard } from '@/components/post-card';
 import { Card, Chip } from '@/components/ui';
 import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 import { useAppState } from '@/context/app-state';
-import { chatOnline, logement } from '@/data/mock';
 import { useTheme } from '@/hooks/use-theme';
 import { formatDZD } from '@/utils/format';
 
@@ -35,7 +34,7 @@ function Highlight({ icon, label, value, tint, href }: { icon: IconName; label: 
 export default function HomeScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
-  const { resident, posts, paiements, souscription, publishPost } = useAppState();
+  const { resident, posts, paiements, publishPost } = useAppState();
   const [filter, setFilter] = useState<Filter>('tout');
   const [draft, setDraft] = useState('');
   const [refreshing, setRefreshing] = useState(false);
@@ -56,6 +55,8 @@ export default function HomeScreen() {
     setTimeout(() => setRefreshing(false), 900);
   }
 
+  const residenceName = resident.logement?.residence || 'Ma Résidence';
+
   const header = (
     <View style={styles.headerBlock}>
       <View style={styles.topBar}>
@@ -63,7 +64,7 @@ export default function HomeScreen() {
           <CityLogo size={38} />
           <View>
             <Text style={[styles.brandName, { color: theme.text }]}>City</Text>
-            <Text style={[styles.brandSub, { color: theme.textSecondary }]}>{logement.residence}</Text>
+            <Text style={[styles.brandSub, { color: theme.textSecondary }]}>{residenceName}</Text>
           </View>
         </View>
         <NotificationBell />
@@ -110,8 +111,8 @@ export default function HomeScreen() {
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.highlights}>
         {nextDue && <Highlight icon="receipt" label="Prochain paiement" value={formatDZD(nextDue.montant)} tint={theme.warning} href="/payments" />}
-        <Highlight icon="chat" label="Discussion" value={`${chatOnline} en ligne`} tint={theme.success} href="/chat" />
-        <Highlight icon="premium" label="Abonnement" value={souscription.abonnement.nom} tint={theme.brand} href="/profile" />
+        <Highlight icon="chat" label="Discussion" value="Résidents" tint={theme.success} href="/chat" />
+        <Highlight icon="premium" label="Espace" value={resident.logement?.appartement ? `Appt ${resident.logement.appartement}` : 'Résident'} tint={theme.brand} href="/profile" />
       </ScrollView>
 
       <View style={styles.filters}>
@@ -127,9 +128,16 @@ export default function HomeScreen() {
       <FlatList
         data={visible}
         keyExtractor={(p) => p.id}
-        renderItem={({ item }) => <PostCard post={item} residence={logement.residence} />}
+        renderItem={({ item }) => <PostCard post={item} residence={residenceName} />}
         ListHeaderComponent={header}
-        ListEmptyComponent={<Text style={[styles.empty, { color: theme.textSecondary }]}>Aucune publication pour le moment.</Text>}
+        ListEmptyComponent={
+          <Card style={styles.emptyCard}>
+            <Text style={[styles.emptyTitle, { color: theme.text }]}>Aucune publication pour le moment</Text>
+            <Text style={[styles.emptySub, { color: theme.textSecondary }]}>
+              Les alertes du syndic et les messages de vos voisins s’afficheront directement ici.
+            </Text>
+          </Card>
+        }
         ItemSeparatorComponent={() => <View style={styles.separator} />}
         contentContainerStyle={[styles.content, { paddingTop: insets.top + Spacing.two }]}
         keyboardShouldPersistTaps="handled"
@@ -266,5 +274,23 @@ const styles = StyleSheet.create({
   empty: {
     textAlign: 'center',
     paddingVertical: Spacing.five,
+  },
+  emptyCard: {
+    padding: Spacing.four,
+    alignItems: 'center',
+    textAlign: 'center',
+    gap: 6,
+    marginVertical: Spacing.two,
+  },
+  emptyTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+  emptySub: {
+    fontSize: 13,
+    textAlign: 'center',
+    lineHeight: 18,
+    maxWidth: 280,
   },
 });

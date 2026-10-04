@@ -8,10 +8,10 @@ function clientMeta(req: Request): authService.ClientMeta {
   return { ip: req.ip, userAgent: req.get("user-agent") };
 }
 
-function sendSession(res: Response, session: authService.Session): void {
+async function sendSession(res: Response, session: authService.Session): Promise<void> {
   res.cookie(cookieNames.refreshToken, session.refreshToken, refreshCookieOptions);
   res.cookie(cookieNames.authHint, "1", authHintCookieOptions);
-  res.status(200).json({ ok: true, account: publicAccount(session.account), accessToken: session.accessToken });
+  res.status(200).json({ ok: true, account: await publicAccount(session.account), accessToken: session.accessToken });
 }
 
 function clearRefreshCookie(res: Response): void {
@@ -29,7 +29,7 @@ function getRefreshCookie(req: Request): string | undefined {
 export const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body as { email: string; password: string };
   const account = await authService.login(email, password);
-  sendSession(res, await authService.createSession(account, clientMeta(req)));
+  await sendSession(res, await authService.createSession(account, clientMeta(req)));
 });
 
 export const refresh = asyncHandler(async (req, res) => {
@@ -37,7 +37,7 @@ export const refresh = asyncHandler(async (req, res) => {
   if (!token) throw new AppError(401, "Invalid session");
 
   try {
-    sendSession(res, await authService.rotateSession(token, clientMeta(req)));
+    await sendSession(res, await authService.rotateSession(token, clientMeta(req)));
   } catch (err) {
     clearRefreshCookie(res);
     throw err;

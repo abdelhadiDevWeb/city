@@ -24,6 +24,7 @@ const createResidentSchema = Joi.object({
     idBatiment: Joi.string().hex().length(24).required(),
     etage: Joi.number().integer().min(0).max(200).required(),
     appartement: Joi.string().trim().min(1).max(20).required(),
+    password: Joi.string().min(6).max(128).optional(),
   }).required(),
 });
 

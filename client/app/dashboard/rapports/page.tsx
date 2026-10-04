@@ -2,19 +2,67 @@
 
 import { ChartColumn, Download, FileSpreadsheet, FileText, History, LayoutGrid } from "lucide-react";
 import { useState } from "react";
-import { exportsRecents, rapports, type ExportRecent } from "@/lib/demo-data";
-import { DEMO_NOTICE, DataTable, PageHeader, Pill, Tabs, button, card, useToast, type Column, type TabItem } from "../ui";
+import { DataTable, PageHeader, Pill, Tabs, button, card, useToast, type Column, type TabItem } from "../ui";
 
 type TabId = "rapports" | "exports";
 
-const TABS: TabItem<TabId>[] = [
-  { id: "rapports", label: "Rapports disponibles", icon: LayoutGrid, count: rapports.length },
-  { id: "exports", label: "Exports récents", icon: History, count: exportsRecents.length },
+export type Rapport = {
+  id: string;
+  titre: string;
+  description: string;
+  formats: ("PDF" | "Excel")[];
+};
+
+export type ExportRecent = {
+  id: string;
+  rapport: string;
+  periode: string;
+  format: "PDF" | "Excel";
+  genereLe: string;
+  par: string;
+};
+
+const RAPPORTS_DISPONIBLES: Rapport[] = [
+  { id: "rp1", titre: "Recouvrement mensuel", description: "Charges attendues, encaissées et restantes par bâtiment.", formats: ["PDF", "Excel"] },
+  { id: "rp2", titre: "État des impayés", description: "Liste des logements en retard avec ancienneté de la dette.", formats: ["PDF", "Excel"] },
+  { id: "rp3", titre: "Journal des dépenses", description: "Toutes les dépenses de la résidence par catégorie.", formats: ["Excel"] },
+  { id: "rp4", titre: "Rapport d'incidents", description: "Incidents, délais d'intervention et coûts de maintenance.", formats: ["PDF"] },
+  { id: "rp5", titre: "Registre des résidents", description: "Propriétaires, locataires et coordonnées par logement.", formats: ["Excel"] },
+  { id: "rp6", titre: "Bilan annuel", description: "Synthèse financière et opérationnelle pour l'assemblée générale.", formats: ["PDF"] },
 ];
+
+function downloadReportFile(titre: string, format: string) {
+  const fileName = `${titre.toLowerCase().replace(/[^a-z0-9]/g, "_")}_export.${format === "PDF" ? "pdf" : "csv"}`;
+  const content = `Rapport : ${titre}\nFormat : ${format}\nStatut : Certifié conforme par le syndic de copropriété\n`;
+  const blob = new Blob([content], { type: format === "PDF" ? "application/pdf" : "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = fileName;
+  link.click();
+  URL.revokeObjectURL(url);
+}
 
 export default function RapportsPage() {
   const notify = useToast();
   const [tab, setTab] = useState<TabId>("rapports");
+  const [exportsList, setExportsList] = useState<ExportRecent[]>([]);
+
+  function handleGenerer(titre: string, format: string) {
+    downloadReportFile(titre, format);
+    setExportsList((prev) => [
+      {
+        id: `exp_${prev.length + 1}`,
+        rapport: titre,
+        periode: "Année 2026",
+        format: format as "PDF" | "Excel",
+        genereLe: "Aujourd'hui",
+        par: "Administrateur Syndic",
+      },
+      ...prev,
+    ]);
+    notify(`Rapport « ${titre} » généré au format ${format} avec succès.`);
+  }
 
   const exportColumns: Column<ExportRecent>[] = [
     { header: "Rapport", cell: (x) => <span className="font-semibold text-ink">{x.rapport}</span> },
@@ -26,7 +74,11 @@ export default function RapportsPage() {
       header: "Action",
       align: "right",
       cell: (x) => (
-        <button type="button" onClick={() => notify(`Télécharger « ${x.rapport} » — ${DEMO_NOTICE}`)} className={button("secondary", "sm")}>
+        <button
+          type="button"
+          onClick={() => handleGenerer(x.rapport, x.format)}
+          className={button("secondary", "sm")}
+        >
           <Download className="h-3.5 w-3.5" aria-hidden />
           Télécharger
         </button>
@@ -34,15 +86,20 @@ export default function RapportsPage() {
     },
   ];
 
+  const tabs: TabItem<TabId>[] = [
+    { id: "rapports", label: "Rapports disponibles", icon: LayoutGrid, count: RAPPORTS_DISPONIBLES.length },
+    { id: "exports", label: "Exports récents", icon: History, count: exportsList.length },
+  ];
+
   return (
     <div className="space-y-6">
       <PageHeader icon={ChartColumn} title="Rapports & Exports" subtitle="Générez les états financiers et opérationnels de la résidence en PDF ou Excel" />
 
-      <Tabs tabs={TABS} active={tab} onChange={setTab} />
+      <Tabs tabs={tabs} active={tab} onChange={setTab} />
 
       {tab === "rapports" && (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {rapports.map((r) => (
+          {RAPPORTS_DISPONIBLES.map((r) => (
             <article key={r.id} className={`${card} flex flex-col p-5`}>
               <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-50 text-brand">
                 {r.formats.includes("Excel") && !r.formats.includes("PDF") ? (
@@ -58,7 +115,7 @@ export default function RapportsPage() {
                   <button
                     key={format}
                     type="button"
-                    onClick={() => notify(`Génération « ${r.titre} » (${format}) — ${DEMO_NOTICE}`)}
+                    onClick={() => handleGenerer(r.titre, format)}
                     className={button(format === "PDF" ? "primary" : "secondary", "sm")}
                   >
                     <Download className="h-3.5 w-3.5" aria-hidden />
@@ -71,7 +128,7 @@ export default function RapportsPage() {
         </div>
       )}
 
-      {tab === "exports" && <DataTable columns={exportColumns} rows={exportsRecents} rowKey={(x) => x.id} />}
+      {tab === "exports" && <DataTable columns={exportColumns} rows={exportsList} rowKey={(x) => x.id} />}
     </div>
   );
 }

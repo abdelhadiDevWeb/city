@@ -175,3 +175,8 @@ export async function getHealth(): Promise<boolean> {
     return false;
   }
 }
+
+export function getAccessToken(): string | null {
+  return accessToken;
+}
+

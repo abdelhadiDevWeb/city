@@ -6,9 +6,16 @@ import { assertActive } from "../services/auth.service";
 import { AppError, asyncHandler } from "../utils/AppError";
 import { abonnementRouter } from "./abonnement.routes";
 import { adminRouter } from "./admin.routes";
+import { annoncesRouter } from "./annonces.routes";
 import { authRouter } from "./auth.routes";
+import { configRouter } from "./config.routes";
+import { documentsRouter } from "./documents.routes";
 import { espaceRouter } from "./espace.routes";
+import { financesRouter } from "./finances.routes";
+import { maintenanceRouter } from "./maintenance.routes";
+import { personnelRouter } from "./personnel.routes";
 import { residenceRouter } from "./residence.routes";
+import { residentRouter } from "./resident.routes";
 import { statsRouter } from "./stats.routes";
 import { superAdminRouter } from "./superAdmin.routes";
 
@@ -26,6 +33,12 @@ apiRouter.use("/abonnements", abonnementRouter);
 apiRouter.use("/stats", statsRouter);
 apiRouter.use("/mon-espace", espaceRouter);
 apiRouter.use("/residents", residentRouter);
+apiRouter.use("/finances", financesRouter);
+apiRouter.use("/maintenance", maintenanceRouter);
+apiRouter.use("/personnel", personnelRouter);
+apiRouter.use("/annonces", annoncesRouter);
+apiRouter.use("/documents", documentsRouter);
+apiRouter.use("/configuration", configRouter);
 
 apiRouter.get(
   "/me",
@@ -34,6 +47,6 @@ apiRouter.get(
     const account = await findAccountById(accountTypeFromRoles(req.user!.roles), req.user!.sub);
     if (!account) throw new AppError(401, "Invalid token");
     await assertActive(account);
-    res.status(200).json({ ok: true, account: publicAccount(account) });
+    res.status(200).json({ ok: true, account: await publicAccount(account) });
   }),
 );

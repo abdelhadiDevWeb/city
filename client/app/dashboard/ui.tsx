@@ -13,7 +13,7 @@ import {
   type ReactNode,
 } from "react";
 import { ApiError } from "@/lib/api";
-import type { Alerte } from "@/lib/demo-data";
+import type { Alerte } from "@/lib/annonces-api";
 
 export const card = "rounded-2xl border border-stone-200 bg-white shadow-[0_1px_2px_rgb(28_25_23/0.04)]";
 
@@ -217,8 +217,8 @@ export function DataTable<T>({
   );
 }
 
-export function Mono({ children, strong = false }: { children: ReactNode; strong?: boolean }) {
-  return <span className={`whitespace-nowrap font-mono ${strong ? "font-bold text-ink" : "text-xs text-stone-600"}`}>{children}</span>;
+export function Mono({ children, strong = false, className = "" }: { children: ReactNode; strong?: boolean; className?: string }) {
+  return <span className={`whitespace-nowrap font-mono ${strong ? "font-bold text-ink" : "text-xs text-stone-600"} ${className}`}>{children}</span>;
 }
 
 export function Menu({

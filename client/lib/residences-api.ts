@@ -74,3 +74,43 @@ export async function getMonEspace(): Promise<MonEspace> {
 export async function createAccount(input: NewAccount): Promise<void> {
   await apiRequest("/admins", { method: "POST", body: input });
 }
+
+export type Resident = {
+  id: string;
+  prenom: string;
+  nom: string;
+  email: string;
+  telephone: string;
+  nin: string;
+  createdAt: string;
+  batiment: { id: string; nom: string } | null;
+  appartement: { id: string; nom: string; etage: number } | null;
+  temporaryPassword?: string;
+};
+
+export type NewResidentInput = {
+  prenom: string;
+  nom: string;
+  email: string;
+  telephone: string;
+  nin: string;
+  idBatiment: string;
+  etage: number;
+  appartement: string;
+  password?: string;
+};
+
+export function etageLabel(etage: number): string {
+  return etage === 0 ? "rez-de-chaussée" : etage === 1 ? "1er étage" : `${etage}e étage`;
+}
+
+export async function listResidents(): Promise<Resident[]> {
+  const res = await apiRequest<{ residents: Resident[] }>("/residents");
+  return res.residents;
+}
+
+export async function createResident(input: NewResidentInput): Promise<Resident> {
+  const res = await apiRequest<{ resident: Resident }>("/residents", { method: "POST", body: input });
+  return res.resident;
+}
+

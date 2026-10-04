@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useColorScheme } from 'react-native';
 
 import { SplashOverlay } from '@/components/splash-overlay';
+import { InAppNotificationBanner } from '@/components/in-app-banner';
 import { Brand } from '@/constants/theme';
 import { AppStateProvider, useAppState } from '@/context/app-state';
 import { useTheme } from '@/hooks/use-theme';
@@ -51,6 +52,7 @@ export default function RootLayout() {
       <AppStateProvider>
         <StatusBar style="auto" />
         <RootNavigator />
+        <InAppNotificationBanner />
       </AppStateProvider>
       <SplashOverlay />
     </ThemeProvider>

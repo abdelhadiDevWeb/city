@@ -5,12 +5,16 @@ import { env } from "../config/env";
 export type JwtUser = {
   sub: string;
   roles: string[];
+  idResidence?: string;
 };
 
 const ALGORITHM = "HS256";
 
-export function signAccessToken(accountId: string, roles: string[]): string {
-  return jwt.sign({ roles }, env.jwt.accessSecret, {
+export function signAccessToken(accountId: string, roles: string[], idResidence?: string): string {
+  const payload: Record<string, unknown> = { roles };
+  if (idResidence) payload.idResidence = idResidence;
+
+  return jwt.sign(payload, env.jwt.accessSecret, {
     algorithm: ALGORITHM,
     subject: accountId,
     issuer: env.jwt.issuer,
@@ -29,8 +33,11 @@ export function verifyAccessToken(token: string): JwtUser {
   });
 
   if (typeof decoded === "string" || !decoded.sub) throw new Error("Invalid token payload");
-  const roles = Array.isArray(decoded.roles) ? decoded.roles.filter((r): r is string => typeof r === "string") : [];
-  return { sub: decoded.sub, roles };
+  const payload = decoded as jwt.JwtPayload;
+  const roles = Array.isArray(payload.roles) ? payload.roles.filter((r): r is string => typeof r === "string") : [];
+  const idResidence = typeof payload.idResidence === "string" ? payload.idResidence : undefined;
+  const sub = typeof payload.sub === "string" ? payload.sub : String(payload.sub);
+  return { sub, roles, idResidence };
 }
 
 export function generateOpaqueToken(bytes = 48): string {

@@ -1,6 +1,6 @@
 "use client";
 
-import { Building2, Search, UserPlus, Users } from "lucide-react";
+import { Building2, Check, Copy, KeyRound, Search, UserPlus, Users } from "lucide-react";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import {
   createResident,
@@ -26,6 +26,7 @@ export default function ResidentsPage() {
   const [error, setError] = useState<string | null>(null);
   const [version, setVersion] = useState(0);
   const [adding, setAdding] = useState(false);
+  const [createdCredentials, setCreatedCredentials] = useState<{ resident: Resident; password: string } | null>(null);
   const [query, setQuery] = useState("");
   const closeModal = useCallback(() => setAdding(false), []);
 
@@ -151,11 +152,97 @@ export default function ResidentsPage() {
           onCreated={(r) => {
             setAdding(false);
             setVersion((v) => v + 1);
+            setCreatedCredentials({ resident: r, password: r.temporaryPassword || "City@2026" });
             notify(`${fullName(r)} ajouté comme propriétaire de l'appartement ${r.appartement?.nom ?? ""}.`);
           }}
         />
       )}
+
+      {createdCredentials && (
+        <ResidentCredentialsModal
+          credentials={createdCredentials}
+          residenceNom={espace?.residence?.nom ?? "Résidence"}
+          onClose={() => setCreatedCredentials(null)}
+        />
+      )}
     </div>
+  );
+}
+
+function ResidentCredentialsModal({
+  credentials,
+  residenceNom,
+  onClose,
+}: {
+  credentials: { resident: Resident; password: string };
+  residenceNom: string;
+  onClose: () => void;
+}) {
+  const [copied, setCopied] = useState(false);
+  const { resident, password } = credentials;
+
+  const copyText = `Bonjour ${resident.prenom},\nVoici vos identifiants pour accéder à l'application mobile City :\n- Email : ${resident.email}\n- Mot de passe : ${password}\n- Résidence : ${residenceNom} (${resident.batiment?.nom ?? ""} · Appt ${resident.appartement?.nom ?? ""})\nConnectez-vous pour suivre les annonces et régler vos charges.`;
+
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(copyText);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 3000);
+    } catch {
+      // ignore
+    }
+  }
+
+  return (
+    <Modal
+      title="Accès résident créé !"
+      description="Le compte du résident est prêt. Transmettez-lui ces identifiants pour qu'il puisse se connecter à l'application mobile."
+      onClose={onClose}
+    >
+      <div className="space-y-4">
+        <div className="rounded-xl border border-stone-200 bg-stone-50/80 p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-stone-500 uppercase tracking-wide">Email de connexion</span>
+            <Mono className="font-bold text-ink">{resident.email}</Mono>
+          </div>
+          <div className="flex items-center justify-between border-t border-stone-200/70 pt-2.5">
+            <span className="text-xs font-semibold text-stone-500 uppercase tracking-wide">Mot de passe initial</span>
+            <div className="flex items-center gap-2">
+              <KeyRound className="h-3.5 w-3.5 text-brand" />
+              <Mono className="font-bold text-brand">{password}</Mono>
+            </div>
+          </div>
+          <div className="flex items-center justify-between border-t border-stone-200/70 pt-2.5">
+            <span className="text-xs font-semibold text-stone-500 uppercase tracking-wide">Logement</span>
+            <span className="text-sm font-semibold text-ink">
+              {resident.batiment?.nom ?? "Bâtiment"} · Appt {resident.appartement?.nom ?? "—"}
+            </span>
+          </div>
+        </div>
+
+        <div className="rounded-xl bg-orange-50/70 border border-orange-200/60 p-3.5 text-xs text-stone-600 leading-relaxed">
+          Le résident peut maintenant ouvrir l&apos;application mobile City sur Android / iOS, saisir cet email et ce mot de passe, et accéder à son espace.
+        </div>
+
+        <div className="flex items-center justify-end gap-3 pt-2">
+          <button
+            type="button"
+            onClick={handleCopy}
+            className="inline-flex items-center gap-2 rounded-xl bg-stone-100 px-4 py-2.5 text-xs font-bold text-ink hover:bg-stone-200 transition"
+          >
+            {copied ? <Check className="h-4 w-4 text-emerald-600" /> : <Copy className="h-4 w-4 text-stone-500" />}
+            {copied ? "Copié !" : "Copier les identifiants (WhatsApp / SMS)"}
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            className={button("primary")}
+          >
+            Terminé
+          </button>
+        </div>
+      </div>
+    </Modal>
   );
 }
 
@@ -179,6 +266,7 @@ function ResidentModal({
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
+    const password = formText(form, "password");
     void run(async () =>
       onCreated(
         await createResident({
@@ -190,13 +278,14 @@ function ResidentModal({
           idBatiment: batimentId,
           etage,
           appartement: formText(form, "appartement"),
+          ...(password ? { password } : {}),
         }),
       ),
     );
   }
 
   return (
-    <Modal title="Ajouter un résident" description="Le résident est enregistré comme propriétaire de l'appartement." onClose={onClose}>
+    <Modal title="Ajouter un résident" description="Le résident est enregistré comme propriétaire et reçoit un accès à l'application mobile." onClose={onClose}>
       <form onSubmit={onSubmit} className="space-y-5">
         <fieldset className="space-y-4">
           <legend className="mb-3 text-[11px] font-bold uppercase tracking-wide text-stone-500">Logement</legend>
@@ -274,6 +363,20 @@ function ResidentModal({
             placeholder="18 chiffres"
             autoComplete="off"
             className="font-mono"
+          />
+        </fieldset>
+
+        <fieldset className="space-y-4">
+          <legend className="mb-3 text-[11px] font-bold uppercase tracking-wide text-stone-500">Accès à l&apos;application mobile</legend>
+          <Field
+            label="Mot de passe initial (facultatif)"
+            name="password"
+            type="text"
+            minLength={6}
+            maxLength={128}
+            placeholder="City@2026 (par défaut)"
+            autoComplete="off"
+            hint="Laissez vide pour utiliser City@2026. Le résident pourra changer ce mot de passe à tout moment."
           />
         </fieldset>
 

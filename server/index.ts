@@ -17,11 +17,19 @@ import { globalLimiter } from "./middleware/rateLimiters";
 import { Abonnement } from "./models/Abonnement";
 import { AbonnementUser } from "./models/AbonnementUser";
 import { Admin } from "./models/Admin";
+import { Annonce } from "./models/Annonce";
 import { Appartement } from "./models/Appartement";
 import { Batiment } from "./models/Batiment";
+import { Charge } from "./models/Charge";
+import { ConfigResidence } from "./models/ConfigResidence";
+import { Depense } from "./models/Depense";
+import { DocumentSyndic } from "./models/DocumentSyndic";
+import { Incident } from "./models/Incident";
+import { Personnel } from "./models/Personnel";
 import { RefreshToken } from "./models/RefreshToken";
 import { Residence } from "./models/Residence";
 import { SuperAdmin } from "./models/SuperAdmin";
+import { Tache } from "./models/Tache";
 import { User } from "./models/User";
 import { apiRouter } from "./routes";
 import { ensureDefaultAccounts } from "./scripts_for_superadmin_and_admin";
@@ -36,6 +44,11 @@ const corsOptions: cors.CorsOptions = {
     // allow same-origin / server-to-server / curl
     if (!origin) return callback(null, true);
     if (env.corsOrigins.includes(origin)) return callback(null, true);
+    if (env.nodeEnv === "development") {
+      if (/^http:\/\/(localhost|127\.0\.0\.1|10\.0\.2\.2|192\.168\.\d+\.\d+|172\.\d+\.\d+\.\d+)(:\d+)?$/.test(origin)) {
+        return callback(null, true);
+      }
+    }
     return callback(new AppError(403, "Origin not allowed"));
   },
   credentials: true,
@@ -82,6 +95,14 @@ async function start(): Promise<void> {
     Abonnement.createIndexes(),
     AbonnementUser.createIndexes(),
     RefreshToken.createIndexes(),
+    Charge.createIndexes(),
+    Depense.createIndexes(),
+    Incident.createIndexes(),
+    Personnel.createIndexes(),
+    Tache.createIndexes(),
+    Annonce.createIndexes(),
+    DocumentSyndic.createIndexes(),
+    ConfigResidence.createIndexes(),
   ]);
   await ensureDefaultAccounts();
   server.listen(env.port, () => {

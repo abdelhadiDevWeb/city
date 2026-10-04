@@ -36,6 +36,9 @@ export const issueCsrfToken: RequestHandler = (req, res) => {
 };
 
 export const csrfProtection: RequestHandler = (req, res, next) => {
+  if (req.headers["x-mobile-app"] === "true") {
+    return next();
+  }
   if (req.method !== "GET" && req.method !== "HEAD" && req.method !== "OPTIONS" && !getSessionId(req)) {
     return res.status(403).json({ ok: false, message: "Invalid CSRF token" });
   }

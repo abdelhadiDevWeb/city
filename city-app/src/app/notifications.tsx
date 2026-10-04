@@ -11,6 +11,7 @@ import { timeAgo } from '@/utils/format';
 
 const KIND: Record<NotificationKind, { icon: IconName; color: string; href: Href }> = {
   annonce: { icon: 'megaphone', color: '#F97316', href: '/' },
+  alerte: { icon: 'error', color: '#DC2626', href: '/' },
   comment: { icon: 'comment', color: '#2563EB', href: '/' },
   like: { icon: 'heartFill', color: '#E11D48', href: '/' },
   chat: { icon: 'chat', color: '#059669', href: '/chat' },
