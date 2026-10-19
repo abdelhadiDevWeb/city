@@ -34,3 +34,5 @@ residentRouter.use(requireAuth, requireRole("admin", "sub_admin"), csrfProtectio
 
 residentRouter.get("/", residents.list);
 residentRouter.post("/", validate(createResidentSchema), residents.create);
+residentRouter.put("/:id", residents.update);
+residentRouter.delete("/:id", residents.remove);

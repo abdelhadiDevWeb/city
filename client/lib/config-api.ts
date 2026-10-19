@@ -40,3 +40,11 @@ export async function addChargeType(input: { nom: string; montantMensuel: number
 export async function toggleChargeType(id: string): Promise<void> {
   await apiRequest(`/configuration/charges/${encodeURIComponent(id)}/toggle`, { method: "PATCH" });
 }
+
+export async function updateChargeType(id: string, input: { nom?: string; montantMensuel?: number; appliqueA?: string }): Promise<void> {
+  await apiRequest(`/configuration/charges/${encodeURIComponent(id)}`, { method: "PUT", body: input });
+}
+
+export async function deleteChargeType(id: string): Promise<void> {
+  await apiRequest(`/configuration/charges/${encodeURIComponent(id)}`, { method: "DELETE" });
+}

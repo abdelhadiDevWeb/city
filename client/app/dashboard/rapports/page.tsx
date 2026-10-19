@@ -1,8 +1,8 @@
 "use client";
 
-import { ChartColumn, Download, FileSpreadsheet, FileText, History, LayoutGrid } from "lucide-react";
+import { ChartColumn, Download, FileSpreadsheet, FileText, History, LayoutGrid, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { DataTable, PageHeader, Pill, Tabs, button, card, useToast, type Column, type TabItem } from "../ui";
+import { ConfirmModal, DataTable, PageHeader, Pill, Tabs, button, card, useToast, type Column, type TabItem } from "../ui";
 
 type TabId = "rapports" | "exports";
 
@@ -47,6 +47,7 @@ export default function RapportsPage() {
   const notify = useToast();
   const [tab, setTab] = useState<TabId>("rapports");
   const [exportsList, setExportsList] = useState<ExportRecent[]>([]);
+  const [deletingExport, setDeletingExport] = useState<ExportRecent | null>(null);
 
   function handleGenerer(titre: string, format: string) {
     downloadReportFile(titre, format);
@@ -74,14 +75,24 @@ export default function RapportsPage() {
       header: "Action",
       align: "right",
       cell: (x) => (
-        <button
-          type="button"
-          onClick={() => handleGenerer(x.rapport, x.format)}
-          className={button("secondary", "sm")}
-        >
-          <Download className="h-3.5 w-3.5" aria-hidden />
-          Télécharger
-        </button>
+        <div className="flex items-center justify-end gap-1.5">
+          <button
+            type="button"
+            onClick={() => handleGenerer(x.rapport, x.format)}
+            className={button("secondary", "sm")}
+          >
+            <Download className="h-3.5 w-3.5" aria-hidden />
+            Télécharger
+          </button>
+          <button
+            type="button"
+            onClick={() => setDeletingExport(x)}
+            className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-stone-200 text-stone-500 transition hover:border-red-300 hover:bg-red-50 hover:text-red-600"
+            title="Supprimer cet export"
+          >
+            <Trash2 className="h-3.5 w-3.5" aria-hidden />
+          </button>
+        </div>
       ),
     },
   ];
@@ -128,7 +139,29 @@ export default function RapportsPage() {
         </div>
       )}
 
-      {tab === "exports" && <DataTable columns={exportColumns} rows={exportsList} rowKey={(x) => x.id} />}
+      {tab === "exports" && (
+        <DataTable
+          columns={exportColumns}
+          rows={exportsList}
+          rowKey={(x) => x.id}
+          empty="Aucun export récent dans cette session."
+        />
+      )}
+
+      <ConfirmModal
+        open={Boolean(deletingExport)}
+        title="Supprimer l'export"
+        message={`Êtes-vous sûr de vouloir retirer le rapport « ${deletingExport?.rapport} » de l'historique récent ?`}
+        confirmLabel="Supprimer"
+        onConfirm={() => {
+          if (!deletingExport) return;
+          setExportsList((prev) => prev.filter((item) => item.id !== deletingExport.id));
+          setDeletingExport(null);
+          notify("Export retiré de l'historique.");
+        }}
+        onCancel={() => setDeletingExport(null)}
+      />
     </div>
   );
 }
+

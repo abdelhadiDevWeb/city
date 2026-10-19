@@ -1,23 +1,31 @@
 "use client";
 
-import { BadgeCheck, CalendarRange, CircleDollarSign, CreditCard, Plus, Receipt, ShieldCheck } from "lucide-react";
+import { BadgeCheck, CalendarRange, CircleDollarSign, CreditCard, Plus, Receipt, ShieldCheck, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { formatDZD } from "@/lib/format";
 import {
   createFormule,
   createSouscription,
+  deleteFormule,
+  deleteSouscription,
   listAdminsAbonnes,
   listFormules,
   setStatutPaiement,
+  updateFormule,
   type AdminAbonne,
   type Formule,
   type Souscription,
 } from "@/lib/platform-api";
 import { ModalActions, SelectField, formText, useSubmit } from "../forms";
-import { AccountStatusPill, DataTable, Field, FormError, Modal, PageHeader, Pill, Tabs, button, card, describeError, useToast, type Column, type Tone } from "../ui";
+import { AccountStatusPill, ActionGroup, ConfirmModal, DataTable, Field, FormError, Modal, PageHeader, Pill, Tabs, button, card, describeError, useToast, type Column, type Tone } from "../ui";
 
 type Etat = "Actif" | "À venir" | "Expiré";
-type ModalState = { kind: "formule" } | { kind: "attribuer"; adminId: string } | { kind: "historique"; adminId: string } | null;
+type ModalState =
+  | { kind: "formule" }
+  | { kind: "edit_formule"; formule: Formule }
+  | { kind: "attribuer"; adminId: string }
+  | { kind: "historique"; adminId: string }
+  | null;
 
 const ETAT_TONE: Record<Etat, Tone> = { Actif: "success", "À venir": "brand", Expiré: "neutral" };
 
@@ -55,8 +63,10 @@ export default function AbonnementsPage() {
   const [tab, setTab] = useState<"admins" | "formules">("admins");
   const [modal, setModal] = useState<ModalState>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<{ kind: "formule" | "souscription"; id: string; nom: string } | null>(null);
 
   const refresh = () => setVersion((v) => v + 1);
+
   const closeModal = useCallback(() => setModal(null), []);
 
   useEffect(() => {
@@ -95,7 +105,11 @@ export default function AbonnementsPage() {
     notify(message);
   }
 
-  const modalAdmin = modal && modal.kind !== "formule" ? admins?.find((a) => a.id === modal.adminId) : undefined;
+  const modalAdmin =
+    modal && (modal.kind === "attribuer" || modal.kind === "historique")
+      ? admins?.find((a) => a.id === modal.adminId)
+      : undefined;
+
 
   return (
     <div className="space-y-6">
@@ -137,12 +151,24 @@ export default function AbonnementsPage() {
               onHistory={(a) => setModal({ kind: "historique", adminId: a.id })}
             />
           ) : (
-            <FormulesGrid formules={formules} onCreate={() => setModal({ kind: "formule" })} />
+            <FormulesGrid
+              formules={formules}
+              onCreate={() => setModal({ kind: "formule" })}
+              onEdit={(f) => setModal({ kind: "edit_formule", formule: f })}
+              onDelete={(f) => setConfirmDelete({ kind: "formule", id: f.id, nom: f.nom })}
+            />
           )}
         </>
       ) : null}
 
       {modal?.kind === "formule" && <FormuleModal onClose={closeModal} onCreated={(nom) => onCreated(`Formule « ${nom} » créée.`)} />}
+      {modal?.kind === "edit_formule" && (
+        <EditFormuleModal
+          formule={modal.formule}
+          onClose={closeModal}
+          onUpdated={(nom) => onCreated(`Formule « ${nom} » mise à jour.`)}
+        />
+      )}
       {modal?.kind === "attribuer" && modalAdmin && formules && (
         <AttribuerModal
           admin={modalAdmin}
@@ -153,7 +179,38 @@ export default function AbonnementsPage() {
         />
       )}
       {modal?.kind === "historique" && modalAdmin && (
-        <HistoriqueModal admin={modalAdmin} busyId={busyId} onToggle={togglePaiement} onClose={closeModal} />
+        <HistoriqueModal
+          admin={modalAdmin}
+          busyId={busyId}
+          onToggle={togglePaiement}
+          onClose={closeModal}
+          onDeleteSouscription={(s) => setConfirmDelete({ kind: "souscription", id: s.id, nom: s.abonnement?.nom ?? "cette souscription" })}
+        />
+      )}
+
+      {confirmDelete && (
+        <ConfirmModal
+          isOpen={true}
+          title={`Supprimer ${confirmDelete.kind === "formule" ? "la formule" : "la souscription"}`}
+          message={`Êtes-vous sûr de vouloir supprimer « ${confirmDelete.nom} » ? Cette action est irréversible.`}
+          confirmLabel="Supprimer définitivement"
+          onCancel={() => setConfirmDelete(null)}
+          onConfirm={async () => {
+            try {
+              if (confirmDelete.kind === "formule") {
+                await deleteFormule(confirmDelete.id);
+                notify(`Formule « ${confirmDelete.nom} » supprimée.`);
+              } else {
+                await deleteSouscription(confirmDelete.id);
+                notify(`Souscription supprimée.`);
+              }
+              setConfirmDelete(null);
+              refresh();
+            } catch (err) {
+              notify(describeError(err).message);
+            }
+          }}
+        />
       )}
     </div>
   );
@@ -290,7 +347,17 @@ function AdminsTable({
   );
 }
 
-function FormulesGrid({ formules, onCreate }: { formules: Formule[]; onCreate: () => void }) {
+function FormulesGrid({
+  formules,
+  onCreate,
+  onEdit,
+  onDelete,
+}: {
+  formules: Formule[];
+  onCreate: () => void;
+  onEdit: (f: Formule) => void;
+  onDelete: (f: Formule) => void;
+}) {
   if (formules.length === 0) {
     return (
       <section className={`${card} flex flex-col items-center p-12 text-center`}>
@@ -310,12 +377,22 @@ function FormulesGrid({ formules, onCreate }: { formules: Formule[]; onCreate: (
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
       {formules.map((f) => (
-        <article key={f.id} className={`${card} p-5`}>
+        <article key={f.id} className={`${card} flex flex-col p-5`}>
           <div className="flex items-start justify-between gap-3">
-            <h3 className="font-bold text-ink">{f.nom}</h3>
-            <Pill tone="dark">{dureeLabel(f.duree)}</Pill>
+            <div>
+              <h3 className="font-bold text-ink">{f.nom}</h3>
+              <div className="mt-1">
+                <Pill tone="dark">{dureeLabel(f.duree)}</Pill>
+              </div>
+            </div>
+            <ActionGroup
+              editLabel="Modifier formule"
+              deleteLabel="Supprimer formule"
+              onEdit={() => onEdit(f)}
+              onDelete={() => onDelete(f)}
+            />
           </div>
-          <p className="mt-3 text-2xl font-bold tracking-tight text-brand">{formatDZD(f.prix)}</p>
+          <p className="mt-4 text-2xl font-bold tracking-tight text-brand">{formatDZD(f.prix)}</p>
           <p className="mt-1 text-xs text-stone-500">
             {f.souscriptions} abonnement{f.souscriptions > 1 ? "s" : ""} · créée le {new Date(f.createdAt).toLocaleDateString("fr-FR")}
           </p>
@@ -425,31 +502,83 @@ function HistoriqueModal({
   busyId,
   onToggle,
   onClose,
+  onDeleteSouscription,
 }: {
   admin: AdminAbonne;
   busyId: string | null;
   onToggle: (s: Souscription) => void;
   onClose: () => void;
+  onDeleteSouscription: (s: Souscription) => void;
 }) {
   return (
     <Modal title="Historique des abonnements" description={`${fullName(admin)} · ${admin.email}`} onClose={onClose}>
-      <ul className="space-y-3">
-        {admin.souscriptions.map((s) => (
-          <li key={s.id} className="rounded-xl border border-stone-200 p-4">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="font-semibold text-ink">{s.abonnement?.nom ?? "Formule supprimée"}</p>
-              <Pill tone={ETAT_TONE[etat(s)]}>{etat(s)}</Pill>
-            </div>
-            <p className="mt-1 text-xs text-stone-500">
-              {formatDate(s.debut)} → {formatDate(s.fin)}
-              {s.abonnement && ` · ${formatDZD(s.abonnement.prix)}`}
-            </p>
-            <div className="mt-3">
-              <PaiementToggle s={s} busy={busyId === s.id} onToggle={onToggle} />
-            </div>
-          </li>
-        ))}
-      </ul>
+      {admin.souscriptions.length === 0 ? (
+        <p className="text-sm text-stone-500">Aucun abonnement enregistré pour cet admin.</p>
+      ) : (
+        <ul className="space-y-3">
+          {admin.souscriptions.map((s) => (
+            <li key={s.id} className="rounded-xl border border-stone-200 p-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="font-semibold text-ink">{s.abonnement?.nom ?? "Formule supprimée"}</p>
+                <Pill tone={ETAT_TONE[etat(s)]}>{etat(s)}</Pill>
+              </div>
+              <p className="mt-1 text-xs text-stone-500">
+                {formatDate(s.debut)} → {formatDate(s.fin)}
+                {s.abonnement && ` · ${formatDZD(s.abonnement.prix)}`}
+              </p>
+              <div className="mt-3 flex items-center justify-between gap-2 border-t border-stone-100 pt-3">
+                <PaiementToggle s={s} busy={busyId === s.id} onToggle={onToggle} />
+                <button
+                  type="button"
+                  onClick={() => onDeleteSouscription(s)}
+                  className="flex items-center gap-1 text-xs font-semibold text-rose-600 hover:text-rose-700"
+                  title="Supprimer cette souscription"
+                >
+                  <Trash2 className="h-3.5 w-3.5" aria-hidden />
+                  Supprimer
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </Modal>
+  );
+}
+
+function EditFormuleModal({
+  formule,
+  onClose,
+  onUpdated,
+}: {
+  formule: Formule;
+  onClose: () => void;
+  onUpdated: (nom: string) => void;
+}) {
+  const { submitting, error, run } = useSubmit();
+  const [nom, setNom] = useState(formule.nom);
+  const [prix, setPrix] = useState(formule.prix);
+  const [duree, setDuree] = useState(formule.duree);
+
+  function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    void run(async () => {
+      await updateFormule(formule.id, { nom, prix: Number(prix), duree: Number(duree) });
+      onUpdated(nom);
+    });
+  }
+
+  return (
+    <Modal title="Modifier la formule" description="Le prix est en dinars algériens et la durée en mois." onClose={onClose}>
+      <form onSubmit={onSubmit} className="space-y-4">
+        <Field label="Nom de la formule" value={nom} onChange={(e) => setNom(e.target.value)} required minLength={2} maxLength={60} autoFocus />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Prix (DZD)" type="number" value={prix} onChange={(e) => setPrix(Number(e.target.value))} required min={0} max={100000000} step={0.01} />
+          <Field label="Durée (mois)" type="number" value={duree} onChange={(e) => setDuree(Number(e.target.value))} required min={1} max={120} step={1} />
+        </div>
+        <FormError error={error} />
+        <ModalActions submitting={submitting} label="Enregistrer les modifications" onCancel={onClose} />
+      </form>
     </Modal>
   );
 }

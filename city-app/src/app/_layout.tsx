@@ -1,4 +1,6 @@
-import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
+import { useEffect } from 'react';
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider, useRouter } from 'expo-router';
+import * as Notifications from 'expo-notifications';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme } from 'react-native';
@@ -14,6 +16,23 @@ SplashScreen.preventAutoHideAsync();
 function RootNavigator() {
   const { signedIn } = useAppState();
   const theme = useTheme();
+  const router = useRouter();
+
+  // Open notifications screen when the user taps a system push notification
+  useEffect(() => {
+    const sub = Notifications.addNotificationResponseReceivedListener((response) => {
+      const route = response?.notification?.request?.content?.data?.route;
+      if (route && typeof route === 'string') {
+        router.push(route as any);
+      } else {
+        router.push('/notifications');
+      }
+    });
+
+    return () => {
+      sub.remove();
+    };
+  }, [router]);
 
   return (
     <Stack

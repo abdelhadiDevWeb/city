@@ -47,16 +47,28 @@ function generatePassword(): string {
   return `${chars.slice(0, 6)}-${chars.slice(6, 12)}-${chars.slice(12)}`;
 }
 
-export function PasswordField({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+export function PasswordField({
+  value,
+  onChange,
+  label = "Mot de passe initial",
+  hint = "12 caractères minimum. Transmettez-le à la personne de façon sécurisée.",
+  required = true,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  label?: string;
+  hint?: string;
+  required?: boolean;
+}) {
   return (
     <div className="space-y-1.5">
       <div className="flex items-end gap-2">
         <div className="flex-1">
           <Field
-            label="Mot de passe initial"
+            label={label}
             name="password"
             type="text"
-            required
+            required={required}
             minLength={12}
             maxLength={128}
             autoComplete="new-password"
@@ -71,10 +83,11 @@ export function PasswordField({ value, onChange }: { value: string; onChange: (v
           Générer
         </button>
       </div>
-      <p className="text-[11px] text-stone-500">12 caractères minimum. Transmettez-le à la personne de façon sécurisée.</p>
+      {hint && <p className="text-[11px] text-stone-500">{hint}</p>}
     </div>
   );
 }
+
 
 export function SelectField({ label, children, ...props }: { label: string; children: ReactNode } & SelectHTMLAttributes<HTMLSelectElement>) {
   const id = useId();

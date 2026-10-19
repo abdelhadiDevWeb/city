@@ -13,6 +13,7 @@ export interface IUser {
   idResidence?: Types.ObjectId | null;
   idBatiment?: Types.ObjectId | null;
   idAppartement?: Types.ObjectId | null;
+  pushTokens?: string[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -33,6 +34,7 @@ const userSchema = new Schema<IUser>(
     idResidence: { type: Schema.Types.ObjectId, ref: "Residence", default: null, index: true },
     idBatiment: { type: Schema.Types.ObjectId, ref: "Batiment", default: null, index: true },
     idAppartement: { type: Schema.Types.ObjectId, ref: "Appartement", default: null, index: true },
+    pushTokens: { type: [String], default: [] },
   },
   { timestamps: true, toJSON: publicJson },
 );

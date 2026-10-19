@@ -4,8 +4,10 @@ import { CreditCard, Pencil, Plus, Receipt, SlidersHorizontal, Wrench } from "lu
 import { useEffect, useState, type FormEvent } from "react";
 import {
   addChargeType,
+  deleteChargeType,
   getConfig,
   toggleChargeType,
+  updateChargeType,
   type ConfigData,
   type ModePaiement,
   type TypeCharge,
@@ -13,7 +15,24 @@ import {
 } from "@/lib/config-api";
 import { formatDZD } from "@/lib/format";
 import { ModalActions, formText, useSubmit } from "../forms";
-import { DataTable, Field, FormError, Modal, Mono, PageHeader, Pill, Tabs, button, card, describeError, useToast, type Column, type TabItem } from "../ui";
+import {
+  ActionGroup,
+  ConfirmModal,
+  DataTable,
+  Field,
+  FormError,
+  Modal,
+  Mono,
+  PageHeader,
+  Pill,
+  Tabs,
+  button,
+  card,
+  describeError,
+  useToast,
+  type Column,
+  type TabItem,
+} from "../ui";
 
 type TabId = "charges" | "incidents" | "paiements";
 
@@ -28,6 +47,8 @@ export default function ConfigurationPage() {
   const [version, setVersion] = useState(0);
   const [tab, setTab] = useState<TabId>("charges");
   const [addingCharge, setAddingCharge] = useState(false);
+  const [editingCharge, setEditingCharge] = useState<TypeCharge | null>(null);
+  const [deletingCharge, setDeletingCharge] = useState<TypeCharge | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -74,14 +95,20 @@ export default function ConfigurationPage() {
       header: "Action",
       align: "right",
       cell: (c) => (
-        <button
-          type="button"
-          onClick={() => void handleToggleCharge(c)}
-          className={button("secondary", "sm")}
-        >
-          <Pencil className="h-3.5 w-3.5" aria-hidden />
-          {c.actif ? "Désactiver" : "Activer"}
-        </button>
+        <div className="flex items-center justify-end gap-2">
+          <button
+            type="button"
+            onClick={() => void handleToggleCharge(c)}
+            className={button("secondary", "sm")}
+          >
+            <Pencil className="h-3.5 w-3.5" aria-hidden />
+            {c.actif ? "Désactiver" : "Activer"}
+          </button>
+          <ActionGroup
+            onEdit={() => setEditingCharge(c)}
+            onDelete={() => setDeletingCharge(c)}
+          />
+        </div>
       ),
     },
   ];
@@ -139,6 +166,33 @@ export default function ConfigurationPage() {
           }}
         />
       )}
+
+      {editingCharge && (
+        <EditTypeChargeModal
+          charge={editingCharge}
+          onClose={() => setEditingCharge(null)}
+          onUpdated={() => {
+            setEditingCharge(null);
+            setVersion((v) => v + 1);
+            notify("Type de charge modifié avec succès.");
+          }}
+        />
+      )}
+
+      <ConfirmModal
+        open={Boolean(deletingCharge)}
+        title="Supprimer le type de charge"
+        message={`Êtes-vous sûr de vouloir supprimer le type de charge « ${deletingCharge?.nom} » ?`}
+        confirmLabel="Supprimer"
+        onConfirm={async () => {
+          if (!deletingCharge) return;
+          await deleteChargeType(deletingCharge.id);
+          setDeletingCharge(null);
+          setVersion((v) => v + 1);
+          notify("Type de charge supprimé avec succès.");
+        }}
+        onCancel={() => setDeletingCharge(null)}
+      />
     </div>
   );
 }
@@ -177,3 +231,41 @@ function NouveauTypeChargeModal({
     </Modal>
   );
 }
+
+function EditTypeChargeModal({
+  charge,
+  onClose,
+  onUpdated,
+}: {
+  charge: TypeCharge;
+  onClose: () => void;
+  onUpdated: () => void;
+}) {
+  const { submitting, error, run } = useSubmit();
+
+  function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    void run(async () => {
+      await updateChargeType(charge.id, {
+        nom: formText(form, "nom"),
+        montantMensuel: Number(form.get("montantMensuel") ?? 1000),
+        appliqueA: formText(form, "appliqueA"),
+      });
+      onUpdated();
+    });
+  }
+
+  return (
+    <Modal title="Modifier le Type de Charge" description={`Modification de « ${charge.nom} »`} onClose={onClose}>
+      <form onSubmit={onSubmit} className="space-y-4">
+        <Field label="Nom de la charge" name="nom" defaultValue={charge.nom} required autoFocus />
+        <Field label="Montant mensuel (DZD)" name="montantMensuel" type="number" defaultValue={charge.montantMensuel} required min={0} />
+        <Field label="Appliqué à" name="appliqueA" defaultValue={charge.appliqueA} required />
+        <FormError error={error} />
+        <ModalActions submitting={submitting} label="Enregistrer les modifications" onCancel={onClose} />
+      </form>
+    </Modal>
+  );
+}
+

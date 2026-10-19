@@ -77,3 +77,24 @@ export async function listSuperAdmins(): Promise<SuperAdminAccount[]> {
 export async function createSuperAdmin(input: { nomComplet: string; email: string; password: string }): Promise<void> {
   await apiRequest("/super-admins", { method: "POST", body: input });
 }
+
+export async function updateFormule(id: string, input: { nom?: string; prix?: number; duree?: number }): Promise<void> {
+  await apiRequest(`/abonnements/${encodeURIComponent(id)}`, { method: "PUT", body: input });
+}
+
+export async function deleteFormule(id: string): Promise<void> {
+  await apiRequest(`/abonnements/${encodeURIComponent(id)}`, { method: "DELETE" });
+}
+
+export async function deleteSouscription(id: string): Promise<void> {
+  await apiRequest(`/abonnements/souscriptions/${encodeURIComponent(id)}`, { method: "DELETE" });
+}
+
+export async function updateSuperAdmin(id: string, input: { nomComplet?: string; email?: string; password?: string }): Promise<void> {
+  await apiRequest(`/super-admins/${encodeURIComponent(id)}`, { method: "PUT", body: input });
+}
+
+export async function deleteSuperAdmin(id: string): Promise<void> {
+  await apiRequest(`/super-admins/${encodeURIComponent(id)}`, { method: "DELETE" });
+}
+

@@ -32,5 +32,10 @@ residenceRouter.use(requireAuth, csrfProtection);
 residenceRouter.get("/", requireRole("super_admin"), residences.list);
 residenceRouter.post("/", requireRole("super_admin"), validate(createResidenceSchema), residences.create);
 residenceRouter.get("/:id", requireRole("super_admin", "admin"), validate(Joi.object({ params: idParams })), residences.details);
+residenceRouter.put("/:id", requireRole("super_admin", "admin"), residences.update);
+residenceRouter.delete("/:id", requireRole("super_admin"), residences.remove);
+
 residenceRouter.post("/:id/batiments", requireRole("super_admin", "admin"), validate(createBatimentSchema), residences.createBatiment);
+residenceRouter.put("/:id/batiments/:batimentId", requireRole("super_admin", "admin"), residences.updateBatiment);
+residenceRouter.delete("/:id/batiments/:batimentId", requireRole("super_admin", "admin"), residences.removeBatiment);
 

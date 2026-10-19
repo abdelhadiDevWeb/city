@@ -20,3 +20,6 @@ superAdminRouter.use(requireAuth, requireRole("super_admin"), csrfProtection);
 
 superAdminRouter.get("/", superAdmins.list);
 superAdminRouter.post("/", validate(createSuperAdminSchema), superAdmins.create);
+superAdminRouter.put("/:id", superAdmins.update);
+superAdminRouter.delete("/:id", superAdmins.remove);
+

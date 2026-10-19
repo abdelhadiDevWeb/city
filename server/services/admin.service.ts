@@ -61,3 +61,42 @@ export async function createAdminAccount(input: CreateAdminInput) {
     throw err;
   }
 }
+
+export async function updateAdminAccount(
+  id: string,
+  input: Partial<{
+    prenom: string;
+    nom: string;
+    email: string;
+    telephone: string;
+    wilaya: string;
+    daira: string;
+    baladia: string;
+    password?: string;
+  }>,
+) {
+  const admin = await Admin.findById(id);
+  if (!admin) throw new AppError(404, "Compte admin introuvable");
+
+  if (input.email && input.email !== admin.email) {
+    if (await isLoginEmailTaken(input.email)) throw new AppError(409, "Cet email est déjà utilisé");
+    admin.email = input.email;
+  }
+  if (input.prenom !== undefined) admin.prenom = input.prenom;
+  if (input.nom !== undefined) admin.nom = input.nom;
+  if (input.telephone !== undefined) admin.telephone = input.telephone;
+  if (input.wilaya !== undefined) admin.wilaya = input.wilaya;
+  if (input.daira !== undefined) admin.daira = input.daira;
+  if (input.baladia !== undefined) admin.baladia = input.baladia;
+  if (input.password) admin.motDePasseHash = await hashPassword(input.password);
+
+  await admin.save();
+  return admin.toJSON();
+}
+
+export async function deleteAdminAccount(id: string) {
+  const admin = await Admin.findById(id);
+  if (!admin) throw new AppError(404, "Compte admin introuvable");
+  await Admin.findByIdAndDelete(id);
+  return { ok: true };
+}

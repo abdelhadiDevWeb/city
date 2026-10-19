@@ -114,3 +114,36 @@ export async function createResident(input: NewResidentInput): Promise<Resident>
   return res.resident;
 }
 
+
+export async function updateResidence(id: string, input: { nom?: string; localisation?: string }): Promise<void> {
+  await apiRequest(`/residences/${encodeURIComponent(id)}`, { method: "PUT", body: input });
+}
+
+export async function deleteResidence(id: string): Promise<void> {
+  await apiRequest(`/residences/${encodeURIComponent(id)}`, { method: "DELETE" });
+}
+
+export async function updateBatiment(residenceId: string, batimentId: string, input: { nom?: string; etages?: number }): Promise<void> {
+  await apiRequest(`/residences/${encodeURIComponent(residenceId)}/batiments/${encodeURIComponent(batimentId)}`, { method: "PUT", body: input });
+}
+
+export async function deleteBatiment(residenceId: string, batimentId: string): Promise<void> {
+  await apiRequest(`/residences/${encodeURIComponent(residenceId)}/batiments/${encodeURIComponent(batimentId)}`, { method: "DELETE" });
+}
+
+export async function updateAccount(id: string, input: { prenom?: string; nom?: string; email?: string; telephone?: string; password?: string }): Promise<void> {
+  await apiRequest(`/admins/${encodeURIComponent(id)}`, { method: "PUT", body: input });
+}
+
+export async function deleteAccount(id: string): Promise<void> {
+  await apiRequest(`/admins/${encodeURIComponent(id)}`, { method: "DELETE" });
+}
+
+export async function updateResident(id: string, input: Partial<NewResidentInput>): Promise<void> {
+  await apiRequest(`/residents/${encodeURIComponent(id)}`, { method: "PUT", body: input });
+}
+
+export async function deleteResident(id: string): Promise<void> {
+  await apiRequest(`/residents/${encodeURIComponent(id)}`, { method: "DELETE" });
+}
+

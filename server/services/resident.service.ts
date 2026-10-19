@@ -141,3 +141,48 @@ export async function createResident(actor: AdminDocument, input: NewResident) {
     temporaryPassword: initialPassword,
   };
 }
+
+export async function updateResident(
+  id: string,
+  actor: AdminDocument,
+  input: Partial<{
+    prenom: string;
+    nom: string;
+    telephone: string;
+    email: string;
+  }>,
+) {
+  const user = await User.findById(id);
+  if (!user) throw new AppError(404, "Résident introuvable");
+
+  const scope = scopeOf(actor);
+  const allowed = "idResidence" in scope ? user.idResidence?.equals(scope.idResidence) : user.idBatiment?.equals(scope.idBatiment);
+  if (!allowed) throw new AppError(403, "Action interdite sur ce résident");
+
+  if (input.email && input.email !== user.email) {
+    if (await isLoginEmailTaken(input.email)) throw new AppError(409, "Cet email est déjà utilisé");
+    user.email = input.email;
+  }
+  if (input.prenom !== undefined) user.prenom = input.prenom;
+  if (input.nom !== undefined) user.nom = input.nom;
+  if (input.telephone !== undefined) user.telephone = input.telephone;
+
+  await user.save();
+  return user.toJSON();
+}
+
+export async function deleteResident(id: string, actor: AdminDocument) {
+  const user = await User.findById(id);
+  if (!user) throw new AppError(404, "Résident introuvable");
+
+  const scope = scopeOf(actor);
+  const allowed = "idResidence" in scope ? user.idResidence?.equals(scope.idResidence) : user.idBatiment?.equals(scope.idBatiment);
+  if (!allowed) throw new AppError(403, "Action interdite sur ce résident");
+
+  await Promise.all([
+    User.findByIdAndDelete(id),
+    Appartement.updateMany({ idProprietaire: user._id }, { $set: { idProprietaire: null } }),
+  ]);
+
+  return { ok: true };
+}

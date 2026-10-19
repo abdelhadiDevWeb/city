@@ -4,13 +4,15 @@ import { BellRing, CalendarDays, Megaphone, Pin, Plus, Send, UsersRound } from "
 import { useEffect, useState, type FormEvent } from "react";
 import {
   createAnnonce,
+  deleteAnnonce,
   getAnnonces,
   renvoyerAnnonce,
+  updateAnnonce,
   type Annonce,
   type AnnoncesData,
 } from "@/lib/annonces-api";
 import { ModalActions, formText, useSubmit } from "../forms";
-import { ALERT_STYLES, Field, FormError, Modal, PageHeader, Pill, Tabs, button, card, describeError, useToast, type TabItem } from "../ui";
+import { ALERT_STYLES, ActionGroup, ConfirmModal, Field, FormError, Modal, PageHeader, Pill, Tabs, button, card, describeError, useToast, type TabItem } from "../ui";
 
 type TabId = "annonces" | "alertes";
 
@@ -21,6 +23,8 @@ export default function AnnoncesPage() {
   const [version, setVersion] = useState(0);
   const [tab, setTab] = useState<TabId>("annonces");
   const [addingAnnonce, setAddingAnnonce] = useState(false);
+  const [editingAnnonce, setEditingAnnonce] = useState<Annonce | null>(null);
+  const [deletingAnnonce, setDeletingAnnonce] = useState<Annonce | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -85,13 +89,23 @@ export default function AnnoncesPage() {
               {annonces.map((a) => (
                 <article key={a.id} className={`${card} flex flex-col p-5 ${a.epinglee ? "ring-1 ring-orange-200" : ""}`}>
                   <div className="flex items-start justify-between gap-2">
-                    <h3 className="font-bold text-ink">{a.titre}</h3>
-                    {a.epinglee && (
-                      <Pill tone="brand">
-                        <Pin className="h-3 w-3" aria-hidden />
-                        Épinglée
-                      </Pill>
-                    )}
+                    <div>
+                      <h3 className="font-bold text-ink">{a.titre}</h3>
+                      {a.epinglee && (
+                        <div className="mt-1">
+                          <Pill tone="brand">
+                            <Pin className="h-3 w-3" aria-hidden />
+                            Épinglée
+                          </Pill>
+                        </div>
+                      )}
+                    </div>
+                    <ActionGroup
+                      editLabel="Modifier l'annonce"
+                      deleteLabel="Supprimer l'annonce"
+                      onEdit={() => setEditingAnnonce(a)}
+                      onDelete={() => setDeletingAnnonce(a)}
+                    />
                   </div>
                   <p className="mt-2 flex-1 text-sm leading-relaxed text-stone-600">{a.contenu}</p>
                   <div className="mt-4 space-y-2 border-t border-stone-100 pt-4 text-xs text-stone-500">
@@ -159,7 +173,93 @@ export default function AnnoncesPage() {
           }}
         />
       )}
+
+      {editingAnnonce && (
+        <EditAnnonceModal
+          annonce={editingAnnonce}
+          onClose={() => setEditingAnnonce(null)}
+          onUpdated={() => {
+            setEditingAnnonce(null);
+            setVersion((v) => v + 1);
+            notify("Annonce mise à jour avec succès.");
+          }}
+        />
+      )}
+
+      {deletingAnnonce && (
+        <ConfirmModal
+          isOpen={true}
+          title="Supprimer l'annonce"
+          message={`Êtes-vous sûr de vouloir supprimer l'annonce « ${deletingAnnonce.titre} » ?`}
+          confirmLabel="Supprimer définitivement"
+          onCancel={() => setDeletingAnnonce(null)}
+          onConfirm={async () => {
+            try {
+              await deleteAnnonce(deletingAnnonce.id);
+              notify(`Annonce « ${deletingAnnonce.titre} » supprimée.`);
+              setDeletingAnnonce(null);
+              setVersion((v) => v + 1);
+            } catch (err) {
+              notify(describeError(err).message);
+            }
+          }}
+        />
+      )}
     </div>
+  );
+}
+
+function EditAnnonceModal({
+  annonce,
+  onClose,
+  onUpdated,
+}: {
+  annonce: Annonce;
+  onClose: () => void;
+  onUpdated: () => void;
+}) {
+  const { submitting, error, run } = useSubmit();
+  const [titre, setTitre] = useState(annonce.titre);
+  const [contenu, setContenu] = useState(annonce.contenu);
+  const [audience, setAudience] = useState(annonce.audience);
+  const [epinglee, setEpinglee] = useState(annonce.epinglee);
+
+  function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    void run(async () => {
+      await updateAnnonce(annonce.id, { titre, contenu, audience, epinglee });
+      onUpdated();
+    });
+  }
+
+  return (
+    <Modal title="Modifier l'Annonce" description="Mettre à jour les informations de l'annonce" onClose={onClose}>
+      <form onSubmit={onSubmit} className="space-y-4">
+        <Field label="Titre de l'annonce" value={titre} onChange={(e) => setTitre(e.target.value)} required autoFocus />
+        <div className="space-y-1.5">
+          <label className="block text-xs font-semibold text-ink">Contenu de l&apos;annonce</label>
+          <textarea
+            value={contenu}
+            onChange={(e) => setContenu(e.target.value)}
+            required
+            rows={4}
+            className="w-full rounded-xl border border-stone-200 bg-white p-3 text-sm text-ink placeholder:text-stone-400 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+          />
+        </div>
+        <Field label="Audience ciblée" value={audience} onChange={(e) => setAudience(e.target.value)} />
+        <label className="flex items-center gap-2 text-sm text-ink cursor-pointer">
+          <input
+            type="checkbox"
+            checked={epinglee}
+            onChange={(e) => setEpinglee(e.target.checked)}
+            className="rounded border-stone-300 text-brand focus:ring-brand"
+          />
+          <span>Épingler en haut de l&apos;application</span>
+        </label>
+        <FormError error={error} />
+        <ModalActions submitting={submitting} label="Enregistrer les modifications" onCancel={onClose} />
+      </form>
+    </Modal>
   );
 }
 

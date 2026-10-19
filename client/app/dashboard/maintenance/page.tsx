@@ -4,7 +4,9 @@ import { Droplets, History, Siren, TriangleAlert, Wrench } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 import {
   createIncident,
+  deleteIncident,
   getMaintenance,
+  updateIncident,
   updateIncidentStatut,
   type Incident,
   type InterventionPassee,
@@ -14,7 +16,7 @@ import {
 } from "@/lib/maintenance-api";
 import { formatDZD } from "@/lib/format";
 import { ModalActions, SelectField, formText, useSubmit } from "../forms";
-import { DataTable, Field, FormError, Modal, Mono, PageHeader, Pill, Tabs, button, card, describeError, useToast, type Column, type TabItem, type Tone } from "../ui";
+import { ActionGroup, ConfirmModal, DataTable, Field, FormError, Modal, Mono, PageHeader, Pill, Tabs, button, card, describeError, useToast, type Column, type TabItem, type Tone } from "../ui";
 
 type TabId = "incidents" | "pannes" | "historique";
 
@@ -27,6 +29,8 @@ export default function MaintenancePage() {
   const [version, setVersion] = useState(0);
   const [tab, setTab] = useState<TabId>("incidents");
   const [reporting, setReporting] = useState(false);
+  const [editingIncident, setEditingIncident] = useState<Incident | null>(null);
+  const [deletingIncident, setDeletingIncident] = useState<{ id: string; titre?: string } | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -84,13 +88,21 @@ export default function MaintenancePage() {
       header: "Action",
       align: "right",
       cell: (i) => (
-        <button
-          type="button"
-          onClick={() => void handleChangerStatut(i)}
-          className={button("secondary", "sm")}
-        >
-          {i.statut === "Nouveau" ? "Prendre en charge" : "Clôturer"}
-        </button>
+        <span className="inline-flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => void handleChangerStatut(i)}
+            className={button("secondary", "sm")}
+          >
+            {i.statut === "Nouveau" ? "Prendre en charge" : "Clôturer"}
+          </button>
+          <ActionGroup
+            editLabel="Modifier incident"
+            deleteLabel="Supprimer incident"
+            onEdit={() => setEditingIncident(i)}
+            onDelete={() => setDeletingIncident({ id: i.id, titre: i.titre })}
+          />
+        </span>
       ),
     },
   ];
@@ -105,13 +117,32 @@ export default function MaintenancePage() {
       header: "Action",
       align: "right",
       cell: (p) => (
-        <button
-          type="button"
-          onClick={() => notify(`Notification envoyée au prestataire ${p.prestataire}.`)}
-          className={button("secondary", "sm")}
-        >
-          Relancer
-        </button>
+        <span className="inline-flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => notify(`Notification envoyée au prestataire ${p.prestataire}.`)}
+            className={button("secondary", "sm")}
+          >
+            Relancer
+          </button>
+          <ActionGroup
+            editLabel="Modifier panne"
+            deleteLabel="Supprimer panne"
+            onEdit={() =>
+              setEditingIncident({
+                id: p.id,
+                titre: p.equipement,
+                lieu: p.lieu,
+                signaleLe: p.depuis,
+                priorite: "Haute",
+                prestataire: p.prestataire,
+                statut: p.statut,
+                signalePar: "Système",
+              })
+            }
+            onDelete={() => setDeletingIncident({ id: p.id, titre: p.equipement })}
+          />
+        </span>
       ),
     },
   ];
@@ -180,6 +211,38 @@ export default function MaintenancePage() {
           }}
         />
       )}
+
+      {editingIncident && (
+        <EditIncidentModal
+          incident={editingIncident}
+          onClose={() => setEditingIncident(null)}
+          onUpdated={() => {
+            setEditingIncident(null);
+            setVersion((v) => v + 1);
+            notify("Incident mis à jour avec succès.");
+          }}
+        />
+      )}
+
+      {deletingIncident && (
+        <ConfirmModal
+          isOpen={true}
+          title="Supprimer l'incident"
+          message={`Êtes-vous sûr de vouloir supprimer ${deletingIncident.titre ? `« ${deletingIncident.titre} »` : "cet incident"} ?`}
+          confirmLabel="Supprimer définitivement"
+          onCancel={() => setDeletingIncident(null)}
+          onConfirm={async () => {
+            try {
+              await deleteIncident(deletingIncident.id);
+              notify("Incident supprimé.");
+              setDeletingIncident(null);
+              setVersion((v) => v + 1);
+            } catch (err) {
+              notify(describeError(err).message);
+            }
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -227,6 +290,58 @@ function SignalerIncidentModal({
         </div>
         <FormError error={error} />
         <ModalActions submitting={submitting} label="Enregistrer l'incident" onCancel={onClose} />
+      </form>
+    </Modal>
+  );
+}
+
+function EditIncidentModal({
+  incident,
+  onClose,
+  onUpdated,
+}: {
+  incident: Incident;
+  onClose: () => void;
+  onUpdated: () => void;
+}) {
+  const { submitting, error, run } = useSubmit();
+  const [titre, setTitre] = useState(incident.titre);
+  const [lieu, setLieu] = useState(incident.lieu);
+  const [priorite, setPriorite] = useState<Priorite>(incident.priorite);
+  const [prestataire, setPrestataire] = useState(incident.prestataire);
+  const [statut, setStatut] = useState(incident.statut);
+
+  function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    void run(async () => {
+      await updateIncident(incident.id, { titre, lieu, priorite, prestataire, statut });
+      onUpdated();
+    });
+  }
+
+  return (
+    <Modal title="Modifier l'incident / panne" description="Mettre à jour les informations d'intervention" onClose={onClose}>
+      <form onSubmit={onSubmit} className="space-y-4">
+        <Field label="Titre / Équipement" value={titre} onChange={(e) => setTitre(e.target.value)} required autoFocus />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Localisation" value={lieu} onChange={(e) => setLieu(e.target.value)} required />
+          <Field label="Prestataire assigné" value={prestataire} onChange={(e) => setPrestataire(e.target.value)} />
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <SelectField label="Priorité" value={priorite} onChange={(e) => setPriorite(e.target.value as Priorite)}>
+            <option value="Haute">Haute</option>
+            <option value="Moyenne">Moyenne</option>
+            <option value="Basse">Basse</option>
+          </SelectField>
+          <SelectField label="Statut" value={statut} onChange={(e) => setStatut(e.target.value)}>
+            <option value="Nouveau">Nouveau</option>
+            <option value="En cours">En cours</option>
+            <option value="Résolu">Résolu</option>
+            <option value="Planifié">Planifié</option>
+          </SelectField>
+        </div>
+        <FormError error={error} />
+        <ModalActions submitting={submitting} label="Enregistrer les modifications" onCancel={onClose} />
       </form>
     </Modal>
   );

@@ -176,3 +176,69 @@ export async function genererCharges(idResidence: string, moisNom: string) {
 
   return { generated: count };
 }
+
+export async function updateDepense(
+  idResidence: string,
+  id: string,
+  input: Partial<{
+    montant: number;
+    categorie: string;
+    fournisseur: string;
+    description: string;
+    date: string;
+    service: string;
+    periode: string;
+    echeance: string;
+    statut: "Payée" | "À payer" | "En retard" | "En attente";
+  }>,
+) {
+  const depense = await Depense.findOne({ _id: id, idResidence });
+  if (!depense) throw new AppError(404, "Dépense ou facture introuvable");
+  if (input.montant !== undefined) depense.montant = input.montant;
+  if (input.categorie !== undefined) depense.categorie = input.categorie;
+  if (input.fournisseur !== undefined) depense.fournisseur = input.fournisseur;
+  if (input.description !== undefined) depense.description = input.description;
+  if (input.date !== undefined) depense.date = input.date;
+  if (input.service !== undefined) depense.service = input.service;
+  if (input.periode !== undefined) depense.periode = input.periode;
+  if (input.echeance !== undefined) depense.echeance = input.echeance;
+  if (input.statut !== undefined) depense.statut = input.statut;
+  await depense.save();
+  return depense.toJSON();
+}
+
+export async function deleteDepense(idResidence: string, id: string) {
+  const depense = await Depense.findOneAndDelete({ _id: id, idResidence });
+  if (!depense) throw new AppError(404, "Dépense ou facture introuvable");
+  return { ok: true };
+}
+
+export async function updateCharge(
+  idResidence: string,
+  id: string,
+  input: Partial<{
+    totalDu: number;
+    moisImpayes: number;
+    statut: "impaye" | "paye";
+    logement: string;
+    resident: string;
+    telephone: string;
+  }>,
+) {
+  const charge = await Charge.findOne({ _id: id, idResidence });
+  if (!charge) throw new AppError(404, "Charge introuvable");
+  if (input.totalDu !== undefined) charge.totalDu = input.totalDu;
+  if (input.moisImpayes !== undefined) charge.moisImpayes = input.moisImpayes;
+  if (input.statut !== undefined) charge.statut = input.statut;
+  if (input.logement !== undefined) charge.logement = input.logement;
+  if (input.resident !== undefined) charge.resident = input.resident;
+  if (input.telephone !== undefined) charge.telephone = input.telephone;
+  await charge.save();
+  return charge.toJSON();
+}
+
+export async function deleteCharge(idResidence: string, id: string) {
+  const charge = await Charge.findOneAndDelete({ _id: id, idResidence });
+  if (!charge) throw new AppError(404, "Charge introuvable");
+  return { ok: true };
+}

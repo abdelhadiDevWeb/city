@@ -4,14 +4,34 @@ import { Download, FileSignature, FileText, FolderOpen, Upload } from "lucide-re
 import { useEffect, useState, type FormEvent } from "react";
 import {
   createDocument,
+  deleteDocument,
   getDocuments,
+  updateDocument,
   type Contrat,
   type DocumentResidence,
   type DocumentsData,
 } from "@/lib/documents-api";
 import { formatDZD } from "@/lib/format";
 import { ModalActions, SelectField, formText, useSubmit } from "../forms";
-import { DataTable, Field, FormError, Modal, Mono, PageHeader, Pill, Tabs, button, card, describeError, useToast, type Column, type TabItem, type Tone } from "../ui";
+import {
+  ActionGroup,
+  ConfirmModal,
+  DataTable,
+  Field,
+  FormError,
+  Modal,
+  Mono,
+  PageHeader,
+  Pill,
+  Tabs,
+  button,
+  card,
+  describeError,
+  useToast,
+  type Column,
+  type TabItem,
+  type Tone,
+} from "../ui";
 
 type TabId = "contrats" | "documents";
 
@@ -24,6 +44,9 @@ export default function DocumentsPage() {
   const [version, setVersion] = useState(0);
   const [tab, setTab] = useState<TabId>("contrats");
   const [uploading, setUploading] = useState(false);
+  const [editingContrat, setEditingContrat] = useState<Contrat | null>(null);
+  const [editingDoc, setEditingDoc] = useState<DocumentResidence | null>(null);
+  const [deletingItem, setDeletingItem] = useState<{ id: string; name: string } | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -64,13 +87,19 @@ export default function DocumentsPage() {
       header: "Action",
       align: "right",
       cell: (c) => (
-        <button
-          type="button"
-          onClick={() => handleDownload(c.objet)}
-          className={button("secondary", "sm")}
-        >
-          Consulter
-        </button>
+        <div className="flex items-center justify-end gap-2">
+          <button
+            type="button"
+            onClick={() => handleDownload(c.objet)}
+            className={button("secondary", "sm")}
+          >
+            Consulter
+          </button>
+          <ActionGroup
+            onEdit={() => setEditingContrat(c)}
+            onDelete={() => setDeletingItem({ id: c.id, name: `le contrat « ${c.objet} »` })}
+          />
+        </div>
       ),
     },
   ];
@@ -95,14 +124,20 @@ export default function DocumentsPage() {
       header: "Action",
       align: "right",
       cell: (d) => (
-        <button
-          type="button"
-          onClick={() => handleDownload(d.nom)}
-          className={button("secondary", "sm")}
-        >
-          <Download className="h-3.5 w-3.5" aria-hidden />
-          Télécharger
-        </button>
+        <div className="flex items-center justify-end gap-2">
+          <button
+            type="button"
+            onClick={() => handleDownload(d.nom)}
+            className={button("secondary", "sm")}
+          >
+            <Download className="h-3.5 w-3.5" aria-hidden />
+            Télécharger
+          </button>
+          <ActionGroup
+            onEdit={() => setEditingDoc(d)}
+            onDelete={() => setDeletingItem({ id: d.id, name: `le document « ${d.nom} »` })}
+          />
+        </div>
       ),
     },
   ];
@@ -146,6 +181,45 @@ export default function DocumentsPage() {
           }}
         />
       )}
+
+      {editingContrat && (
+        <EditContratModal
+          contrat={editingContrat}
+          onClose={() => setEditingContrat(null)}
+          onUpdated={() => {
+            setEditingContrat(null);
+            setVersion((v) => v + 1);
+            notify("Contrat mis à jour avec succès.");
+          }}
+        />
+      )}
+
+      {editingDoc && (
+        <EditDocumentModal
+          document={editingDoc}
+          onClose={() => setEditingDoc(null)}
+          onUpdated={() => {
+            setEditingDoc(null);
+            setVersion((v) => v + 1);
+            notify("Document mis à jour avec succès.");
+          }}
+        />
+      )}
+
+      <ConfirmModal
+        open={Boolean(deletingItem)}
+        title="Confirmer la suppression"
+        message={`Êtes-vous sûr de vouloir supprimer ${deletingItem?.name} ? Cette action est irréversible.`}
+        confirmLabel="Supprimer"
+        onConfirm={async () => {
+          if (!deletingItem) return;
+          await deleteDocument(deletingItem.id);
+          setDeletingItem(null);
+          setVersion((v) => v + 1);
+          notify("Élément supprimé avec succès.");
+        }}
+        onCancel={() => setDeletingItem(null)}
+      />
     </div>
   );
 }
@@ -214,3 +288,92 @@ function NouveauDocumentModal({
     </Modal>
   );
 }
+
+function EditContratModal({
+  contrat,
+  onClose,
+  onUpdated,
+}: {
+  contrat: Contrat;
+  onClose: () => void;
+  onUpdated: () => void;
+}) {
+  const { submitting, error, run } = useSubmit();
+
+  function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    void run(async () => {
+      await updateDocument(contrat.id, {
+        objet: formText(form, "objet"),
+        prestataire: formText(form, "prestataire"),
+        montantAnnuel: Number(form.get("montantAnnuel") ?? 0),
+        statut: (formText(form, "statut") as Contrat["statut"]) || "Actif",
+        debut: formText(form, "debut") || undefined,
+        fin: formText(form, "fin") || undefined,
+      });
+      onUpdated();
+    });
+  }
+
+  return (
+    <Modal title="Modifier le contrat" description={`Modification du contrat ${contrat.objet}`} onClose={onClose}>
+      <form onSubmit={onSubmit} className="space-y-4">
+        <Field label="Objet du contrat" name="objet" defaultValue={contrat.objet} required autoFocus />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Prestataire" name="prestataire" defaultValue={contrat.prestataire} required />
+          <Field label="Montant annuel (DZD)" name="montantAnnuel" type="number" defaultValue={contrat.montantAnnuel} required />
+        </div>
+        <SelectField label="Statut" name="statut" defaultValue={contrat.statut}>
+          <option value="Actif">Actif</option>
+          <option value="Expire bientôt">Expire bientôt</option>
+          <option value="Expiré">Expiré</option>
+        </SelectField>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Date début" name="debut" defaultValue={contrat.debut} placeholder="Ex: 01 Jan 2026" />
+          <Field label="Date fin" name="fin" defaultValue={contrat.fin} placeholder="Ex: 31 Déc 2026" />
+        </div>
+
+        <FormError error={error} />
+        <ModalActions submitting={submitting} label="Enregistrer les modifications" onCancel={onClose} />
+      </form>
+    </Modal>
+  );
+}
+
+function EditDocumentModal({
+  document,
+  onClose,
+  onUpdated,
+}: {
+  document: DocumentResidence;
+  onClose: () => void;
+  onUpdated: () => void;
+}) {
+  const { submitting, error, run } = useSubmit();
+
+  function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    void run(async () => {
+      await updateDocument(document.id, {
+        nom: formText(form, "nom"),
+        categorie: formText(form, "categorie"),
+      });
+      onUpdated();
+    });
+  }
+
+  return (
+    <Modal title="Modifier le document" description={`Modification de « ${document.nom} »`} onClose={onClose}>
+      <form onSubmit={onSubmit} className="space-y-4">
+        <Field label="Titre / Nom du document" name="nom" defaultValue={document.nom} required autoFocus />
+        <Field label="Catégorie" name="categorie" defaultValue={document.categorie} required />
+
+        <FormError error={error} />
+        <ModalActions submitting={submitting} label="Enregistrer les modifications" onCancel={onClose} />
+      </form>
+    </Modal>
+  );
+}
+

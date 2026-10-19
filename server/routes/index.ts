@@ -13,6 +13,7 @@ import { documentsRouter } from "./documents.routes";
 import { espaceRouter } from "./espace.routes";
 import { financesRouter } from "./finances.routes";
 import { maintenanceRouter } from "./maintenance.routes";
+import { notificationsRouter } from "./notifications.routes";
 import { personnelRouter } from "./personnel.routes";
 import { residenceRouter } from "./residence.routes";
 import { residentRouter } from "./resident.routes";
@@ -37,6 +38,8 @@ apiRouter.use("/finances", financesRouter);
 apiRouter.use("/maintenance", maintenanceRouter);
 apiRouter.use("/personnel", personnelRouter);
 apiRouter.use("/annonces", annoncesRouter);
+apiRouter.use("/notifications", notificationsRouter);
+apiRouter.use("/notification", notificationsRouter);
 apiRouter.use("/documents", documentsRouter);
 apiRouter.use("/configuration", configRouter);
 

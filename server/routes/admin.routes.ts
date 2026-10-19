@@ -30,6 +30,9 @@ const createAdminSchema = Joi.object({
 
 export const adminRouter = Router();
 
-adminRouter.use(requireAuth, requireRole("super_admin"), csrfProtection);
+adminRouter.use(requireAuth, csrfProtection);
 
-adminRouter.post("/", validate(createAdminSchema), admins.create);
+adminRouter.post("/", requireRole("super_admin"), validate(createAdminSchema), admins.create);
+adminRouter.put("/:id", requireRole("super_admin", "admin"), admins.update);
+adminRouter.delete("/:id", requireRole("super_admin", "admin"), admins.remove);
+

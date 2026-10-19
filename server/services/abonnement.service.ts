@@ -108,3 +108,34 @@ export async function setPaymentStatus(id: string, statutPaiement: boolean) {
   const plan = await Abonnement.findById(souscription.idAbonnement);
   return souscriptionJson(souscription, new Map(plan ? [[plan.id as string, plan]] : []));
 }
+
+export async function updatePlan(id: string, input: Partial<{ nom: string; prix: number; duree: number }>) {
+  const plan = await Abonnement.findById(id);
+  if (!plan) throw new AppError(404, "Formule introuvable");
+  if (input.nom !== undefined) plan.nom = input.nom;
+  if (input.prix !== undefined) plan.prix = input.prix;
+  if (input.duree !== undefined) plan.duree = input.duree;
+  try {
+    await plan.save();
+    return plan.toJSON();
+  } catch (err) {
+    if (isDuplicateKeyError(err)) throw new AppError(409, "Une formule porte déjà ce nom");
+    throw err;
+  }
+}
+
+export async function deletePlan(id: string) {
+  const plan = await Abonnement.findById(id);
+  if (!plan) throw new AppError(404, "Formule introuvable");
+  await Promise.all([
+    Abonnement.findByIdAndDelete(id),
+    AbonnementUser.deleteMany({ idAbonnement: plan._id }),
+  ]);
+  return { ok: true };
+}
+
+export async function deleteSouscription(id: string) {
+  const souscription = await AbonnementUser.findByIdAndDelete(id);
+  if (!souscription) throw new AppError(404, "Souscription introuvable");
+  return { ok: true };
+}

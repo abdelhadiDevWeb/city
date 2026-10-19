@@ -1,6 +1,6 @@
 "use client";
 
-import { CircleAlert, Info, TriangleAlert, X, type LucideIcon } from "lucide-react";
+import { CircleAlert, Info, Pencil, Trash2, TriangleAlert, X, type LucideIcon } from "lucide-react";
 import {
   createContext,
   useCallback,
@@ -17,12 +17,14 @@ import type { Alerte } from "@/lib/annonces-api";
 
 export const card = "rounded-2xl border border-stone-200 bg-white shadow-[0_1px_2px_rgb(28_25_23/0.04)]";
 
-type ButtonVariant = "primary" | "secondary" | "brand";
+type ButtonVariant = "primary" | "secondary" | "brand" | "danger" | "ghost";
 
 const BUTTON_VARIANTS: Record<ButtonVariant, string> = {
   primary: "bg-ink text-white hover:bg-stone-800",
   secondary: "border border-stone-200 bg-white text-ink hover:border-stone-300 hover:bg-stone-50",
   brand: "bg-brand text-white hover:bg-brand-hover",
+  danger: "border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 hover:border-red-300",
+  ghost: "text-stone-500 hover:bg-stone-100 hover:text-ink",
 };
 
 export function button(variant: ButtonVariant = "primary", size: "md" | "sm" = "md"): string {
@@ -418,6 +420,98 @@ export function FormError({ error }: { error: { message: string; details: string
             <li key={d}>{d}</li>
           ))}
         </ul>
+      )}
+    </div>
+  );
+}
+
+export function ConfirmModal({
+  title,
+  description,
+  message,
+  confirmLabel = "Supprimer",
+  onConfirm,
+  onClose,
+  onCancel,
+  loading = false,
+  open = true,
+  isOpen = true,
+}: {
+  title: string;
+  description?: string;
+  message?: string;
+  confirmLabel?: string;
+  onConfirm: () => void | Promise<void>;
+  onClose?: () => void;
+  onCancel?: () => void;
+  loading?: boolean;
+  open?: boolean;
+  isOpen?: boolean;
+}) {
+  const isVisible = open && isOpen;
+  if (!isVisible) return null;
+
+  const handleClose = onCancel || onClose || (() => {});
+  const desc = description || message || "Cette action est irréversible.";
+
+  return (
+    <Modal title={title} description={desc} onClose={handleClose}>
+      <div className="flex items-center justify-end gap-3 pt-4">
+        <button type="button" onClick={handleClose} disabled={loading} className={button("secondary")}>
+          Annuler
+        </button>
+        <button
+          type="button"
+          onClick={() => void onConfirm()}
+          disabled={loading}
+          className={button("danger")}
+        >
+          {loading ? "Suppression..." : confirmLabel}
+        </button>
+      </div>
+    </Modal>
+  );
+}
+
+
+export function ActionGroup({
+  onEdit,
+  onDelete,
+  editLabel = "Modifier",
+  deleteLabel = "Supprimer",
+  compact = false,
+}: {
+  onEdit?: () => void;
+  onDelete?: () => void;
+  editLabel?: string;
+  deleteLabel?: string;
+  compact?: boolean;
+}) {
+  return (
+    <div className="flex items-center gap-1.5">
+      {onEdit && (
+        <button
+          type="button"
+          onClick={onEdit}
+          title={editLabel}
+          aria-label={editLabel}
+          className={button("secondary", "sm")}
+        >
+          <Pencil className="h-3.5 w-3.5 text-stone-600" aria-hidden />
+          {!compact && <span>{editLabel}</span>}
+        </button>
+      )}
+      {onDelete && (
+        <button
+          type="button"
+          onClick={onDelete}
+          title={deleteLabel}
+          aria-label={deleteLabel}
+          className={button("danger", "sm")}
+        >
+          <Trash2 className="h-3.5 w-3.5 text-red-600" aria-hidden />
+          {!compact && <span>{deleteLabel}</span>}
+        </button>
       )}
     </div>
   );

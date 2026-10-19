@@ -4,10 +4,14 @@ import { ArrowDownRight, CalendarDays, FileText, NotebookText, Phone, Plus, Tria
 import { useEffect, useState, type FormEvent } from "react";
 import {
   createPaiement,
+  deleteCharge,
+  deleteDepense,
   encaisserCharge,
   genererCharges,
   getFinances,
   payerFacture,
+  updateCharge,
+  updateDepense,
   type Depense,
   type Facture,
   type FinancesData,
@@ -16,7 +20,7 @@ import {
 } from "@/lib/finances-api";
 import { formatDZD } from "@/lib/format";
 import { ModalActions, SelectField, formText, useSubmit } from "../forms";
-import { DataTable, Field, FormError, Modal, Mono, PageHeader, Pill, Tabs, button, card, describeError, useToast, type Column, type TabItem, type Tone } from "../ui";
+import { ActionGroup, ConfirmModal, DataTable, Field, FormError, Modal, Mono, PageHeader, Pill, Tabs, button, card, describeError, useToast, type Column, type TabItem, type Tone } from "../ui";
 
 type TabId = "impayes" | "journal" | "depenses" | "factures";
 
@@ -40,6 +44,10 @@ export default function FinancesPage() {
   const [encaissantCharge, setEncaissantCharge] = useState<Impaye | null>(null);
   const [addingPaiement, setAddingPaiement] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [editingCharge, setEditingCharge] = useState<Impaye | null>(null);
+  const [editingDepense, setEditingDepense] = useState<Depense | null>(null);
+  const [editingFacture, setEditingFacture] = useState<Facture | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<{ kind: "charge" | "depense" | "facture"; id: string; nom: string } | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -122,7 +130,7 @@ export default function FinancesPage() {
       header: "Action rapide",
       align: "right",
       cell: (r) => (
-        <span className="inline-flex gap-2">
+        <span className="inline-flex items-center gap-2">
           <button type="button" onClick={() => setEncaissantCharge(r)} className={button("primary", "sm")}>
             Encaisser
           </button>
@@ -130,6 +138,12 @@ export default function FinancesPage() {
             <Phone className="h-3.5 w-3.5" aria-hidden />
             Rappeler
           </a>
+          <ActionGroup
+            editLabel="Modifier créance"
+            deleteLabel="Supprimer créance"
+            onEdit={() => setEditingCharge(r)}
+            onDelete={() => setConfirmDelete({ kind: "charge", id: r.id, nom: `Charge ${r.logement}` })}
+          />
         </span>
       ),
     },
@@ -151,6 +165,18 @@ export default function FinancesPage() {
     { header: "Description", cell: (d) => d.description },
     { header: "Statut", cell: (d) => <Pill tone={d.statut === "Payée" ? "success" : "warning"}>{d.statut}</Pill> },
     { header: "Montant", align: "right", cell: (d) => <Mono strong>{formatDZD(d.montant)}</Mono> },
+    {
+      header: "Actions",
+      align: "right",
+      cell: (d) => (
+        <ActionGroup
+          editLabel="Modifier dépense"
+          deleteLabel="Supprimer dépense"
+          onEdit={() => setEditingDepense(d)}
+          onDelete={() => setConfirmDelete({ kind: "depense", id: d.id, nom: d.description || d.categorie })}
+        />
+      ),
+    },
   ];
 
   const factureColumns: Column<Facture>[] = [
@@ -170,14 +196,23 @@ export default function FinancesPage() {
     {
       header: "Action",
       align: "right",
-      cell: (f) =>
-        f.statut === "Payée" ? (
-          <span className="text-xs font-semibold text-emerald-600">Acquittée</span>
-        ) : (
-          <button type="button" onClick={() => void handlePayerFacture(f)} className={button("primary", "sm")}>
-            Payer
-          </button>
-        ),
+      cell: (f) => (
+        <span className="inline-flex items-center gap-2">
+          {f.statut === "Payée" ? (
+            <span className="text-xs font-semibold text-emerald-600">Acquittée</span>
+          ) : (
+            <button type="button" onClick={() => void handlePayerFacture(f)} className={button("primary", "sm")}>
+              Payer
+            </button>
+          )}
+          <ActionGroup
+            editLabel="Modifier facture"
+            deleteLabel="Supprimer facture"
+            onEdit={() => setEditingFacture(f)}
+            onDelete={() => setConfirmDelete({ kind: "facture", id: f.id, nom: `Facture ${f.fournisseur}` })}
+          />
+        </span>
+      ),
     },
   ];
 
@@ -279,6 +314,67 @@ export default function FinancesPage() {
             setAddingPaiement(false);
             setVersion((v) => v + 1);
             notify("Paiement enregistré avec succès.");
+          }}
+        />
+      )}
+
+      {editingCharge && (
+        <EditChargeModal
+          charge={editingCharge}
+          onClose={() => setEditingCharge(null)}
+          onUpdated={() => {
+            setEditingCharge(null);
+            setVersion((v) => v + 1);
+            notify("Charge mise à jour avec succès.");
+          }}
+        />
+      )}
+
+      {editingDepense && (
+        <EditDepenseModal
+          depense={editingDepense}
+          onClose={() => setEditingDepense(null)}
+          onUpdated={() => {
+            setEditingDepense(null);
+            setVersion((v) => v + 1);
+            notify("Dépense mise à jour avec succès.");
+          }}
+        />
+      )}
+
+      {editingFacture && (
+        <EditFactureModal
+          facture={editingFacture}
+          onClose={() => setEditingFacture(null)}
+          onUpdated={() => {
+            setEditingFacture(null);
+            setVersion((v) => v + 1);
+            notify("Facture mise à jour avec succès.");
+          }}
+        />
+      )}
+
+      {confirmDelete && (
+        <ConfirmModal
+          isOpen={true}
+          title={`Supprimer ${confirmDelete.kind === "charge" ? "la créance" : confirmDelete.kind === "depense" ? "la dépense" : "la facture"}`}
+          message={`Êtes-vous sûr de vouloir supprimer « ${confirmDelete.nom} » ? Cette action est irréversible.`}
+          confirmLabel="Supprimer définitivement"
+          onCancel={() => setConfirmDelete(null)}
+          onConfirm={async () => {
+            try {
+              if (confirmDelete.kind === "charge") {
+                await deleteCharge(confirmDelete.id);
+                notify("Créance supprimée.");
+              } else {
+                await deleteDepense(confirmDelete.id);
+                notify("Dépense/Facture supprimée.");
+              }
+              setConfirmDelete(null);
+              setVersion((v) => v + 1);
+            } catch (err) {
+              notify(describeError(err).message);
+            }
           }}
         />
       )}
@@ -385,6 +481,128 @@ function NouveauPaiementModal({
         </div>
         <FormError error={error} />
         <ModalActions submitting={submitting} label="Enregistrer le paiement" onCancel={onClose} />
+      </form>
+    </Modal>
+  );
+}
+
+function EditChargeModal({
+  charge,
+  onClose,
+  onUpdated,
+}: {
+  charge: Impaye;
+  onClose: () => void;
+  onUpdated: () => void;
+}) {
+  const { submitting, error, run } = useSubmit();
+  const [montant, setMontant] = useState(charge.totalDu);
+  const [statut, setStatut] = useState<"Payée" | "À payer" | "En retard">("À payer");
+
+  function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    void run(async () => {
+      await updateCharge(charge.id, { montant: Number(montant), statut });
+      onUpdated();
+    });
+  }
+
+  return (
+    <Modal title="Modifier la créance" description={`${charge.logement} · ${charge.resident}`} onClose={onClose}>
+      <form onSubmit={onSubmit} className="space-y-4">
+        <Field label="Montant total dû (DZD)" type="number" value={montant} onChange={(e) => setMontant(Number(e.target.value))} required min={0} />
+        <SelectField label="Statut de la créance" value={statut} onChange={(e) => setStatut(e.target.value as any)}>
+          <option value="À payer">À payer</option>
+          <option value="En retard">En retard</option>
+          <option value="Payée">Payée</option>
+        </SelectField>
+        <FormError error={error} />
+        <ModalActions submitting={submitting} label="Enregistrer les modifications" onCancel={onClose} />
+      </form>
+    </Modal>
+  );
+}
+
+function EditDepenseModal({
+  depense,
+  onClose,
+  onUpdated,
+}: {
+  depense: Depense;
+  onClose: () => void;
+  onUpdated: () => void;
+}) {
+  const { submitting, error, run } = useSubmit();
+  const [categorie, setCategorie] = useState(depense.categorie);
+  const [fournisseur, setFournisseur] = useState(depense.fournisseur);
+  const [description, setDescription] = useState(depense.description);
+  const [montant, setMontant] = useState(depense.montant);
+  const [statut, setStatut] = useState(depense.statut);
+
+  function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    void run(async () => {
+      await updateDepense(depense.id, { categorie, fournisseur, description, montant: Number(montant), statut });
+      onUpdated();
+    });
+  }
+
+  return (
+    <Modal title="Modifier la dépense" description="Mettre à jour les détails de la dépense" onClose={onClose}>
+      <form onSubmit={onSubmit} className="space-y-4">
+        <Field label="Catégorie" value={categorie} onChange={(e) => setCategorie(e.target.value)} required />
+        <Field label="Fournisseur" value={fournisseur} onChange={(e) => setFournisseur(e.target.value)} required />
+        <Field label="Description" value={description} onChange={(e) => setDescription(e.target.value)} required />
+        <Field label="Montant (DZD)" type="number" value={montant} onChange={(e) => setMontant(Number(e.target.value))} required min={0} />
+        <SelectField label="Statut" value={statut} onChange={(e) => setStatut(e.target.value as any)}>
+          <option value="Payée">Payée</option>
+          <option value="À payer">À payer</option>
+          <option value="En retard">En retard</option>
+          <option value="En attente">En attente</option>
+        </SelectField>
+        <FormError error={error} />
+        <ModalActions submitting={submitting} label="Enregistrer les modifications" onCancel={onClose} />
+      </form>
+    </Modal>
+  );
+}
+
+function EditFactureModal({
+  facture,
+  onClose,
+  onUpdated,
+}: {
+  facture: Facture;
+  onClose: () => void;
+  onUpdated: () => void;
+}) {
+  const { submitting, error, run } = useSubmit();
+  const [fournisseur, setFournisseur] = useState(facture.fournisseur);
+  const [service, setService] = useState(facture.service);
+  const [montant, setMontant] = useState(facture.montant);
+  const [statut, setStatut] = useState(facture.statut);
+
+  function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    void run(async () => {
+      await updateDepense(facture.id, { fournisseur, description: service, montant: Number(montant), statut });
+      onUpdated();
+    });
+  }
+
+  return (
+    <Modal title="Modifier la facture" description="Détails du service ou fournisseur d'énergie" onClose={onClose}>
+      <form onSubmit={onSubmit} className="space-y-4">
+        <Field label="Fournisseur" value={fournisseur} onChange={(e) => setFournisseur(e.target.value)} required />
+        <Field label="Service" value={service} onChange={(e) => setService(e.target.value)} required />
+        <Field label="Montant (DZD)" type="number" value={montant} onChange={(e) => setMontant(Number(e.target.value))} required min={0} />
+        <SelectField label="Statut" value={statut} onChange={(e) => setStatut(e.target.value as any)}>
+          <option value="Payée">Payée</option>
+          <option value="À payer">À payer</option>
+          <option value="En retard">En retard</option>
+        </SelectField>
+        <FormError error={error} />
+        <ModalActions submitting={submitting} label="Enregistrer les modifications" onCancel={onClose} />
       </form>
     </Modal>
   );

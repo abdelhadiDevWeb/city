@@ -61,3 +61,63 @@ export async function updateTacheStatut(idResidence: string, tacheId: string, st
   await tache.save();
   return tache.toJSON();
 }
+
+export async function createPersonnel(
+  idResidence: string,
+  input: { nom: string; poste: string; telephone?: string; horaire?: string; statut?: "En service" | "Repos" | "Congé" },
+) {
+  const staff = await Personnel.create({
+    idResidence,
+    nom: input.nom,
+    poste: input.poste,
+    telephone: input.telephone || "0550000000",
+    horaire: input.horaire || "8h - 16h",
+    statut: input.statut || "En service",
+  });
+  return staff.toJSON();
+}
+
+export async function updatePersonnel(
+  idResidence: string,
+  id: string,
+  input: Partial<{ nom: string; poste: string; telephone: string; horaire: string; statut: "En service" | "Repos" | "Congé" }>,
+) {
+  const staff = await Personnel.findOne({ _id: id, idResidence });
+  if (!staff) throw new AppError(404, "Personnel introuvable");
+  if (input.nom !== undefined) staff.nom = input.nom;
+  if (input.poste !== undefined) staff.poste = input.poste;
+  if (input.telephone !== undefined) staff.telephone = input.telephone;
+  if (input.horaire !== undefined) staff.horaire = input.horaire;
+  if (input.statut !== undefined) staff.statut = input.statut;
+  await staff.save();
+  return staff.toJSON();
+}
+
+export async function deletePersonnel(idResidence: string, id: string) {
+  const staff = await Personnel.findOneAndDelete({ _id: id, idResidence });
+  if (!staff) throw new AppError(404, "Personnel introuvable");
+  return { ok: true };
+}
+
+export async function updateTache(
+  idResidence: string,
+  tacheId: string,
+  input: Partial<{ titre: string; assigneA: string; lieu: string; echeance: string; urgente: boolean; statut: string }>,
+) {
+  const tache = await Tache.findOne({ _id: tacheId, idResidence });
+  if (!tache) throw new AppError(404, "Tâche introuvable");
+  if (input.titre !== undefined) tache.titre = input.titre;
+  if (input.assigneA !== undefined) tache.assigneA = input.assigneA;
+  if (input.lieu !== undefined) tache.lieu = input.lieu;
+  if (input.echeance !== undefined) tache.echeance = input.echeance;
+  if (input.urgente !== undefined) tache.urgente = input.urgente;
+  if (input.statut !== undefined) tache.statut = input.statut as any;
+  await tache.save();
+  return tache.toJSON();
+}
+
+export async function deleteTache(idResidence: string, tacheId: string) {
+  const tache = await Tache.findOneAndDelete({ _id: tacheId, idResidence });
+  if (!tache) throw new AppError(404, "Tâche introuvable");
+  return { ok: true };
+}

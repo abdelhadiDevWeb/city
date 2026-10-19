@@ -22,3 +22,17 @@ export const updateStatut = asyncHandler(async (req, res) => {
   const incident = await maintenanceService.updateIncidentStatut(String(admin.idResidence), req.params.id as string, req.body.statut);
   res.status(200).json({ ok: true, incident });
 });
+
+export const updateIncident = asyncHandler(async (req, res) => {
+  const admin = await loadActiveAdmin(req.user!.sub);
+  if (!admin.idResidence) throw new AppError(403, "Aucune résidence attribuée");
+  const incident = await maintenanceService.updateIncident(String(admin.idResidence), req.params.id as string, req.body);
+  res.status(200).json({ ok: true, incident });
+});
+
+export const deleteIncident = asyncHandler(async (req, res) => {
+  const admin = await loadActiveAdmin(req.user!.sub);
+  if (!admin.idResidence) throw new AppError(403, "Aucune résidence attribuée");
+  await maintenanceService.deleteIncident(String(admin.idResidence), req.params.id as string);
+  res.status(200).json({ ok: true });
+});

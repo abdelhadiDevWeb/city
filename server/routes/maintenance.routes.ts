@@ -10,3 +10,5 @@ maintenanceRouter.use(requireAuth, requireRole("admin", "sub_admin"), csrfProtec
 maintenanceRouter.get("/", maintenance.getMaintenance);
 maintenanceRouter.post("/incidents", maintenance.createIncident);
 maintenanceRouter.patch("/incidents/:id/statut", maintenance.updateStatut);
+maintenanceRouter.put("/incidents/:id", maintenance.updateIncident);
+maintenanceRouter.delete("/incidents/:id", maintenance.deleteIncident);

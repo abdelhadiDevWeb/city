@@ -90,3 +90,40 @@ export async function updateIncidentStatut(idResidence: string, incidentId: stri
   await incident.save();
   return incident.toJSON();
 }
+
+export async function updateIncident(
+  idResidence: string,
+  incidentId: string,
+  input: Partial<{
+    titre: string;
+    description: string;
+    lieu: string;
+    priorite: "Haute" | "Moyenne" | "Basse";
+    prestataire: string;
+    statut: "Nouveau" | "En cours" | "Résolu" | "Planifié";
+    cout: number;
+  }>,
+) {
+  const incident = await Incident.findOne({ _id: incidentId, idResidence });
+  if (!incident) throw new AppError(404, "Incident introuvable");
+  if (input.titre !== undefined) incident.titre = input.titre;
+  if (input.description !== undefined) incident.description = input.description;
+  if (input.lieu !== undefined) incident.lieu = input.lieu;
+  if (input.priorite !== undefined) incident.priorite = input.priorite;
+  if (input.prestataire !== undefined) incident.prestataire = input.prestataire;
+  if (input.cout !== undefined) incident.cout = input.cout;
+  if (input.statut !== undefined) {
+    incident.statut = input.statut;
+    if (input.statut === "Résolu" && !incident.clotureLe) {
+      incident.clotureLe = new Date().toLocaleDateString("fr-FR");
+    }
+  }
+  await incident.save();
+  return incident.toJSON();
+}
+
+export async function deleteIncident(idResidence: string, incidentId: string) {
+  const incident = await Incident.findOneAndDelete({ _id: incidentId, idResidence });
+  if (!incident) throw new AppError(404, "Incident introuvable");
+  return { ok: true };
+}

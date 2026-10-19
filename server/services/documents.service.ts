@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { DocumentSyndic } from "../models/DocumentSyndic";
+import { AppError } from "../utils/AppError";
 
 export async function getDocuments(idResidence: string) {
   const resId = new mongoose.Types.ObjectId(idResidence);
@@ -64,4 +65,38 @@ export async function createDocument(
     ajouteLe: now,
   });
   return doc.toJSON();
+}
+
+export async function updateDocument(
+  idResidence: string,
+  id: string,
+  input: Partial<{
+    nom: string;
+    objet: string;
+    prestataire: string;
+    debut: string;
+    fin: string;
+    statut: "Actif" | "Expire bientôt" | "Expiré";
+    montantAnnuel: number;
+    categorie: string;
+  }>,
+) {
+  const doc = await DocumentSyndic.findOne({ _id: id, idResidence });
+  if (!doc) throw new AppError(404, "Document introuvable");
+  if (input.nom !== undefined) doc.nom = input.nom;
+  if (input.objet !== undefined) doc.objet = input.objet;
+  if (input.prestataire !== undefined) doc.prestataire = input.prestataire;
+  if (input.debut !== undefined) doc.debut = input.debut;
+  if (input.fin !== undefined) doc.fin = input.fin;
+  if (input.statut !== undefined) doc.statut = input.statut;
+  if (input.montantAnnuel !== undefined) doc.montantAnnuel = input.montantAnnuel;
+  if (input.categorie !== undefined) doc.categorie = input.categorie;
+  await doc.save();
+  return doc.toJSON();
+}
+
+export async function deleteDocument(idResidence: string, id: string) {
+  const doc = await DocumentSyndic.findOneAndDelete({ _id: id, idResidence });
+  if (!doc) throw new AppError(404, "Document introuvable");
+  return { ok: true };
 }

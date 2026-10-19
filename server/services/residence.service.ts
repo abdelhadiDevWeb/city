@@ -101,3 +101,58 @@ export async function createBatiment(residenceId: string, input: { nom: string; 
     throw err;
   }
 }
+
+export async function updateResidence(id: string, input: { nom?: string; localisation?: string }) {
+  const residence = await Residence.findById(id);
+  if (!residence) throw new AppError(404, "Résidence introuvable");
+  if (input.nom !== undefined) residence.nom = input.nom;
+  if (input.localisation !== undefined) residence.localisation = input.localisation;
+  await residence.save();
+  return residence.toJSON();
+}
+
+export async function deleteResidence(id: string) {
+  const residence = await Residence.findById(id);
+  if (!residence) throw new AppError(404, "Résidence introuvable");
+
+  const batiments = await Batiment.find({ idResidence: residence._id });
+  const batimentIds = batiments.map((b) => b._id);
+
+  await Promise.all([
+    Residence.findByIdAndDelete(id),
+    Batiment.deleteMany({ idResidence: residence._id }),
+    Appartement.deleteMany({ idBatiment: { $in: batimentIds } }),
+    Admin.updateMany({ idResidence: residence._id }, { $set: { idResidence: null, idBatiment: null } }),
+    User.updateMany({ idResidence: residence._id }, { $set: { idResidence: null, idBatiment: null, idAppartement: null } }),
+  ]);
+
+  return { ok: true };
+}
+
+export async function updateBatiment(batimentId: string, input: { nom?: string; etages?: number }) {
+  const batiment = await Batiment.findById(batimentId);
+  if (!batiment) throw new AppError(404, "Bâtiment introuvable");
+  if (input.nom !== undefined) batiment.nom = input.nom;
+  if (input.etages !== undefined) batiment.etages = input.etages;
+  try {
+    await batiment.save();
+    return batiment.toJSON();
+  } catch (err) {
+    if (isDuplicateKeyError(err)) throw new AppError(409, "Un bâtiment porte déjà ce nom dans cette résidence");
+    throw err;
+  }
+}
+
+export async function deleteBatiment(batimentId: string) {
+  const batiment = await Batiment.findById(batimentId);
+  if (!batiment) throw new AppError(404, "Bâtiment introuvable");
+
+  await Promise.all([
+    Batiment.findByIdAndDelete(batimentId),
+    Appartement.deleteMany({ idBatiment: batiment._id }),
+    Admin.updateMany({ idBatiment: batiment._id }, { $set: { idBatiment: null } }),
+    User.updateMany({ idBatiment: batiment._id }, { $set: { idBatiment: null, idAppartement: null } }),
+  ]);
+
+  return { ok: true };
+}

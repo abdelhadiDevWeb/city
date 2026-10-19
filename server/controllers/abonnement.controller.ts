@@ -26,3 +26,18 @@ export const setPaymentStatus = asyncHandler(async (req, res) => {
   const souscription = await abonnementService.setPaymentStatus(req.params.id as string, statutPaiement);
   res.status(200).json({ ok: true, souscription });
 });
+
+export const updatePlan = asyncHandler(async (req, res) => {
+  const abonnement = await abonnementService.updatePlan(req.params.id as string, req.body);
+  res.status(200).json({ ok: true, abonnement });
+});
+
+export const deletePlan = asyncHandler(async (req, res) => {
+  await abonnementService.deletePlan(req.params.id as string);
+  res.status(200).json({ ok: true });
+});
+
+export const deleteSouscription = asyncHandler(async (req, res) => {
+  await abonnementService.deleteSouscription(req.params.id as string);
+  res.status(200).json({ ok: true });
+});

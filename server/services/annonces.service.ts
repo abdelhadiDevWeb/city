@@ -1,7 +1,43 @@
 import mongoose from "mongoose";
 import { Annonce } from "../models/Annonce";
+import { User } from "../models/User";
 import { broadcastNotification } from "../socket";
+import { sendPushNotifications } from "./push.service";
 import { AppError } from "../utils/AppError";
+
+async function dispatchMobilePushForResidence(
+  idResidence: string,
+  data: { id: string; titre: string; detail: string; isAlerte?: boolean; isRappel?: boolean },
+) {
+  try {
+    const resId = new mongoose.Types.ObjectId(idResidence);
+    const users = await User.find(
+      { idResidence: resId, pushTokens: { $exists: true, $not: { $size: 0 } } },
+      { pushTokens: 1 },
+    ).lean();
+
+    const tokens = users.flatMap((u) => u.pushTokens || []);
+    if (tokens.length === 0) {
+      console.log(`[AnnoncesService] No mobile push tokens registered for residence ${idResidence}`);
+      return;
+    }
+
+    const titlePrefix = data.isAlerte ? "🚨 [Alerte] " : data.isRappel ? "📢 [Rappel] " : "📢 ";
+    await sendPushNotifications(tokens, {
+      title: `${titlePrefix}${data.titre}`,
+      body: data.detail,
+      data: {
+        id: data.id,
+        kind: data.isAlerte ? "alerte" : "annonce",
+        route: "/notifications",
+      },
+      priority: data.isAlerte ? "high" : "default",
+      sound: "default",
+    });
+  } catch (pushErr) {
+    console.error("[AnnoncesService] Error dispatching push notifications:", pushErr);
+  }
+}
 
 export async function getAnnonces(idResidence: string) {
   const resId = new mongoose.Types.ObjectId(idResidence);
@@ -58,6 +94,7 @@ export async function createAnnonce(
     niveauAlerte: input.niveauAlerte || "info",
   });
 
+  // 1. In-app real-time Socket.IO notification (Web & open mobile app)
   broadcastNotification(String(idResidence), {
     id: String(annonce._id),
     titre: annonce.titre,
@@ -72,6 +109,14 @@ export async function createAnnonce(
     mobileRoute: "/notifications",
   });
 
+  // 2. Mobile push notification out of the application (Lock screen & Notification center)
+  void dispatchMobilePushForResidence(String(idResidence), {
+    id: String(annonce._id),
+    titre: annonce.titre,
+    detail: annonce.contenu,
+    isAlerte: Boolean(annonce.isAlerte),
+  });
+
   return annonce.toJSON();
 }
 
@@ -81,6 +126,7 @@ export async function renvoyerAnnonce(idResidence: string, id: string) {
   annonce.date = `Renvoyée le ${new Date().toLocaleDateString("fr-FR")}`;
   await annonce.save();
 
+  // 1. In-app real-time Socket.IO notification
   broadcastNotification(String(idResidence), {
     id: String(annonce._id),
     titre: `[Rappel] ${annonce.titre}`,
@@ -95,5 +141,46 @@ export async function renvoyerAnnonce(idResidence: string, id: string) {
     mobileRoute: "/notifications",
   });
 
+  // 2. Mobile push notification
+  void dispatchMobilePushForResidence(String(idResidence), {
+    id: String(annonce._id),
+    titre: annonce.titre,
+    detail: annonce.contenu,
+    isAlerte: Boolean(annonce.isAlerte),
+    isRappel: true,
+  });
+
   return annonce.toJSON();
+}
+
+export async function updateAnnonce(
+  idResidence: string,
+  id: string,
+  input: Partial<{
+    titre: string;
+    contenu: string;
+    audience: string;
+    canaux: string[];
+    epinglee: boolean;
+    isAlerte: boolean;
+    niveauAlerte: "critique" | "attention" | "info";
+  }>,
+) {
+  const annonce = await Annonce.findOne({ _id: id, idResidence });
+  if (!annonce) throw new AppError(404, "Annonce introuvable");
+  if (input.titre !== undefined) annonce.titre = input.titre;
+  if (input.contenu !== undefined) annonce.contenu = input.contenu;
+  if (input.audience !== undefined) annonce.audience = input.audience;
+  if (input.canaux !== undefined) annonce.canaux = input.canaux;
+  if (input.epinglee !== undefined) annonce.epinglee = input.epinglee;
+  if (input.isAlerte !== undefined) annonce.isAlerte = input.isAlerte;
+  if (input.niveauAlerte !== undefined) annonce.niveauAlerte = input.niveauAlerte;
+  await annonce.save();
+  return annonce.toJSON();
+}
+
+export async function deleteAnnonce(idResidence: string, id: string) {
+  const annonce = await Annonce.findOneAndDelete({ _id: id, idResidence });
+  if (!annonce) throw new AppError(404, "Annonce introuvable");
+  return { ok: true };
 }

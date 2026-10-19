@@ -43,3 +43,31 @@ export const genererCharges = asyncHandler(async (req, res) => {
   const result = await financesService.genererCharges(String(admin.idResidence), req.body.moisNom || "Mois courant");
   res.status(200).json({ ok: true, ...result });
 });
+
+export const updateDepense = asyncHandler(async (req, res) => {
+  const admin = await loadActiveAdmin(req.user!.sub);
+  if (!admin.idResidence) throw new AppError(403, "Aucune résidence attribuée");
+  const depense = await financesService.updateDepense(String(admin.idResidence), req.params.id as string, req.body);
+  res.status(200).json({ ok: true, depense });
+});
+
+export const deleteDepense = asyncHandler(async (req, res) => {
+  const admin = await loadActiveAdmin(req.user!.sub);
+  if (!admin.idResidence) throw new AppError(403, "Aucune résidence attribuée");
+  await financesService.deleteDepense(String(admin.idResidence), req.params.id as string);
+  res.status(200).json({ ok: true });
+});
+
+export const updateCharge = asyncHandler(async (req, res) => {
+  const admin = await loadActiveAdmin(req.user!.sub);
+  if (!admin.idResidence) throw new AppError(403, "Aucune résidence attribuée");
+  const charge = await financesService.updateCharge(String(admin.idResidence), req.params.id as string, req.body);
+  res.status(200).json({ ok: true, charge });
+});
+
+export const deleteCharge = asyncHandler(async (req, res) => {
+  const admin = await loadActiveAdmin(req.user!.sub);
+  if (!admin.idResidence) throw new AppError(403, "Aucune résidence attribuée");
+  await financesService.deleteCharge(String(admin.idResidence), req.params.id as string);
+  res.status(200).json({ ok: true });
+});

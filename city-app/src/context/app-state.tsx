@@ -2,6 +2,11 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState, ty
 
 import type { AppNotification, ChatMessage, Paiement, Post, Resident, Souscription } from '@/data/types';
 import { getAppSocket, getSocketUrl, setSocketToken } from '@/utils/socket';
+import {
+  registerForPushNotificationsAsync,
+  syncPushTokenWithBackend,
+  removePushTokenFromBackend,
+} from '@/services/notifications';
 
 type ProfileUpdate = Pick<Resident, 'prenom' | 'nom' | 'email' | 'telephone'>;
 
@@ -76,6 +81,8 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const [souscription, setSouscription] = useState<Souscription>(defaultSouscription);
   const [activeBanner, setActiveBanner] = useState<AppNotification | null>(null);
   const bannerTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pushTokenRef = useRef<string | null>(null);
+  const accessTokenRef = useRef<string | null>(null);
 
   const dismissBanner = useCallback(() => {
     setActiveBanner(null);
@@ -262,6 +269,15 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
 
       setResident(loggedResident);
       setSignedIn(true);
+      accessTokenRef.current = accessToken;
+
+      // Register device for mobile push notifications (Lock screen / Notification center)
+      void registerForPushNotificationsAsync().then((token) => {
+        if (token) {
+          pushTokenRef.current = token;
+          void syncPushTokenWithBackend(baseUrl, token, accessToken);
+        }
+      });
 
       // Authenticate socket connection
       setSocketToken(accessToken);
@@ -336,6 +352,11 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       const socket = getAppSocket();
       if (resident.idResidence) {
         socket.emit('leave_residence', resident.idResidence);
+      }
+      if (pushTokenRef.current && accessTokenRef.current) {
+        void removePushTokenFromBackend(getSocketUrl(), pushTokenRef.current, accessTokenRef.current);
+        pushTokenRef.current = null;
+        accessTokenRef.current = null;
       }
       setSocketToken(null);
       setSignedIn(false);

@@ -86,3 +86,19 @@ export async function payerFacture(id: string): Promise<void> {
 export async function genererCharges(moisNom: string): Promise<{ generated: number }> {
   return apiRequest<{ generated: number }>("/finances/generer", { method: "POST", body: { moisNom } });
 }
+
+export async function updateDepense(id: string, input: { categorie?: string; fournisseur?: string; description?: string; montant?: number; statut?: "Payée" | "À payer" | "En retard" | "En attente" }): Promise<void> {
+  await apiRequest(`/finances/depenses/${encodeURIComponent(id)}`, { method: "PUT", body: input });
+}
+
+export async function deleteDepense(id: string): Promise<void> {
+  await apiRequest(`/finances/depenses/${encodeURIComponent(id)}`, { method: "DELETE" });
+}
+
+export async function updateCharge(id: string, input: { statut?: "Payée" | "À payer" | "En retard"; montant?: number }): Promise<void> {
+  await apiRequest(`/finances/charges/${encodeURIComponent(id)}`, { method: "PUT", body: input });
+}
+
+export async function deleteCharge(id: string): Promise<void> {
+  await apiRequest(`/finances/charges/${encodeURIComponent(id)}`, { method: "DELETE" });
+}

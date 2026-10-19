@@ -42,3 +42,11 @@ export async function createDocument(input: {
 }): Promise<void> {
   await apiRequest("/documents", { method: "POST", body: input });
 }
+
+export async function updateDocument(id: string, input: { nom?: string; objet?: string; prestataire?: string; statut?: "Actif" | "Expire bientôt" | "Expiré"; debut?: string; fin?: string; montantAnnuel?: number; categorie?: string }): Promise<void> {
+  await apiRequest(`/documents/${encodeURIComponent(id)}`, { method: "PUT", body: input });
+}
+
+export async function deleteDocument(id: string): Promise<void> {
+  await apiRequest(`/documents/${encodeURIComponent(id)}`, { method: "DELETE" });
+}

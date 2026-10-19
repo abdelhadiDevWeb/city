@@ -36,6 +36,10 @@ abonnementRouter.use(requireAuth, requireRole("super_admin"), csrfProtection);
 
 abonnementRouter.get("/", abonnements.listPlans);
 abonnementRouter.post("/", validate(createPlanSchema), abonnements.createPlan);
+abonnementRouter.put("/:id", abonnements.updatePlan);
+abonnementRouter.delete("/:id", abonnements.deletePlan);
+
 abonnementRouter.get("/admins", abonnements.listAdmins);
 abonnementRouter.post("/souscriptions", validate(createSouscriptionSchema), abonnements.createSouscription);
 abonnementRouter.patch("/souscriptions/:id", validate(paymentStatusSchema), abonnements.setPaymentStatus);
+abonnementRouter.delete("/souscriptions/:id", abonnements.deleteSouscription);

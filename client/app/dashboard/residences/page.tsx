@@ -1,11 +1,16 @@
 "use client";
 
-import { Building2, ChevronRight, DoorOpen, Layers, Mail, MapPin, Phone, Plus, UsersRound } from "lucide-react";
+import { Building2, ChevronRight, DoorOpen, Layers, Mail, MapPin, Pencil, Phone, Plus, UsersRound } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 import {
   createBatiment,
+  deleteAccount,
+  deleteBatiment,
   etageLabel,
   getMonEspace,
+  updateAccount,
+  updateBatiment,
+  updateResidence,
   type MonEspace,
   type Responsable,
 } from "@/lib/residences-api";
@@ -13,7 +18,9 @@ import { ROLE_LABELS } from "@/lib/roles";
 import { ModalActions, formText, useSubmit } from "../forms";
 import { useSession } from "../session";
 import {
+  ActionGroup,
   Avatar,
+  ConfirmModal,
   DataTable,
   Field,
   FormError,
@@ -57,6 +64,11 @@ export default function ResidencesPage() {
   const [tab, setTab] = useState<TabId>("batiments");
   const [buildingFilter, setBuildingFilter] = useState<string>("all");
   const [addingBatiment, setAddingBatiment] = useState(false);
+  const [editingBatiment, setEditingBatiment] = useState<{ id: string; nom: string; etages: number } | null>(null);
+  const [editingGestionnaire, setEditingGestionnaire] = useState<GestionnaireRow | null>(null);
+  const [editingResidence, setEditingResidence] = useState(false);
+  const [deletingItem, setDeletingItem] = useState<{ type: "batiment" | "gestionnaire"; id: string; name: string } | null>(null);
+
 
   useEffect(() => {
     let active = true;
@@ -128,7 +140,7 @@ export default function ResidencesPage() {
       header: "Actions",
       align: "right",
       cell: (g) => (
-        <div className="flex justify-end gap-1.5">
+        <div className="flex items-center justify-end gap-1.5">
           <a
             href={`tel:${g.telephone}`}
             title={`Appeler ${fullName(g)}`}
@@ -145,6 +157,12 @@ export default function ResidencesPage() {
             <Mail className="h-3.5 w-3.5" aria-hidden />
             Email
           </a>
+          {isAdmin && (
+            <ActionGroup
+              onEdit={() => setEditingGestionnaire(g)}
+              onDelete={() => setDeletingItem({ type: "gestionnaire", id: g.id, name: fullName(g) })}
+            />
+          )}
         </div>
       ),
     },
@@ -247,11 +265,21 @@ export default function ResidencesPage() {
                   return (
                     <article key={b.id} className={`${card} flex flex-col p-5`}>
                       <div className="flex items-start justify-between gap-2">
-                        <h3 className="text-sm font-extrabold uppercase tracking-wide text-ink">Bâtiment {b.nom}</h3>
-                        <Pill tone={taux > 50 ? "success" : "neutral"}>{taux}% occupé</Pill>
+                        <div>
+                          <h3 className="text-sm font-extrabold uppercase tracking-wide text-ink">Bâtiment {b.nom}</h3>
+                          <p className="text-xs text-stone-500">{b.etages} Étages ({etageLabel(b.etages)})</p>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <Pill tone={taux > 50 ? "success" : "neutral"}>{taux}% occupé</Pill>
+                          {isAdmin && (
+                            <ActionGroup
+                              onEdit={() => setEditingBatiment({ id: b.id, nom: b.nom, etages: b.etages })}
+                              onDelete={() => setDeletingItem({ type: "batiment", id: b.id, name: `le bâtiment « ${b.nom} »` })}
+                            />
+                          )}
+                        </div>
                       </div>
                       <p className="mt-3 text-2xl font-bold tracking-tight text-ink">{nbAppart} Appartements</p>
-                      <p className="text-xs text-stone-500">{b.etages} Étages ({etageLabel(b.etages)})</p>
 
                       <div className="mt-4 rounded-xl border border-stone-200 bg-stone-50/70 p-3">
                         <p className="text-[10px] font-bold uppercase tracking-wide text-stone-500">
@@ -330,11 +358,25 @@ export default function ResidencesPage() {
           {tab === "residence" && (
             <div className="grid gap-6 md:grid-cols-2">
               <article className={`${card} p-6`}>
-                <h3 className="text-lg font-bold text-ink">{residence.nom}</h3>
-                <p className="mt-1 flex items-center gap-1.5 text-xs text-stone-500">
-                  <MapPin className="h-3.5 w-3.5" aria-hidden />
-                  {residence.localisation}
-                </p>
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <h3 className="text-lg font-bold text-ink">{residence.nom}</h3>
+                    <p className="mt-1 flex items-center gap-1.5 text-xs text-stone-500">
+                      <MapPin className="h-3.5 w-3.5" aria-hidden />
+                      {residence.localisation}
+                    </p>
+                  </div>
+                  {isAdmin && (
+                    <button
+                      type="button"
+                      onClick={() => setEditingResidence(true)}
+                      className={button("secondary", "sm")}
+                    >
+                      <Pencil className="h-3.5 w-3.5" aria-hidden />
+                      Modifier
+                    </button>
+                  )}
+                </div>
 
                 <div className="mt-5 grid grid-cols-2 gap-3">
                   <div className="rounded-xl border border-stone-200 bg-stone-50/70 p-3">
@@ -410,6 +452,62 @@ export default function ResidencesPage() {
           }}
         />
       )}
+
+      {editingBatiment && residence && (
+        <EditBatimentModal
+          batiment={editingBatiment}
+          residenceId={residence.id}
+          onClose={() => setEditingBatiment(null)}
+          onUpdated={() => {
+            setEditingBatiment(null);
+            setVersion((v) => v + 1);
+            notify("Bâtiment modifié avec succès.");
+          }}
+        />
+      )}
+
+      {editingGestionnaire && (
+        <EditGestionnaireModal
+          gestionnaire={editingGestionnaire}
+          onClose={() => setEditingGestionnaire(null)}
+          onUpdated={() => {
+            setEditingGestionnaire(null);
+            setVersion((v) => v + 1);
+            notify("Gestionnaire modifié avec succès.");
+          }}
+        />
+      )}
+
+      {editingResidence && residence && (
+        <EditResidenceModal
+          residence={residence}
+          onClose={() => setEditingResidence(false)}
+          onUpdated={() => {
+            setEditingResidence(false);
+            setVersion((v) => v + 1);
+            notify("Informations de la résidence mises à jour.");
+          }}
+        />
+      )}
+
+      <ConfirmModal
+        open={Boolean(deletingItem)}
+        title="Confirmer la suppression"
+        message={`Êtes-vous sûr de vouloir supprimer ${deletingItem?.name} ? Cette action est irréversible.`}
+        confirmLabel="Supprimer"
+        onConfirm={async () => {
+          if (!deletingItem || !residence) return;
+          if (deletingItem.type === "batiment") {
+            await deleteBatiment(residence.id, deletingItem.id);
+          } else {
+            await deleteAccount(deletingItem.id);
+          }
+          setDeletingItem(null);
+          setVersion((v) => v + 1);
+          notify("Élément supprimé avec succès.");
+        }}
+        onCancel={() => setDeletingItem(null)}
+      />
     </div>
   );
 }
@@ -470,3 +568,117 @@ function BatimentModal({
     </Modal>
   );
 }
+
+function EditBatimentModal({
+  batiment,
+  residenceId,
+  onClose,
+  onUpdated,
+}: {
+  batiment: { id: string; nom: string; etages: number };
+  residenceId: string;
+  onClose: () => void;
+  onUpdated: () => void;
+}) {
+  const { submitting, error, run } = useSubmit();
+
+  function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    void run(async () => {
+      await updateBatiment(residenceId, batiment.id, {
+        nom: formText(form, "nom"),
+        etages: Number(form.get("etages") ?? batiment.etages),
+      });
+      onUpdated();
+    });
+  }
+
+  return (
+    <Modal title="Modifier le Bâtiment" description={`Modification du bâtiment ${batiment.nom}`} onClose={onClose}>
+      <form onSubmit={onSubmit} className="space-y-4">
+        <Field label="Nom ou lettre du bâtiment" name="nom" defaultValue={batiment.nom} required autoFocus />
+        <Field label="Nombre d'étages" name="etages" type="number" defaultValue={batiment.etages} required min={0} max={200} />
+        <FormError error={error} />
+        <ModalActions submitting={submitting} label="Enregistrer les modifications" onCancel={onClose} />
+      </form>
+    </Modal>
+  );
+}
+
+function EditGestionnaireModal({
+  gestionnaire,
+  onClose,
+  onUpdated,
+}: {
+  gestionnaire: GestionnaireRow;
+  onClose: () => void;
+  onUpdated: () => void;
+}) {
+  const { submitting, error, run } = useSubmit();
+
+  function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    void run(async () => {
+      await updateAccount(gestionnaire.id, {
+        prenom: formText(form, "prenom"),
+        nom: formText(form, "nom"),
+        email: formText(form, "email"),
+        telephone: formText(form, "telephone"),
+      });
+      onUpdated();
+    });
+  }
+
+  return (
+    <Modal title="Modifier le Gestionnaire" description={`Modification du compte de ${fullName(gestionnaire)}`} onClose={onClose}>
+      <form onSubmit={onSubmit} className="space-y-4">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Prénom" name="prenom" defaultValue={gestionnaire.prenom} required autoFocus />
+          <Field label="Nom" name="nom" defaultValue={gestionnaire.nom} required />
+        </div>
+        <Field label="Email" name="email" type="email" defaultValue={gestionnaire.email} required />
+        <Field label="Téléphone" name="telephone" type="tel" defaultValue={gestionnaire.telephone} required />
+        <FormError error={error} />
+        <ModalActions submitting={submitting} label="Enregistrer les modifications" onCancel={onClose} />
+      </form>
+    </Modal>
+  );
+}
+
+function EditResidenceModal({
+  residence,
+  onClose,
+  onUpdated,
+}: {
+  residence: { id: string; nom: string; localisation: string };
+  onClose: () => void;
+  onUpdated: () => void;
+}) {
+  const { submitting, error, run } = useSubmit();
+
+  function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    void run(async () => {
+      await updateResidence(residence.id, {
+        nom: formText(form, "nom"),
+        localisation: formText(form, "localisation"),
+      });
+      onUpdated();
+    });
+  }
+
+  return (
+    <Modal title="Modifier la Résidence" description={`Modification de « ${residence.nom} »`} onClose={onClose}>
+      <form onSubmit={onSubmit} className="space-y-4">
+        <Field label="Nom de la résidence" name="nom" defaultValue={residence.nom} required autoFocus />
+        <Field label="Localisation" name="localisation" defaultValue={residence.localisation} required />
+        <FormError error={error} />
+        <ModalActions submitting={submitting} label="Enregistrer les modifications" onCancel={onClose} />
+      </form>
+    </Modal>
+  );
+}
+

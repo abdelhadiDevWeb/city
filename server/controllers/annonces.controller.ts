@@ -32,3 +32,17 @@ export const renvoyerAnnonce = asyncHandler(async (req, res) => {
   const annonce = await annoncesService.renvoyerAnnonce(String(admin.idResidence), req.params.id as string);
   res.status(200).json({ ok: true, annonce });
 });
+
+export const updateAnnonce = asyncHandler(async (req, res) => {
+  const admin = await loadActiveAdmin(req.user!.sub);
+  if (!admin.idResidence) throw new AppError(403, "Aucune résidence attribuée");
+  const annonce = await annoncesService.updateAnnonce(String(admin.idResidence), req.params.id as string, req.body);
+  res.status(200).json({ ok: true, annonce });
+});
+
+export const deleteAnnonce = asyncHandler(async (req, res) => {
+  const admin = await loadActiveAdmin(req.user!.sub);
+  if (!admin.idResidence) throw new AppError(403, "Aucune résidence attribuée");
+  await annoncesService.deleteAnnonce(String(admin.idResidence), req.params.id as string);
+  res.status(200).json({ ok: true });
+});

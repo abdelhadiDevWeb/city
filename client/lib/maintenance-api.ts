@@ -57,3 +57,11 @@ export async function createIncident(input: {
 export async function updateIncidentStatut(id: string, statut: "Nouveau" | "En cours" | "Résolu" | "Planifié"): Promise<void> {
   await apiRequest(`/maintenance/incidents/${encodeURIComponent(id)}/statut`, { method: "PATCH", body: { statut } });
 }
+
+export async function updateIncident(id: string, input: { titre?: string; description?: string; lieu?: string; priorite?: Priorite; prestataire?: string; statut?: string }): Promise<void> {
+  await apiRequest(`/maintenance/incidents/${encodeURIComponent(id)}`, { method: "PUT", body: input });
+}
+
+export async function deleteIncident(id: string): Promise<void> {
+  await apiRequest(`/maintenance/incidents/${encodeURIComponent(id)}`, { method: "DELETE" });
+}

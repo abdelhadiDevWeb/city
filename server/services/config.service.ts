@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { ConfigResidence, type ModePaiementItem, type TypeChargeItem, type TypeIncidentItem } from "../models/ConfigResidence";
+import { AppError } from "../utils/AppError";
 
 export async function getConfig(idResidence: string) {
   const resId = new mongoose.Types.ObjectId(idResidence);
@@ -70,4 +71,31 @@ export async function toggleChargeType(idResidence: string, chargeId: string) {
     await config.save();
   }
   return item;
+}
+
+export async function updateChargeType(
+  idResidence: string,
+  chargeId: string,
+  input: Partial<{ nom: string; montantMensuel: number; appliqueA: string; actif: boolean }>,
+) {
+  const resId = new mongoose.Types.ObjectId(idResidence);
+  const config = await ConfigResidence.findOne({ idResidence: resId });
+  if (!config) throw new AppError(404, "Configuration introuvable");
+  const item = config.typesCharges.find((c) => c.id === chargeId);
+  if (!item) throw new AppError(404, "Type de charge introuvable");
+  if (input.nom !== undefined) item.nom = input.nom;
+  if (input.montantMensuel !== undefined) item.montantMensuel = input.montantMensuel;
+  if (input.appliqueA !== undefined) item.appliqueA = input.appliqueA;
+  if (input.actif !== undefined) item.actif = input.actif;
+  await config.save();
+  return item;
+}
+
+export async function deleteChargeType(idResidence: string, chargeId: string) {
+  const resId = new mongoose.Types.ObjectId(idResidence);
+  const config = await ConfigResidence.findOne({ idResidence: resId });
+  if (!config) throw new AppError(404, "Configuration introuvable");
+  config.typesCharges = config.typesCharges.filter((c) => c.id !== chargeId);
+  await config.save();
+  return { ok: true };
 }

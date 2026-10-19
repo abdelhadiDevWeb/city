@@ -2,11 +2,31 @@
 
 import { ShieldPlus, User } from "lucide-react";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
-import { createSuperAdmin, listSuperAdmins, type SuperAdminAccount } from "@/lib/platform-api";
+import {
+  createSuperAdmin,
+  deleteSuperAdmin,
+  listSuperAdmins,
+  updateSuperAdmin,
+  type SuperAdminAccount,
+} from "@/lib/platform-api";
 import { ROLE_BADGE, ROLE_LABELS, displayName, initials, primaryRole } from "@/lib/roles";
 import { ModalActions, PasswordField, formText, useSubmit } from "../forms";
 import { useSession } from "../session";
-import { DataTable, Field as InputField, FormError, Modal, PageHeader, Pill, button, card, describeError, useToast, type Column } from "../ui";
+import {
+  ActionGroup,
+  ConfirmModal,
+  DataTable,
+  Field as InputField,
+  FormError,
+  Modal,
+  PageHeader,
+  Pill,
+  button,
+  card,
+  describeError,
+  useToast,
+  type Column,
+} from "../ui";
 
 function Field({ label, value }: { label: string; value: string }) {
   return (
@@ -71,6 +91,8 @@ function SuperAdminsSection({ currentId }: { currentId: string }) {
   const [error, setError] = useState<string | null>(null);
   const [version, setVersion] = useState(0);
   const [creating, setCreating] = useState(false);
+  const [editingSuperAdmin, setEditingSuperAdmin] = useState<SuperAdminAccount | null>(null);
+  const [deletingSuperAdmin, setDeletingSuperAdmin] = useState<SuperAdminAccount | null>(null);
   const closeModal = useCallback(() => setCreating(false), []);
 
   useEffect(() => {
@@ -101,6 +123,16 @@ function SuperAdminsSection({ currentId }: { currentId: string }) {
     },
     { header: "Email", cell: (s) => s.email },
     { header: "Créé le", cell: (s) => <span className="text-stone-500">{new Date(s.createdAt).toLocaleDateString("fr-FR")}</span> },
+    {
+      header: "Actions",
+      align: "right",
+      cell: (s) => (
+        <ActionGroup
+          onEdit={() => setEditingSuperAdmin(s)}
+          onDelete={s.id !== currentId ? () => setDeletingSuperAdmin(s) : undefined}
+        />
+      ),
+    },
   ];
 
   return (
@@ -139,6 +171,33 @@ function SuperAdminsSection({ currentId }: { currentId: string }) {
           }}
         />
       )}
+
+      {editingSuperAdmin && (
+        <EditSuperAdminModal
+          account={editingSuperAdmin}
+          onClose={() => setEditingSuperAdmin(null)}
+          onUpdated={() => {
+            setEditingSuperAdmin(null);
+            setVersion((v) => v + 1);
+            notify("Compte Super Admin mis à jour avec succès.");
+          }}
+        />
+      )}
+
+      <ConfirmModal
+        open={Boolean(deletingSuperAdmin)}
+        title="Supprimer le Super Admin"
+        message={`Êtes-vous sûr de vouloir supprimer le compte Super Admin de ${deletingSuperAdmin?.nomComplet} (${deletingSuperAdmin?.email}) ?`}
+        confirmLabel="Supprimer"
+        onConfirm={async () => {
+          if (!deletingSuperAdmin) return;
+          await deleteSuperAdmin(deletingSuperAdmin.id);
+          setDeletingSuperAdmin(null);
+          setVersion((v) => v + 1);
+          notify("Super Admin supprimé avec succès.");
+        }}
+        onCancel={() => setDeletingSuperAdmin(null)}
+      />
     </section>
   );
 }
@@ -169,3 +228,49 @@ function SuperAdminModal({ onClose, onCreated }: { onClose: () => void; onCreate
     </Modal>
   );
 }
+
+function EditSuperAdminModal({
+  account,
+  onClose,
+  onUpdated,
+}: {
+  account: SuperAdminAccount;
+  onClose: () => void;
+  onUpdated: () => void;
+}) {
+  const { submitting, error, run } = useSubmit();
+  const [password, setPassword] = useState("");
+
+  function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    const email = formText(form, "email").toLowerCase();
+    void run(async () => {
+      await updateSuperAdmin(account.id, {
+        nomComplet: formText(form, "nomComplet"),
+        email,
+        password: password.trim() ? password : undefined,
+      });
+      onUpdated();
+    });
+  }
+
+  return (
+    <Modal title="Modifier le Super Admin" description={`Modification du compte de ${account.nomComplet}`} onClose={onClose}>
+      <form onSubmit={onSubmit} className="space-y-4">
+        <InputField label="Nom complet" name="nomComplet" defaultValue={account.nomComplet} required minLength={2} maxLength={120} autoFocus />
+        <PasswordField
+          value={password}
+          onChange={setPassword}
+          label="Nouveau mot de passe"
+          required={false}
+          hint="Laissez vide pour conserver le mot de passe actuel."
+        />
+
+        <FormError error={error} />
+        <ModalActions submitting={submitting} label="Enregistrer les modifications" onCancel={onClose} />
+      </form>
+    </Modal>
+  );
+}
+

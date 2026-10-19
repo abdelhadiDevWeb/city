@@ -4,16 +4,18 @@ import { Building2, Check, Copy, KeyRound, Search, UserPlus, Users } from "lucid
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import {
   createResident,
+  deleteResident,
   etageLabel,
   getMonEspace,
   listResidents,
+  updateResident,
   type BatimentDetail,
   type MonEspace,
   type Resident,
 } from "@/lib/residences-api";
 import { ModalActions, SelectField, formText, useSubmit } from "../forms";
 import { useSession } from "../session";
-import { Avatar, DataTable, Field, FormError, Modal, Mono, PageHeader, Pill, button, card, describeError, useToast, type Column } from "../ui";
+import { ActionGroup, Avatar, ConfirmModal, DataTable, Field, FormError, Modal, Mono, PageHeader, Pill, button, card, describeError, useToast, type Column } from "../ui";
 
 const fullName = (p: { prenom: string; nom: string }) => `${p.prenom} ${p.nom}`;
 
@@ -26,6 +28,8 @@ export default function ResidentsPage() {
   const [error, setError] = useState<string | null>(null);
   const [version, setVersion] = useState(0);
   const [adding, setAdding] = useState(false);
+  const [editingResident, setEditingResident] = useState<Resident | null>(null);
+  const [deletingResident, setDeletingResident] = useState<Resident | null>(null);
   const [createdCredentials, setCreatedCredentials] = useState<{ resident: Resident; password: string } | null>(null);
   const [query, setQuery] = useState("");
   const closeModal = useCallback(() => setAdding(false), []);
@@ -84,6 +88,18 @@ export default function ResidentsPage() {
     },
     { header: "Statut", cell: () => <Pill tone="dark">Propriétaire</Pill> },
     { header: "Ajouté le", cell: (r) => <span className="text-stone-500">{new Date(r.createdAt).toLocaleDateString("fr-FR")}</span> },
+    {
+      header: "Actions",
+      align: "right",
+      cell: (r) => (
+        <ActionGroup
+          editLabel="Modifier résident"
+          deleteLabel="Supprimer résident"
+          onEdit={() => setEditingResident(r)}
+          onDelete={() => setDeletingResident(r)}
+        />
+      ),
+    },
   ];
 
   const canAdd = !!espace?.residence && espace.batiments.length > 0;
@@ -154,6 +170,39 @@ export default function ResidentsPage() {
             setVersion((v) => v + 1);
             setCreatedCredentials({ resident: r, password: r.temporaryPassword || "City@2026" });
             notify(`${fullName(r)} ajouté comme propriétaire de l'appartement ${r.appartement?.nom ?? ""}.`);
+          }}
+        />
+      )}
+
+      {editingResident && espace?.residence && (
+        <EditResidentModal
+          resident={editingResident}
+          batiments={espace.batiments}
+          onClose={() => setEditingResident(null)}
+          onUpdated={() => {
+            setEditingResident(null);
+            setVersion((v) => v + 1);
+            notify("Résident mis à jour avec succès.");
+          }}
+        />
+      )}
+
+      {deletingResident && (
+        <ConfirmModal
+          isOpen={true}
+          title="Supprimer le résident"
+          message={`Êtes-vous sûr de vouloir supprimer « ${fullName(deletingResident)} » ? Cela révoquera son accès et libérera l'appartement.`}
+          confirmLabel="Supprimer définitivement"
+          onCancel={() => setDeletingResident(null)}
+          onConfirm={async () => {
+            try {
+              await deleteResident(deletingResident.id);
+              notify(`Résident « ${fullName(deletingResident)} » supprimé.`);
+              setDeletingResident(null);
+              setVersion((v) => v + 1);
+            } catch (err) {
+              notify(describeError(err).message);
+            }
           }}
         />
       )}
@@ -382,6 +431,134 @@ function ResidentModal({
 
         <FormError error={error} />
         <ModalActions submitting={submitting} label="Ajouter le résident" onCancel={onClose} />
+      </form>
+    </Modal>
+  );
+}
+
+function EditResidentModal({
+  resident,
+  batiments,
+  onClose,
+  onUpdated,
+}: {
+  resident: Resident;
+  batiments: BatimentDetail[];
+  onClose: () => void;
+  onUpdated: () => void;
+}) {
+  const { submitting, error, run } = useSubmit();
+  const [prenom, setPrenom] = useState(resident.prenom);
+  const [nom, setNom] = useState(resident.nom);
+  const [email, setEmail] = useState(resident.email);
+  const [telephone, setTelephone] = useState(resident.telephone);
+  const [nin, setNin] = useState(resident.nin);
+  const [batimentId, setBatimentId] = useState(resident.batiment?.id ?? batiments[0]?.id ?? "");
+  const [etage, setEtage] = useState(resident.appartement?.etage ?? 0);
+  const [appartement, setAppartement] = useState(resident.appartement?.nom ?? "");
+  const [password, setPassword] = useState("");
+
+  const batiment = batiments.find((b) => b.id === batimentId);
+
+  function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    void run(async () => {
+      await updateResident(resident.id, {
+        prenom,
+        nom,
+        email: email.toLowerCase(),
+        telephone,
+        nin,
+        idBatiment: batimentId,
+        etage,
+        appartement,
+        ...(password.trim() ? { password: password.trim() } : {}),
+      });
+      onUpdated();
+    });
+  }
+
+  return (
+    <Modal title="Modifier le résident" description="Modifiez les informations personnelles ou le logement du propriétaire." onClose={onClose}>
+      <form onSubmit={onSubmit} className="space-y-5">
+        <fieldset className="space-y-4">
+          <legend className="mb-3 text-[11px] font-bold uppercase tracking-wide text-stone-500">Identité du propriétaire</legend>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="Prénom" value={prenom} onChange={(e) => setPrenom(e.target.value)} required maxLength={60} autoFocus />
+            <Field label="Nom" value={nom} onChange={(e) => setNom(e.target.value)} required maxLength={60} />
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required maxLength={254} />
+            <Field label="Téléphone" type="tel" value={telephone} onChange={(e) => setTelephone(e.target.value)} required pattern="\\+?[0-9]{8,15}" title="8 à 15 chiffres, + facultatif" />
+          </div>
+          <Field
+            label="NIN (numéro d'identification nationale)"
+            value={nin}
+            onChange={(e) => setNin(e.target.value)}
+            required
+            inputMode="numeric"
+            pattern="[0-9]{18}"
+            minLength={18}
+            maxLength={18}
+            title="18 chiffres"
+            className="font-mono"
+          />
+        </fieldset>
+
+        <fieldset className="space-y-4">
+          <legend className="mb-3 text-[11px] font-bold uppercase tracking-wide text-stone-500">Logement</legend>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <SelectField
+              label="Bâtiment"
+              value={batimentId}
+              onChange={(e) => {
+                setBatimentId(e.target.value);
+                setEtage(0);
+              }}
+              required
+            >
+              {batiments.map((b) => (
+                <option key={b.id} value={b.id}>
+                  {b.nom} ({b.etages} étages)
+                </option>
+              ))}
+            </SelectField>
+            {batiment && (
+              <SelectField label="Étage" value={String(etage)} onChange={(e) => setEtage(Number(e.target.value))} required>
+                {Array.from({ length: batiment.etages + 1 }, (_, i) => (
+                  <option key={i} value={i}>
+                    {etageLabel(i)}
+                  </option>
+                ))}
+              </SelectField>
+            )}
+          </div>
+          <Field
+            label="Numéro / Nom de l'appartement"
+            value={appartement}
+            onChange={(e) => setAppartement(e.target.value)}
+            required
+            maxLength={40}
+            placeholder="Ex : 12, A-04..."
+          />
+        </fieldset>
+
+        <fieldset className="space-y-4">
+          <legend className="mb-3 text-[11px] font-bold uppercase tracking-wide text-stone-500">Changer le mot de passe (facultatif)</legend>
+          <Field
+            label="Nouveau mot de passe"
+            type="text"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            minLength={6}
+            maxLength={128}
+            placeholder="Laissez vide pour conserver l'actuel"
+            hint="Laissez vide si vous ne souhaitez pas modifier le mot de passe."
+          />
+        </fieldset>
+
+        <FormError error={error} />
+        <ModalActions submitting={submitting} label="Enregistrer les modifications" onCancel={onClose} />
       </form>
     </Modal>
   );
