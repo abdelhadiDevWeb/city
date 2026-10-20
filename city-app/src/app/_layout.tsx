@@ -20,19 +20,24 @@ function RootNavigator() {
 
   // Open notifications screen when the user taps a system push notification
   useEffect(() => {
-    const sub = Notifications.addNotificationResponseReceivedListener((response) => {
-      const route = response?.notification?.request?.content?.data?.route;
-      if (route && typeof route === 'string') {
-        router.push(route as any);
-      } else {
-        router.push('/notifications');
-      }
-    });
+    try {
+      const sub = Notifications.addNotificationResponseReceivedListener?.((response) => {
+        const route = response?.notification?.request?.content?.data?.route;
+        if (route && typeof route === 'string') {
+          router.push(route as any);
+        } else {
+          router.push('/notifications');
+        }
+      });
 
-    return () => {
-      sub.remove();
-    };
+      return () => {
+        sub?.remove?.();
+      };
+    } catch (e) {
+      console.warn('[PushNotifications] addNotificationResponseReceivedListener skipped:', e);
+    }
   }, [router]);
+
 
   return (
     <Stack

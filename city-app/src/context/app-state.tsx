@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 
 import type { AppNotification, ChatMessage, Paiement, Post, Resident, Souscription } from '@/data/types';
-import { getAppSocket, getSocketUrl, setSocketToken } from '@/utils/socket';
+import { getAppSocket, getSocketUrl, loadSavedServerUrl, setSocketToken } from '@/utils/socket';
 import {
   registerForPushNotificationsAsync,
   syncPushTokenWithBackend,
@@ -90,6 +90,10 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       clearTimeout(bannerTimer.current);
       bannerTimer.current = null;
     }
+  }, []);
+
+  useEffect(() => {
+    loadSavedServerUrl().catch(() => {});
   }, []);
 
   // Maintain residence room joining across socket connections & reconnects

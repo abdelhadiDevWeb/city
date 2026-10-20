@@ -4,32 +4,41 @@ import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 
 // Configure how notifications appear when the app is in the foreground
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-    shouldShowBanner: true,
-    shouldShowList: true,
-    priority: Notifications.AndroidNotificationPriority.HIGH,
-  }),
-});
+try {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: true,
+      shouldShowBanner: true,
+      shouldShowList: true,
+      priority: Notifications.AndroidNotificationPriority?.HIGH,
+    }),
+  });
+} catch (e) {
+  console.warn('[PushNotifications] setNotificationHandler skipped in this environment:', e);
+}
 
 /**
  * Configure Android notification channels with high importance and custom vibration/sound.
  */
 export async function setupNotificationChannels(): Promise<void> {
   if (Platform.OS === 'android') {
-    await Notifications.setNotificationChannelAsync('default', {
-      name: 'Annonces & Alertes Syndic',
-      importance: Notifications.AndroidImportance.MAX,
-      vibrationPattern: [0, 250, 250, 250],
-      lightColor: '#EA580C',
-      sound: 'default',
-      enableVibrate: true,
-    });
+    try {
+      await Notifications.setNotificationChannelAsync('default', {
+        name: 'Annonces & Alertes Syndic',
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: '#EA580C',
+        sound: 'default',
+        enableVibrate: true,
+      });
+    } catch (e) {
+      console.warn('[PushNotifications] setNotificationChannelAsync skipped:', e);
+    }
   }
 }
+
 
 /**
  * Request system permissions and retrieve the Expo Push Token for this physical device.
