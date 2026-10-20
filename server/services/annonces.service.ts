@@ -62,7 +62,9 @@ export async function getAnnonces(idResidence: string) {
       id: String(a._id),
       titre: a.titre,
       detail: a.contenu,
-      niveau: a.niveauAlerte || "info",
+      niveau: (a.niveauAlerte || "info") as "critique" | "attention" | "info",
+      audience: a.audience,
+      canaux: a.canaux,
       date: a.date,
     }));
 
@@ -184,3 +186,44 @@ export async function deleteAnnonce(idResidence: string, id: string) {
   if (!annonce) throw new AppError(404, "Annonce introuvable");
   return { ok: true };
 }
+
+export async function createAlerte(
+  idResidence: string,
+  input: {
+    titre: string;
+    detail: string;
+    niveau?: "critique" | "attention" | "info";
+    audience?: string;
+    canaux?: string[];
+  },
+) {
+  return createAnnonce(idResidence, {
+    titre: input.titre,
+    contenu: input.detail,
+    isAlerte: true,
+    niveauAlerte: input.niveau || "info",
+    audience: input.audience || "Tous les résidents",
+    canaux: input.canaux || ["Application", "Notification Push"],
+  });
+}
+
+export async function updateAlerte(
+  idResidence: string,
+  id: string,
+  input: {
+    titre?: string;
+    detail?: string;
+    niveau?: "critique" | "attention" | "info";
+    audience?: string;
+    canaux?: string[];
+  },
+) {
+  return updateAnnonce(idResidence, id, {
+    titre: input.titre,
+    contenu: input.detail,
+    niveauAlerte: input.niveau,
+    audience: input.audience,
+    canaux: input.canaux,
+  });
+}
+
