@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { User } from "../models/User";
 
 export interface PushNotificationPayload {
@@ -129,3 +130,57 @@ export async function sendPushNotifications(
   console.log(`[PushService] Sent ${totalSent} push notifications (${totalFailed} failed).`);
   return { sent: totalSent, failed: totalFailed };
 }
+
+/**
+ * Sends a push notification to all residents of a given residence who have registered mobile devices.
+ */
+export async function dispatchMobilePushForResidence(
+  idResidence: string,
+  data: {
+    id: string;
+    titre: string;
+    detail: string;
+    isAlerte?: boolean;
+    isRappel?: boolean;
+    kind?: "annonce" | "alerte" | "maintenance";
+    route?: string;
+  },
+): Promise<{ sent: number; failed: number }> {
+  try {
+    const resId = new mongoose.Types.ObjectId(idResidence);
+    const users = await User.find(
+      { idResidence: resId, pushTokens: { $exists: true, $not: { $size: 0 } } },
+      { pushTokens: 1 },
+    ).lean();
+
+    const tokens = users.flatMap((u) => u.pushTokens || []);
+    if (tokens.length === 0) {
+      console.log(`[PushService] No mobile push tokens registered for residence ${idResidence}`);
+      return { sent: 0, failed: 0 };
+    }
+
+    let title = data.titre;
+    if (data.kind === "maintenance") {
+      title = data.titre.startsWith("🔧") || data.titre.startsWith("🚨") ? data.titre : `🔧 [Maintenance] ${data.titre}`;
+    } else if (!data.titre.startsWith("🚨") && !data.titre.startsWith("📢")) {
+      const titlePrefix = data.isAlerte ? "🚨 [Alerte] " : data.isRappel ? "📢 [Rappel] " : "📢 ";
+      title = `${titlePrefix}${data.titre}`;
+    }
+
+    return await sendPushNotifications(tokens, {
+      title,
+      body: data.detail,
+      data: {
+        id: data.id,
+        kind: data.kind || (data.isAlerte ? "alerte" : "annonce"),
+        route: data.route || "/notifications",
+      },
+      priority: data.isAlerte ? "high" : "default",
+      sound: "default",
+    });
+  } catch (pushErr) {
+    console.error("[PushService] Error dispatching push notifications:", pushErr);
+    return { sent: 0, failed: 0 };
+  }
+}
+

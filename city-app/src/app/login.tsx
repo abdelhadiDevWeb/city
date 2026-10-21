@@ -87,7 +87,7 @@ export default function LoginScreen() {
       generalError?.toLowerCase().includes('network'));
 
   return (
-    <KeyboardAvoidingView style={[styles.flex, { backgroundColor: Ink }]} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardAvoidingView style={[styles.flex, { backgroundColor: Ink }]} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" bounces={false}>
         <View style={[styles.hero, { paddingTop: insets.top + Spacing.four }]}>
           <View style={styles.glow} />
@@ -200,7 +200,7 @@ export default function LoginScreen() {
         transparent
         onRequestClose={() => setServerModalVisible(false)}>
         <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.modalOverlay}>
           <View style={[styles.modalCard, { backgroundColor: theme.background, borderColor: theme.border }]}>
             <View style={styles.modalHeader}>

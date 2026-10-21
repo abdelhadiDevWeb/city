@@ -7,6 +7,8 @@
     "dev": "bun --watch index.ts",
     "start": "bun index.ts",
     "create-super-admin": "bun scripts/create-super-admin.ts",
+    "create:resident-and-post": "bun scripts/create-resident-and-post.ts",
+    "test:realtime": "bun scripts/test-realtime-and-posts.ts",
     "seed:accounts": "bun scripts_for_superadmin_and_admin.ts",
     "typecheck": "bun x tsc -p tsconfig.json --noEmit"
   },
@@ -17,7 +19,8 @@
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/hpp": "^0.2.7",
-    "@types/jsonwebtoken": "^9.0.10"
+    "@types/jsonwebtoken": "^9.0.10",
+    "socket.io-client": "^4.8.4"
   },
   "overrides": {
     "@types/express": "^4.17.21"

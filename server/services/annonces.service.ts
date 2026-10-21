@@ -1,43 +1,8 @@
 import mongoose from "mongoose";
 import { Annonce } from "../models/Annonce";
-import { User } from "../models/User";
 import { broadcastNotification } from "../socket";
-import { sendPushNotifications } from "./push.service";
+import { dispatchMobilePushForResidence } from "./push.service";
 import { AppError } from "../utils/AppError";
-
-async function dispatchMobilePushForResidence(
-  idResidence: string,
-  data: { id: string; titre: string; detail: string; isAlerte?: boolean; isRappel?: boolean },
-) {
-  try {
-    const resId = new mongoose.Types.ObjectId(idResidence);
-    const users = await User.find(
-      { idResidence: resId, pushTokens: { $exists: true, $not: { $size: 0 } } },
-      { pushTokens: 1 },
-    ).lean();
-
-    const tokens = users.flatMap((u) => u.pushTokens || []);
-    if (tokens.length === 0) {
-      console.log(`[AnnoncesService] No mobile push tokens registered for residence ${idResidence}`);
-      return;
-    }
-
-    const titlePrefix = data.isAlerte ? "🚨 [Alerte] " : data.isRappel ? "📢 [Rappel] " : "📢 ";
-    await sendPushNotifications(tokens, {
-      title: `${titlePrefix}${data.titre}`,
-      body: data.detail,
-      data: {
-        id: data.id,
-        kind: data.isAlerte ? "alerte" : "annonce",
-        route: "/notifications",
-      },
-      priority: data.isAlerte ? "high" : "default",
-      sound: "default",
-    });
-  } catch (pushErr) {
-    console.error("[AnnoncesService] Error dispatching push notifications:", pushErr);
-  }
-}
 
 export async function getAnnonces(idResidence: string) {
   const resId = new mongoose.Types.ObjectId(idResidence);

@@ -79,6 +79,8 @@ export async function updateDocument(
     statut: "Actif" | "Expire bientôt" | "Expiré";
     montantAnnuel: number;
     categorie: string;
+    format: string;
+    taille: string;
   }>,
 ) {
   const doc = await DocumentSyndic.findOne({ _id: id, idResidence });
@@ -91,6 +93,8 @@ export async function updateDocument(
   if (input.statut !== undefined) doc.statut = input.statut;
   if (input.montantAnnuel !== undefined) doc.montantAnnuel = input.montantAnnuel;
   if (input.categorie !== undefined) doc.categorie = input.categorie;
+  if (input.format !== undefined) doc.format = input.format;
+  if (input.taille !== undefined) doc.taille = input.taille;
   await doc.save();
   return doc.toJSON();
 }

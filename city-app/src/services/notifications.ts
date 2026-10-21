@@ -1,7 +1,11 @@
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
-import Constants from 'expo-constants';
+import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { Platform } from 'react-native';
+
+export const isExpoGo =
+  Constants.executionEnvironment === ExecutionEnvironment.StoreClient ||
+  (Constants as any).appOwnership === 'expo';
 
 // Configure how notifications appear when the app is in the foreground
 try {
@@ -24,6 +28,10 @@ try {
  */
 export async function setupNotificationChannels(): Promise<void> {
   if (Platform.OS === 'android') {
+    if (isExpoGo) {
+      // In Expo Go SDK 53+, Android native notification channels provider is omitted
+      return;
+    }
     try {
       await Notifications.setNotificationChannelAsync('default', {
         name: 'Annonces & Alertes Syndic',
@@ -39,12 +47,16 @@ export async function setupNotificationChannels(): Promise<void> {
   }
 }
 
-
 /**
  * Request system permissions and retrieve the Expo Push Token for this physical device.
  */
 export async function registerForPushNotificationsAsync(): Promise<string | null> {
   if (Platform.OS === 'web') {
+    return null;
+  }
+
+  if (isExpoGo && Platform.OS === 'android') {
+    console.log('[PushNotifications] Expo Go (Android SDK 53+) detected: Remote push notifications are unavailable in Expo Go. Use a development build (expo run:android) for push notifications.');
     return null;
   }
 
@@ -55,12 +67,13 @@ export async function registerForPushNotificationsAsync(): Promise<string | null
     return null;
   }
 
-  const { status: existingStatus } = await Notifications.getPermissionsAsync();
+  const perm = (await Notifications.getPermissionsAsync()) as any;
+  const existingStatus = perm.status;
   let finalStatus = existingStatus;
 
   if (existingStatus !== 'granted') {
-    const { status } = await Notifications.requestPermissionsAsync();
-    finalStatus = status;
+    const reqPerm = (await Notifications.requestPermissionsAsync()) as any;
+    finalStatus = reqPerm.status;
   }
 
   if (finalStatus !== 'granted') {

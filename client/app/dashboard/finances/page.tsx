@@ -3,6 +3,7 @@
 import { ArrowDownRight, CalendarDays, FileText, NotebookText, Phone, Plus, TriangleAlert, Wallet } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 import {
+  createDepense,
   createPaiement,
   deleteCharge,
   deleteDepense,
@@ -43,6 +44,8 @@ export default function FinancesPage() {
 
   const [encaissantCharge, setEncaissantCharge] = useState<Impaye | null>(null);
   const [addingPaiement, setAddingPaiement] = useState(false);
+  const [addingDepense, setAddingDepense] = useState(false);
+  const [addingFacture, setAddingFacture] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [editingCharge, setEditingCharge] = useState<Impaye | null>(null);
   const [editingDepense, setEditingDepense] = useState<Depense | null>(null);
@@ -224,19 +227,33 @@ export default function FinancesPage() {
         subtitle="Suivi des charges communes, encaissements Edahabia/CCP, impayés et dépenses de la résidence"
         actions={
           <>
-            <button
-              type="button"
-              disabled={generating}
-              onClick={() => void handleGenererCharges()}
-              className={button("secondary")}
-            >
-              <CalendarDays className="h-4 w-4" aria-hidden />
-              {generating ? "Génération en cours..." : "Générer Charges"}
-            </button>
-            <button type="button" onClick={() => setAddingPaiement(true)} className={button("primary")}>
-              <Plus className="h-4 w-4" aria-hidden />
-              Enregistrer Paiement
-            </button>
+            {tab === "depenses" ? (
+              <button type="button" onClick={() => setAddingDepense(true)} className={button("primary")}>
+                <Plus className="h-4 w-4" aria-hidden />
+                Nouvelle Dépense
+              </button>
+            ) : tab === "factures" ? (
+              <button type="button" onClick={() => setAddingFacture(true)} className={button("primary")}>
+                <Plus className="h-4 w-4" aria-hidden />
+                Nouvelle Facture
+              </button>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  disabled={generating}
+                  onClick={() => void handleGenererCharges()}
+                  className={button("secondary")}
+                >
+                  <CalendarDays className="h-4 w-4" aria-hidden />
+                  {generating ? "Génération en cours..." : "Générer Charges"}
+                </button>
+                <button type="button" onClick={() => setAddingPaiement(true)} className={button("primary")}>
+                  <Plus className="h-4 w-4" aria-hidden />
+                  Enregistrer Paiement
+                </button>
+              </>
+            )}
           </>
         }
       />
@@ -314,6 +331,28 @@ export default function FinancesPage() {
             setAddingPaiement(false);
             setVersion((v) => v + 1);
             notify("Paiement enregistré avec succès.");
+          }}
+        />
+      )}
+
+      {addingDepense && (
+        <NouvelleDepenseModal
+          onClose={() => setAddingDepense(false)}
+          onCreated={() => {
+            setAddingDepense(false);
+            setVersion((v) => v + 1);
+            notify("Dépense enregistrée avec succès.");
+          }}
+        />
+      )}
+
+      {addingFacture && (
+        <NouvelleFactureModal
+          onClose={() => setAddingFacture(false)}
+          onCreated={() => {
+            setAddingFacture(false);
+            setVersion((v) => v + 1);
+            notify("Facture enregistrée avec succès.");
           }}
         />
       )}
@@ -603,6 +642,125 @@ function EditFactureModal({
         </SelectField>
         <FormError error={error} />
         <ModalActions submitting={submitting} label="Enregistrer les modifications" onCancel={onClose} />
+      </form>
+    </Modal>
+  );
+}
+
+function NouvelleDepenseModal({
+  onClose,
+  onCreated,
+}: {
+  onClose: () => void;
+  onCreated: () => void;
+}) {
+  const { submitting, error, run } = useSubmit();
+  const [categorie, setCategorie] = useState("Entretien & Réparations");
+  const [statut, setStatut] = useState<"Payée" | "À payer" | "En attente">("Payée");
+
+  function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    void run(async () => {
+      await createDepense({
+        categorie,
+        fournisseur: formText(form, "fournisseur"),
+        description: formText(form, "description"),
+        montant: Number(formText(form, "montant")),
+        statut,
+        typeDepense: "depense",
+      });
+      onCreated();
+    });
+  }
+
+  return (
+    <Modal title="Enregistrer une dépense résidence" description="Achats, travaux, prestataires et charges opérationnelles" onClose={onClose}>
+      <form onSubmit={onSubmit} className="space-y-4">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <SelectField label="Catégorie" value={categorie} onChange={(e) => setCategorie(e.target.value)}>
+            <option value="Entretien & Réparations">Entretien & Réparations</option>
+            <option value="Nettoyage & Hygiène">Nettoyage & Hygiène</option>
+            <option value="Sécurité & Gardiennage">Sécurité & Gardiennage</option>
+            <option value="Maintenance Ascenseur">Maintenance Ascenseur</option>
+            <option value="Espaces Verts">Espaces Verts</option>
+            <option value="Fournitures & Petit matériel">Fournitures & Petit matériel</option>
+          </SelectField>
+          <Field label="Fournisseur / Prestataire" name="fournisseur" required placeholder="Ex: Plomberie Express, SARL Net" />
+        </div>
+        <Field label="Description de la dépense" name="description" required placeholder="Ex: Remplacement lampe hall et serrures portail" />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Montant (DZD)" name="montant" type="number" required placeholder="Ex: 8500" min={0} />
+          <SelectField label="Statut du règlement" value={statut} onChange={(e) => setStatut(e.target.value as any)}>
+            <option value="Payée">Payée (Décaissée)</option>
+            <option value="À payer">À payer</option>
+            <option value="En attente">En attente de devis/facture</option>
+          </SelectField>
+        </div>
+        <FormError error={error} />
+        <ModalActions submitting={submitting} label="Enregistrer la dépense" onCancel={onClose} />
+      </form>
+    </Modal>
+  );
+}
+
+function NouvelleFactureModal({
+  onClose,
+  onCreated,
+}: {
+  onClose: () => void;
+  onCreated: () => void;
+}) {
+  const { submitting, error, run } = useSubmit();
+  const [fournisseur, setFournisseur] = useState("Sonelgaz (Électricité & Gaz)");
+  const [statut, setStatut] = useState<"À payer" | "Payée" | "En retard">("À payer");
+
+  function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    void run(async () => {
+      await createDepense({
+        categorie: "Utilités & Services",
+        fournisseur,
+        service: formText(form, "service"),
+        description: formText(form, "service"),
+        periode: formText(form, "periode"),
+        echeance: formText(form, "echeance"),
+        montant: Number(formText(form, "montant")),
+        statut,
+        typeDepense: "facture",
+      });
+      onCreated();
+    });
+  }
+
+  return (
+    <Modal title="Ajouter une facture service ou Sonelgaz" description="Factures d'énergie, d'eau, télécoms ou contrats réguliers" onClose={onClose}>
+      <form onSubmit={onSubmit} className="space-y-4">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <SelectField label="Organisme / Fournisseur" value={fournisseur} onChange={(e) => setFournisseur(e.target.value)}>
+            <option value="Sonelgaz (Électricité & Gaz)">Sonelgaz (Électricité & Gaz)</option>
+            <option value="SEAAL / ADE (Eau)">SEAAL / ADE (Eau)</option>
+            <option value="Maintenance Ascenseur (Contrat)">Maintenance Ascenseur (Contrat)</option>
+            <option value="Algérie Télécom (Fibre/Internet)">Algérie Télécom (Fibre/Internet)</option>
+            <option value="Autre Service">Autre Service</option>
+          </SelectField>
+          <Field label="Service / Réf. Facture" name="service" required placeholder="Ex: Éclairage parties communes" />
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Période couverte" name="periode" required placeholder="Ex: 3e Trimestre 2026" />
+          <Field label="Date d'échéance" name="echeance" required placeholder="Ex: 15/11/2026" />
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Montant à payer (DZD)" name="montant" type="number" required placeholder="Ex: 24500" min={0} />
+          <SelectField label="Statut de la facture" value={statut} onChange={(e) => setStatut(e.target.value as any)}>
+            <option value="À payer">À payer</option>
+            <option value="Payée">Payée (Acquittée)</option>
+            <option value="En retard">En retard</option>
+          </SelectField>
+        </div>
+        <FormError error={error} />
+        <ModalActions submitting={submitting} label="Ajouter la facture" onCancel={onClose} />
       </form>
     </Modal>
   );

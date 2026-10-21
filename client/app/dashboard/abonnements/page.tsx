@@ -531,11 +531,11 @@ function HistoriqueModal({
                 <button
                   type="button"
                   onClick={() => onDeleteSouscription(s)}
-                  className="flex items-center gap-1 text-xs font-semibold text-rose-600 hover:text-rose-700"
                   title="Supprimer cette souscription"
+                  aria-label="Supprimer cette souscription"
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-red-200 bg-red-50/70 text-red-600 shadow-xs transition hover:border-red-300 hover:bg-red-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                 >
                   <Trash2 className="h-3.5 w-3.5" aria-hidden />
-                  Supprimer
                 </button>
               </div>
             </li>

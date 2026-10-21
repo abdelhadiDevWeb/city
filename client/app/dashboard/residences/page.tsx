@@ -370,10 +370,11 @@ export default function ResidencesPage() {
                     <button
                       type="button"
                       onClick={() => setEditingResidence(true)}
-                      className={button("secondary", "sm")}
+                      title="Modifier la résidence"
+                      aria-label="Modifier la résidence"
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-stone-200 bg-white text-stone-600 shadow-xs transition hover:border-stone-300 hover:bg-stone-50 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                     >
                       <Pencil className="h-3.5 w-3.5" aria-hidden />
-                      Modifier
                     </button>
                   )}
                 </div>

@@ -69,6 +69,7 @@ export async function createPaiement(input: {
 export async function createDepense(input: {
   categorie: string;
   fournisseur: string;
+  service?: string;
   description: string;
   montant: number;
   statut: "Payée" | "À payer" | "En retard" | "En attente";

@@ -259,6 +259,7 @@ function EditSuperAdminModal({
     <Modal title="Modifier le Super Admin" description={`Modification du compte de ${account.nomComplet}`} onClose={onClose}>
       <form onSubmit={onSubmit} className="space-y-4">
         <InputField label="Nom complet" name="nomComplet" defaultValue={account.nomComplet} required minLength={2} maxLength={120} autoFocus />
+        <InputField label="Adresse email" name="email" type="email" defaultValue={account.email} required maxLength={254} />
         <PasswordField
           value={password}
           onChange={setPassword}

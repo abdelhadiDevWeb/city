@@ -17,6 +17,7 @@ const KIND: Record<NotificationKind, { icon: IconName; color: string; href: Href
   chat: { icon: 'chat', color: '#059669', href: '/chat' },
   paiement: { icon: 'receipt', color: '#D97706', href: '/payments' },
   abonnement: { icon: 'premium', color: '#7C3AED', href: '/profile' },
+  maintenance: { icon: 'wrench', color: '#0284C7', href: '/notifications' },
 };
 
 function NotificationRow({ item }: { item: AppNotification }) {

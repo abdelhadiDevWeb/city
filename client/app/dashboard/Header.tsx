@@ -49,15 +49,17 @@ export function Header({ onOpenMenu }: { onOpenMenu: () => void }) {
 
   useEffect(() => {
     let active = true;
-    getAnnonces()
-      .then((res) => {
-        if (active && res?.alertes) {
-          setAlertes(res.alertes);
-        }
-      })
-      .catch(() => {
-        // Silently ignore if unauthenticated or error
-      });
+    if (account && account.type !== "SuperAdmin") {
+      getAnnonces()
+        .then((res) => {
+          if (active && res?.alertes) {
+            setAlertes(res.alertes);
+          }
+        })
+        .catch(() => {
+          // Silently ignore if unauthenticated or error
+        });
+    }
 
     const socket = getSocket();
     refreshSocketAuth();
@@ -65,8 +67,15 @@ export function Header({ onOpenMenu }: { onOpenMenu: () => void }) {
       socket.emit("join_residence", account.idResidence);
     }
 
+    const recentNotifKeys = new Set<string>();
+
     const onNotification = (notif: RealtimeNotification) => {
       if (!active) return;
+      const notifKey = `${notif.id || ""}_${notif.titre}`;
+      if (recentNotifKeys.has(notifKey)) return;
+      recentNotifKeys.add(notifKey);
+      setTimeout(() => recentNotifKeys.delete(notifKey), 10000);
+
       const newAlerte: Alerte = {
         id: notif.id,
         titre: notif.titre,
@@ -75,6 +84,12 @@ export function Header({ onOpenMenu }: { onOpenMenu: () => void }) {
         date: notif.date || "À l'instant",
       };
       setAlertes((prev) => [newAlerte, ...prev.filter((a) => a.id !== notif.id)]);
+
+      // Avoid double-toasting when the admin is directly on the annonces page
+      // where the specific action modal already provides clean confirmation
+      if (typeof window !== "undefined" && window.location.pathname.includes("/dashboard/annonces")) {
+        return;
+      }
       notify(`📢 ${notif.titre} : ${notif.detail}`);
     };
 
@@ -146,7 +161,7 @@ export function Header({ onOpenMenu }: { onOpenMenu: () => void }) {
                   alertes.map((alerte) => {
                     const { icon: Icon, className } = ALERT_STYLES[alerte.niveau];
                     return (
-                      <Link key={alerte.id} href="/dashboard/annonces" role="menuitem" onClick={close} className={`${menuItem} items-start`}>
+                      <Link key={alerte.id} href={role === "super_admin" ? "/dashboard" : "/dashboard/annonces"} role="menuitem" onClick={close} className={`${menuItem} items-start`}>
                         <span className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${className}`}>
                           <Icon className="h-4 w-4" aria-hidden />
                         </span>

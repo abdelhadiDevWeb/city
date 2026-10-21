@@ -1,7 +1,9 @@
 import { router, type Href } from 'expo-router';
 import { useState } from 'react';
-import { FlatList, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { FlatList, KeyboardAvoidingView, Modal, Platform, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import * as ImagePicker from 'expo-image-picker';
+import { Image } from 'expo-image';
 
 import { Avatar } from '@/components/avatar';
 import { CityLogo } from '@/components/city-logo';
@@ -39,14 +41,73 @@ export default function HomeScreen() {
   const [draft, setDraft] = useState('');
   const [refreshing, setRefreshing] = useState(false);
 
+  // Photo & Event attachments
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [showEventModal, setShowEventModal] = useState(false);
+  const [eventData, setEventData] = useState<{ titre: string; date: string; lieu: string; imageUrl?: string } | null>(null);
+  const [eventTitre, setEventTitre] = useState('');
+  const [eventDate, setEventDate] = useState('');
+  const [eventLieu, setEventLieu] = useState('');
+  const [eventImage, setEventImage] = useState<string | null>(null);
+
   const visible = posts.filter((p) => filter === 'tout' || (filter === 'annonces' ? p.kind === 'annonce' : p.kind === 'post'));
   const nextDue = paiements.find((p) => p.statut === 'en_attente');
 
+  async function pickImage() {
+    try {
+      const res = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        quality: 0.8,
+      });
+      if (!res.canceled && res.assets && res.assets[0]?.uri) {
+        setSelectedImage(res.assets[0].uri);
+      }
+    } catch (err) {
+      console.warn('Erreur sélection photo:', err);
+    }
+  }
+
+  async function pickEventImage() {
+    try {
+      const res = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        quality: 0.8,
+      });
+      if (!res.canceled && res.assets && res.assets[0]?.uri) {
+        setEventImage(res.assets[0].uri);
+      }
+    } catch (err) {
+      console.warn('Erreur sélection image événement:', err);
+    }
+  }
+
+  function handleSaveEvent() {
+    if (!eventTitre.trim()) return;
+    setEventData({
+      titre: eventTitre.trim(),
+      date: eventDate.trim() || 'À venir',
+      lieu: eventLieu.trim() || 'Résidence',
+      imageUrl: eventImage || undefined,
+    });
+    setEventTitre('');
+    setEventDate('');
+    setEventLieu('');
+    setEventImage(null);
+    setShowEventModal(false);
+  }
+
   function publish() {
     const text = draft.trim();
-    if (!text) return;
-    publishPost(text);
+    if (!text && !selectedImage && !eventData) return;
+    publishPost(text || (eventData ? `Événement : ${eventData.titre}` : 'Photo partagée'), {
+      imageUrl: selectedImage || undefined,
+      event: eventData || undefined,
+    });
     setDraft('');
+    setSelectedImage(null);
+    setEventData(null);
     setFilter('tout');
   }
 
@@ -56,6 +117,8 @@ export default function HomeScreen() {
   }
 
   const residenceName = resident.logement?.residence || 'Ma Résidence';
+
+  const canPublish = Boolean(draft.trim() || selectedImage || eventData);
 
   const header = (
     <View style={styles.headerBlock}>
@@ -88,13 +151,70 @@ export default function HomeScreen() {
             style={[styles.composerInput, { color: theme.text }]}
           />
         </View>
+
+        {/* Selected Image Attachment Preview */}
+        {selectedImage && (
+          <View style={styles.attachmentRow}>
+            <View style={styles.imagePreviewWrap}>
+              <Image source={{ uri: selectedImage }} style={styles.previewThumb} contentFit="cover" />
+              <Pressable
+                accessibilityLabel="Supprimer la photo"
+                onPress={() => setSelectedImage(null)}
+                style={styles.removeBadge}
+                hitSlop={8}
+              >
+                <Icon name="close" size={14} color="#FFFFFF" />
+              </Pressable>
+            </View>
+          </View>
+        )}
+
+        {/* Selected Event Preview */}
+        {eventData && (
+          <View style={styles.attachmentRow}>
+            <View style={[styles.eventBadge, { backgroundColor: theme.backgroundElement, borderColor: theme.border }]}>
+              <View style={[styles.eventIconWrap, { backgroundColor: theme.brandSoft }]}>
+                <Icon name="calendar" size={16} color={theme.brand} />
+              </View>
+              <View style={styles.eventBadgeText}>
+                <Text numberOfLines={1} style={[styles.eventBadgeTitle, { color: theme.text }]}>
+                  {eventData.titre}
+                </Text>
+                <Text numberOfLines={1} style={[styles.eventBadgeSub, { color: theme.textSecondary }]}>
+                  {eventData.date} · {eventData.lieu}
+                </Text>
+              </View>
+              <Pressable
+                accessibilityLabel="Retirer l'événement"
+                onPress={() => setEventData(null)}
+                style={styles.eventRemoveBtn}
+                hitSlop={8}
+              >
+                <Icon name="close" size={16} color={theme.textMuted} />
+              </Pressable>
+            </View>
+          </View>
+        )}
+
         <View style={[styles.composerActions, { borderColor: theme.border }]}>
           <View style={styles.composerTools}>
-            <Pressable style={styles.tool} hitSlop={6}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Ajouter une photo"
+              onPress={pickImage}
+              style={styles.tool}
+              hitSlop={6}
+            >
               <Icon name="image" size={18} color={theme.success} />
               <Text style={[styles.toolLabel, { color: theme.textSecondary }]}>Photo</Text>
             </Pressable>
-            <Pressable style={styles.tool} hitSlop={6}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Créer un événement"
+              onPress={() => setShowEventModal(true)}
+              style={styles.tool}
+              hitSlop={6}
+            >
               <Icon name="calendar" size={18} color={theme.brand} />
               <Text style={[styles.toolLabel, { color: theme.textSecondary }]}>Événement</Text>
             </Pressable>
@@ -102,9 +222,9 @@ export default function HomeScreen() {
           <Pressable
             accessibilityRole="button"
             onPress={publish}
-            disabled={!draft.trim()}
-            style={[styles.publish, { backgroundColor: draft.trim() ? theme.brand : theme.backgroundSelected }]}>
-            <Text style={[styles.publishLabel, { color: draft.trim() ? '#FFFFFF' : theme.textMuted }]}>Publier</Text>
+            disabled={!canPublish}
+            style={[styles.publish, { backgroundColor: canPublish ? theme.brand : theme.backgroundSelected }]}>
+            <Text style={[styles.publishLabel, { color: canPublish ? '#FFFFFF' : theme.textMuted }]}>Publier</Text>
           </Pressable>
         </View>
       </Card>
@@ -144,6 +264,120 @@ export default function HomeScreen() {
         automaticallyAdjustKeyboardInsets
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor={theme.brand} colors={[theme.brand]} />}
       />
+
+      {/* Event Creation Modal */}
+      <Modal
+        visible={showEventModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowEventModal(false)}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.modalOverlay}
+        >
+          <View style={[styles.modalContent, { backgroundColor: theme.card, borderColor: theme.border, maxHeight: '88%' }]}>
+            <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} bounces={false}>
+              <View style={styles.modalHeader}>
+                <View style={[styles.modalIconWrap, { backgroundColor: theme.brandSoft }]}>
+                  <Icon name="calendar" size={22} color={theme.brand} />
+                </View>
+                <View style={styles.modalHeaderText}>
+                  <Text style={[styles.modalTitle, { color: theme.text }]}>Créer un Événement</Text>
+                  <Text style={[styles.modalSub, { color: theme.textSecondary }]}>
+                    Activité ou rencontre pour les résidents
+                  </Text>
+                </View>
+                <Pressable
+                  accessibilityLabel="Fermer"
+                  onPress={() => setShowEventModal(false)}
+                  hitSlop={8}
+                  style={styles.modalCloseBtn}
+                >
+                  <Icon name="close" size={20} color={theme.textMuted} />
+                </Pressable>
+              </View>
+
+              <View style={styles.modalBody}>
+                <View style={styles.inputGroup}>
+                  <Text style={[styles.inputLabel, { color: theme.textSecondary }]}>Titre de l&apos;événement *</Text>
+                  <TextInput
+                    value={eventTitre}
+                    onChangeText={setEventTitre}
+                    placeholder="Ex: Goûter des enfants, Tournoi de foot..."
+                    placeholderTextColor={theme.textMuted}
+                    style={[styles.modalInput, { backgroundColor: theme.backgroundElement, color: theme.text }]}
+                  />
+                </View>
+
+                <View style={styles.inputGroup}>
+                  <Text style={[styles.inputLabel, { color: theme.textSecondary }]}>Date et heure</Text>
+                  <TextInput
+                    value={eventDate}
+                    onChangeText={setEventDate}
+                    placeholder="Ex: Samedi 16h00, Demain 18h..."
+                    placeholderTextColor={theme.textMuted}
+                    style={[styles.modalInput, { backgroundColor: theme.backgroundElement, color: theme.text }]}
+                  />
+                </View>
+
+                <View style={styles.inputGroup}>
+                  <Text style={[styles.inputLabel, { color: theme.textSecondary }]}>Lieu</Text>
+                  <TextInput
+                    value={eventLieu}
+                    onChangeText={setEventLieu}
+                    placeholder="Ex: Jardin central, Hall Bâtiment A..."
+                    placeholderTextColor={theme.textMuted}
+                    style={[styles.modalInput, { backgroundColor: theme.backgroundElement, color: theme.text }]}
+                  />
+                </View>
+
+                {/* Event Image Picker */}
+                <View style={styles.inputGroup}>
+                  <Text style={[styles.inputLabel, { color: theme.textSecondary }]}>Photo / Affiche (optionnel)</Text>
+                  {eventImage ? (
+                    <View style={styles.eventImagePreviewRow}>
+                      <Image source={{ uri: eventImage }} style={styles.eventPreviewImg} contentFit="cover" />
+                      <Pressable
+                        onPress={() => setEventImage(null)}
+                        style={[styles.removeEventImgBtn, { backgroundColor: theme.danger }]}
+                      >
+                        <Text style={styles.removeEventImgText}>Supprimer</Text>
+                      </Pressable>
+                    </View>
+                  ) : (
+                    <Pressable
+                      onPress={pickEventImage}
+                      style={[styles.pickImgButton, { backgroundColor: theme.backgroundElement, borderColor: theme.border }]}
+                    >
+                      <Icon name="image" size={18} color={theme.brand} />
+                      <Text style={[styles.pickImgText, { color: theme.brand }]}>Choisir une affiche / photo</Text>
+                    </Pressable>
+                  )}
+                </View>
+              </View>
+
+              <View style={styles.modalActions}>
+                <Pressable
+                  onPress={() => setShowEventModal(false)}
+                  style={[styles.modalBtnCancel, { borderColor: theme.border }]}
+                >
+                  <Text style={[styles.modalBtnCancelText, { color: theme.textSecondary }]}>Annuler</Text>
+                </Pressable>
+                <Pressable
+                  onPress={handleSaveEvent}
+                  disabled={!eventTitre.trim()}
+                  style={[styles.modalBtnConfirm, { backgroundColor: eventTitre.trim() ? theme.brand : theme.backgroundSelected }]}
+                >
+                  <Text style={[styles.modalBtnConfirmText, { color: eventTitre.trim() ? '#FFFFFF' : theme.textMuted }]}>
+                    Ajouter l&apos;événement
+                  </Text>
+                </Pressable>
+              </View>
+            </ScrollView>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </View>
   );
 }
@@ -292,5 +526,177 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 18,
     maxWidth: 280,
+  },
+  attachmentRow: {
+    paddingHorizontal: Spacing.three,
+    paddingBottom: 10,
+  },
+  imagePreviewWrap: {
+    position: 'relative',
+    width: 90,
+    height: 90,
+    borderRadius: Radius.md,
+    overflow: 'hidden',
+  },
+  previewThumb: {
+    width: '100%',
+    height: '100%',
+  },
+  removeBadge: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: 'rgba(0, 0, 0, 0.65)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  eventBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    padding: 10,
+    borderRadius: Radius.md,
+    borderWidth: StyleSheet.hairlineWidth,
+  },
+  eventIconWrap: {
+    width: 34,
+    height: 34,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  eventBadgeText: {
+    flex: 1,
+    minWidth: 0,
+  },
+  eventBadgeTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  eventBadgeSub: {
+    fontSize: 11.5,
+    marginTop: 1,
+  },
+  eventRemoveBtn: {
+    padding: 6,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.55)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingHorizontal: Spacing.four,
+    paddingTop: Spacing.four,
+    paddingBottom: Spacing.five,
+    borderTopWidth: StyleSheet.hairlineWidth,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: Spacing.three,
+  },
+  modalIconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalHeaderText: {
+    flex: 1,
+  },
+  modalTitle: {
+    fontSize: 17,
+    fontWeight: '800',
+  },
+  modalSub: {
+    fontSize: 12,
+    marginTop: 2,
+  },
+  modalCloseBtn: {
+    padding: 6,
+  },
+  modalBody: {
+    gap: 12,
+  },
+  inputGroup: {
+    gap: 4,
+  },
+  inputLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  modalInput: {
+    borderRadius: Radius.md,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 14,
+  },
+  eventImagePreviewRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  eventPreviewImg: {
+    width: 60,
+    height: 60,
+    borderRadius: Radius.md,
+  },
+  removeEventImgBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: Radius.md,
+  },
+  removeEventImgText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  pickImgButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: Radius.md,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+  },
+  pickImgText: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  modalActions: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 18,
+  },
+  modalBtnCancel: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: Radius.full,
+    alignItems: 'center',
+    borderWidth: 1,
+  },
+  modalBtnCancelText: {
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  modalBtnConfirm: {
+    flex: 2,
+    paddingVertical: 12,
+    borderRadius: Radius.full,
+    alignItems: 'center',
+  },
+  modalBtnConfirmText: {
+    fontSize: 14,
+    fontWeight: '800',
   },
 });

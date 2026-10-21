@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react';
-import { Pressable, Share, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Pressable, Share, StyleSheet, Text, TextInput, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSequence, withSpring, withTiming } from 'react-native-reanimated';
+import { Image } from 'expo-image';
 
 import { Avatar } from '@/components/avatar';
 import { Icon, type IconName } from '@/components/icon';
@@ -22,7 +23,7 @@ function Action({ icon, label, color, onPress, children }: { icon?: IconName; la
 
 export function PostCard({ post, residence }: { post: Post; residence: string }) {
   const theme = useTheme();
-  const { resident, toggleLike, addComment } = useAppState();
+  const { resident, toggleLike, addComment, deletePost } = useAppState();
   const [showComments, setShowComments] = useState(false);
   const [draft, setDraft] = useState('');
   const [going, setGoing] = useState(false);
@@ -31,6 +32,18 @@ export function PostCard({ post, residence }: { post: Post; residence: string })
 
   const isAnnonce = post.kind === 'annonce';
   const subtitle = post.author.role === 'syndic' ? `Syndic · ${residence}` : post.author.logement;
+  const isOwner = resident.id ? (post.author.id === resident.id || post.author.id === 'me') : (post.author.id === 'u-1' || post.author.id === 'me');
+
+  function confirmDelete() {
+    Alert.alert(
+      'Supprimer la publication',
+      'Êtes-vous sûr de vouloir supprimer cette publication ? Cette action est irréversible.',
+      [
+        { text: 'Annuler', style: 'cancel' },
+        { text: 'Supprimer', style: 'destructive', onPress: () => deletePost(post.id) },
+      ]
+    );
+  }
 
   function like() {
     heart.set(withSequence(withTiming(1.35, { duration: 110 }), withSpring(1, { damping: 6, stiffness: 220 })));
@@ -66,18 +79,50 @@ export function PostCard({ post, residence }: { post: Post; residence: string })
             {subtitle} · {timeAgo(post.createdAt)}
           </Text>
         </View>
-        <Pressable accessibilityLabel="Plus d’options" hitSlop={10}>
-          <Icon name="more" size={20} color={theme.textMuted} />
-        </Pressable>
+        {isOwner ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Supprimer ma publication"
+            hitSlop={10}
+            onPress={confirmDelete}
+            style={styles.deleteBtn}
+          >
+            <Icon name="trash" size={18} color={theme.danger} />
+          </Pressable>
+        ) : (
+          <Pressable accessibilityLabel="Plus d’options" hitSlop={10}>
+            <Icon name="more" size={20} color={theme.textMuted} />
+          </Pressable>
+        )}
       </View>
 
       <Text style={[styles.body, { color: theme.text }]}>{post.text}</Text>
 
+      {post.imageUrl && (
+        <View style={styles.imageContainer}>
+          <Image
+            source={{ uri: post.imageUrl }}
+            style={styles.postImage}
+            contentFit="cover"
+            transition={250}
+          />
+        </View>
+      )}
+
       {post.event && (
         <View style={[styles.event, { backgroundColor: theme.backgroundElement }]}>
-          <View style={[styles.eventIcon, { backgroundColor: theme.card }]}>
-            <Icon name="calendar" size={20} color={theme.brand} />
-          </View>
+          {post.event.imageUrl ? (
+            <Image
+              source={{ uri: post.event.imageUrl }}
+              style={styles.eventImage}
+              contentFit="cover"
+              transition={200}
+            />
+          ) : (
+            <View style={[styles.eventIcon, { backgroundColor: theme.card }]}>
+              <Icon name="calendar" size={20} color={theme.brand} />
+            </View>
+          )}
           <View style={styles.eventText}>
             <Text style={[styles.eventTitle, { color: theme.text }]}>{post.event.titre}</Text>
             <Text style={[styles.meta, { color: theme.textSecondary }]}>
@@ -323,5 +368,25 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     paddingVertical: 9,
+  },
+  deleteBtn: {
+    padding: 6,
+    borderRadius: Radius.full,
+  },
+  imageContainer: {
+    marginHorizontal: Spacing.three,
+    marginTop: 10,
+    borderRadius: Radius.lg,
+    overflow: 'hidden',
+  },
+  postImage: {
+    width: '100%',
+    height: 220,
+    borderRadius: Radius.lg,
+  },
+  eventImage: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
   },
 });

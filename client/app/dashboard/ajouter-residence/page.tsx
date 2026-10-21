@@ -1,7 +1,8 @@
 "use client";
 
 import { Building, Building2, KeyRound, Layers, MapPin, Plus, ShieldCheck, UserPlus, UserRound } from "lucide-react";
-import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useCallback, useEffect, useState, type FormEvent } from "react";
 import {
   createAccount,
   createBatiment,
@@ -58,7 +59,23 @@ const formatDate = (iso: string) => new Date(iso).toLocaleDateString("fr-FR");
 const fullName = (p: { prenom: string; nom: string }) => `${p.prenom} ${p.nom}`;
 
 export default function AjouterResidencePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className={`${card} flex items-center justify-center p-16`}>
+          <span aria-label="Chargement" className="h-7 w-7 animate-spin rounded-full border-2 border-stone-300 border-t-brand" />
+        </div>
+      }
+    >
+      <AjouterResidenceContent />
+    </Suspense>
+  );
+}
+
+function AjouterResidenceContent() {
   const notify = useToast();
+  const searchParams = useSearchParams();
+  const queryId = searchParams.get("id");
   const [residences, setResidences] = useState<ResidenceSummary[] | null>(null);
   const [listError, setListError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -68,7 +85,11 @@ export default function AjouterResidencePage() {
   const [modal, setModal] = useState<ModalState>(null);
   const [confirmDelete, setConfirmDelete] = useState<ConfirmDeleteState>(null);
 
-  const activeId = selectedId ?? residences?.[0]?.id ?? null;
+  useEffect(() => {
+    if (queryId) setSelectedId(queryId);
+  }, [queryId]);
+
+  const activeId = selectedId ?? queryId ?? residences?.[0]?.id ?? null;
   const refresh = () => setVersion((v) => v + 1);
   const closeModal = useCallback(() => setModal(null), []);
 

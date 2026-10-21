@@ -36,3 +36,61 @@ export const deleteChargeType = asyncHandler(async (req, res) => {
   await configService.deleteChargeType(String(admin.idResidence), req.params.id as string);
   res.status(200).json({ ok: true });
 });
+
+// Incidents
+export const addIncidentType = asyncHandler(async (req, res) => {
+  const admin = await loadActiveAdmin(req.user!.sub);
+  if (!admin.idResidence) throw new AppError(403, "Aucune résidence attribuée");
+  const item = await configService.addIncidentType(String(admin.idResidence), req.body);
+  res.status(201).json({ ok: true, item });
+});
+
+export const toggleIncidentType = asyncHandler(async (req, res) => {
+  const admin = await loadActiveAdmin(req.user!.sub);
+  if (!admin.idResidence) throw new AppError(403, "Aucune résidence attribuée");
+  const item = await configService.toggleIncidentType(String(admin.idResidence), req.params.id as string);
+  res.status(200).json({ ok: true, item });
+});
+
+export const updateIncidentType = asyncHandler(async (req, res) => {
+  const admin = await loadActiveAdmin(req.user!.sub);
+  if (!admin.idResidence) throw new AppError(403, "Aucune résidence attribuée");
+  const item = await configService.updateIncidentType(String(admin.idResidence), req.params.id as string, req.body);
+  res.status(200).json({ ok: true, item });
+});
+
+export const deleteIncidentType = asyncHandler(async (req, res) => {
+  const admin = await loadActiveAdmin(req.user!.sub);
+  if (!admin.idResidence) throw new AppError(403, "Aucune résidence attribuée");
+  await configService.deleteIncidentType(String(admin.idResidence), req.params.id as string);
+  res.status(200).json({ ok: true });
+});
+
+// Paiements
+export const addPaymentMode = asyncHandler(async (req, res) => {
+  const admin = await loadActiveAdmin(req.user!.sub);
+  if (!admin.idResidence) throw new AppError(403, "Aucune résidence attribuée");
+  const item = await configService.addPaymentMode(String(admin.idResidence), req.body);
+  res.status(201).json({ ok: true, item });
+});
+
+export const togglePaymentMode = asyncHandler(async (req, res) => {
+  const admin = await loadActiveAdmin(req.user!.sub);
+  if (!admin.idResidence) throw new AppError(403, "Aucune résidence attribuée");
+  const item = await configService.togglePaymentMode(String(admin.idResidence), req.params.id as string);
+  res.status(200).json({ ok: true, item });
+});
+
+export const updatePaymentMode = asyncHandler(async (req, res) => {
+  const admin = await loadActiveAdmin(req.user!.sub);
+  if (!admin.idResidence) throw new AppError(403, "Aucune résidence attribuée");
+  const item = await configService.updatePaymentMode(String(admin.idResidence), req.params.id as string, req.body);
+  res.status(200).json({ ok: true, item });
+});
+
+export const deletePaymentMode = asyncHandler(async (req, res) => {
+  const admin = await loadActiveAdmin(req.user!.sub);
+  if (!admin.idResidence) throw new AppError(403, "Aucune résidence attribuée");
+  await configService.deletePaymentMode(String(admin.idResidence), req.params.id as string);
+  res.status(200).json({ ok: true });
+});

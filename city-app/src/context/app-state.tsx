@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 
-import type { AppNotification, ChatMessage, Paiement, Post, Resident, Souscription } from '@/data/types';
+import type { AppNotification, ChatMessage, NotificationKind, Paiement, Post, Resident, Souscription } from '@/data/types';
+import { currentResident, posts as mockPosts, chatMessages as mockMessages, notifications as mockNotifications, paiements as mockPaiements, souscription as mockSouscription } from '@/data/mock';
 import { getAppSocket, getSocketUrl, loadSavedServerUrl, setSocketToken } from '@/utils/socket';
 import {
   registerForPushNotificationsAsync,
@@ -25,10 +26,17 @@ type AppState = {
   signOut: () => void;
   updateProfile: (update: ProfileUpdate) => Promise<void>;
   changePassword: (current: string, next: string) => Promise<void>;
-  publishPost: (text: string) => void;
+  publishPost: (
+    text: string,
+    options?: {
+      imageUrl?: string;
+      event?: { titre: string; date: string; lieu: string; imageUrl?: string };
+    }
+  ) => void;
+  deletePost: (postId: string) => void;
   toggleLike: (postId: string) => void;
   addComment: (postId: string, text: string) => void;
-  sendMessage: (text: string) => void;
+  sendMessage: (text: string, channelId?: string, recipientId?: string) => void;
   markRead: (id: string) => void;
   markAllRead: () => void;
 };
@@ -73,12 +81,12 @@ const defaultSouscription: Souscription = {
 
 export function AppStateProvider({ children }: { children: ReactNode }) {
   const [signedIn, setSignedIn] = useState(false);
-  const [resident, setResident] = useState<Resident>(defaultResident);
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [notifications, setNotifications] = useState<AppNotification[]>([]);
-  const [paiements, setPaiements] = useState<Paiement[]>([]);
-  const [souscription, setSouscription] = useState<Souscription>(defaultSouscription);
+  const [resident, setResident] = useState<Resident>(currentResident);
+  const [posts, setPosts] = useState<Post[]>(mockPosts);
+  const [messages, setMessages] = useState<ChatMessage[]>(mockMessages);
+  const [notifications, setNotifications] = useState<AppNotification[]>(mockNotifications);
+  const [paiements, setPaiements] = useState<Paiement[]>(mockPaiements);
+  const [souscription, setSouscription] = useState<Souscription>(mockSouscription);
   const [activeBanner, setActiveBanner] = useState<AppNotification | null>(null);
   const bannerTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pushTokenRef = useRef<string | null>(null);
@@ -98,24 +106,31 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
 
   // Maintain residence room joining across socket connections & reconnects
   useEffect(() => {
-    if (!resident.idResidence) return;
     const socket = getAppSocket();
-    const joinRoom = () => {
+    const joinRooms = () => {
       if (resident.idResidence) {
         socket.emit('join_residence', resident.idResidence);
-        console.log('[AppState] Socket connected/reconnected, joined room for residence:', resident.idResidence);
       }
+      const bId = resident.idBatiment || resident.logement?.batiment;
+      if (bId) {
+        socket.emit('join_batiment', bId);
+      }
+      const uId = resident.id || 'u-1';
+      if (uId) {
+        socket.emit('join_user', uId);
+      }
+      console.log('[AppState] Socket rooms joined:', { residence: resident.idResidence, batiment: bId, user: uId });
     };
 
     if (socket.connected) {
-      joinRoom();
+      joinRooms();
     }
-    socket.on('connect', joinRoom);
+    socket.on('connect', joinRooms);
 
     return () => {
-      socket.off('connect', joinRoom);
+      socket.off('connect', joinRooms);
     };
-  }, [resident.idResidence]);
+  }, [resident.idResidence, resident.idBatiment, resident.logement?.batiment, resident.id]);
 
   useEffect(() => {
     const socket = getAppSocket();
@@ -126,15 +141,18 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       detail?: string;
       contenu?: string;
       isAlerte?: boolean;
+      kind?: NotificationKind;
       idResidence?: string;
     }) => {
       console.log('[AppState] Received new_notification:', data);
       const textDetail = data.detail || data.contenu || '';
       const notifId = data.id || newId('notif');
 
+      const notifKind: NotificationKind = data.kind || (data.isAlerte ? 'alerte' : 'annonce');
+
       const newNotif: AppNotification = {
         id: notifId,
-        kind: data.isAlerte ? 'alerte' : 'annonce',
+        kind: notifKind,
         titre: data.titre,
         detail: textDetail,
         lu: false,
@@ -294,6 +312,13 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       if (acc.idResidence) {
         socket.emit('join_residence', acc.idResidence);
       }
+      const bId = acc.idBatiment || acc.batiment?.nom;
+      if (bId) {
+        socket.emit('join_batiment', bId);
+      }
+      if (acc.id) {
+        socket.emit('join_user', acc.id);
+      }
 
       // Load real announcements from the server
       try {
@@ -381,18 +406,24 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       await wait(600);
     },
 
-    publishPost(text) {
+    publishPost(text, options) {
       const post: Post = {
         id: newId('post'),
         author: meAuthor,
         kind: 'post',
         text,
+        imageUrl: options?.imageUrl,
+        event: options?.event,
         createdAt: new Date().toISOString(),
         likes: 0,
         liked: false,
         comments: [],
       };
       setPosts((list) => [post, ...list]);
+    },
+
+    deletePost(postId) {
+      setPosts((list) => list.filter((p) => p.id !== postId));
     },
 
     toggleLike(postId) {
@@ -404,16 +435,23 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       setPosts((list) => list.map((p) => (p.id === postId ? { ...p, comments: [...p.comments, comment] } : p)));
     },
 
-    sendMessage(text) {
+    sendMessage(text, channelId = 'batiment', recipientId) {
       const msg: ChatMessage = {
         id: newId('m'),
         author: meAuthor,
         text,
+        channelId,
+        recipientId,
+        batimentId: resident.idBatiment || resident.logement?.batiment,
         createdAt: new Date().toISOString(),
       };
       setMessages((list) => [...list, msg]);
       const socket = getAppSocket();
-      if (resident.idResidence) {
+      if (recipientId) {
+        socket.emit('send_message', { recipientId, message: msg });
+      } else if (channelId === 'batiment' && (resident.idBatiment || resident.logement?.batiment)) {
+        socket.emit('send_message', { idBatiment: resident.idBatiment || resident.logement?.batiment, message: msg });
+      } else if (resident.idResidence) {
         socket.emit('send_message', { idResidence: resident.idResidence, message: msg });
       }
     },

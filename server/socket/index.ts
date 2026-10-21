@@ -19,6 +19,7 @@ export interface NotificationEventPayload {
   idResidence: string;
   webUrl: string;
   mobileRoute: string;
+  kind?: "annonce" | "alerte" | "maintenance" | "paiement" | "chat";
 }
 
 export function getIO(): Server | null {
@@ -27,10 +28,8 @@ export function getIO(): Server | null {
 
 export function broadcastNotification(idResidence: string, payload: NotificationEventPayload): void {
   if (!ioInstance) return;
-  // Send to the specific residence room and as a fallback broadcast
   console.log(`[Socket] Broadcasting notification to residence:${idResidence}:`, payload.titre);
   ioInstance.to(`residence:${idResidence}`).emit("new_notification", payload);
-  ioInstance.emit("new_notification", payload);
 }
 
 export function initSocket(server: HttpServer): Server {
@@ -83,8 +82,14 @@ export function initSocket(server: HttpServer): Server {
       void socket.join(`residence:${user.idResidence}`);
       console.log(`[Socket] Client ${socket.id} auto-joined residence:${user.idResidence}`);
     }
+    if (user?.idBatiment) {
+      void socket.join(`batiment:${user.idBatiment}`);
+    }
+    if (user?.sub) {
+      void socket.join(`user:${user.sub}`);
+    }
 
-    socket.on("authenticate", (token: string, cb?: (res: { ok: boolean; idResidence?: string }) => void) => {
+    socket.on("authenticate", (token: string, cb?: (res: { ok: boolean; idResidence?: string; idBatiment?: string; userId?: string }) => void) => {
       if (typeof token === "string" && token.length > 0) {
         try {
           const authUser = verifyAccessToken(token);
@@ -93,7 +98,13 @@ export function initSocket(server: HttpServer): Server {
             void socket.join(`residence:${authUser.idResidence}`);
             console.log(`[Socket] Client ${socket.id} authenticated and joined residence:${authUser.idResidence}`);
           }
-          if (typeof cb === "function") cb({ ok: true, idResidence: authUser.idResidence });
+          if (authUser.idBatiment) {
+            void socket.join(`batiment:${authUser.idBatiment}`);
+          }
+          if (authUser.sub) {
+            void socket.join(`user:${authUser.sub}`);
+          }
+          if (typeof cb === "function") cb({ ok: true, idResidence: authUser.idResidence, idBatiment: authUser.idBatiment, userId: authUser.sub });
         } catch (err) {
           console.warn(`[Socket] Authentication failed for ${socket.id}:`, err);
           if (typeof cb === "function") cb({ ok: false });
@@ -109,16 +120,41 @@ export function initSocket(server: HttpServer): Server {
       }
     });
 
+    socket.on("join_batiment", (batimentId: string) => {
+      if (typeof batimentId === "string" && batimentId.trim().length > 0) {
+        const room = `batiment:${batimentId.trim()}`;
+        void socket.join(room);
+        console.log(`[Socket] Client ${socket.id} joined room ${room}`);
+      }
+    });
+
+    socket.on("join_user", (userId: string) => {
+      if (typeof userId === "string" && userId.trim().length > 0) {
+        const room = `user:${userId.trim()}`;
+        void socket.join(room);
+      }
+    });
+
     socket.on("leave_residence", (residenceId: string) => {
       if (typeof residenceId === "string" && residenceId.trim().length > 0) {
         void socket.leave(`residence:${residenceId.trim()}`);
       }
     });
 
-    socket.on("send_message", (data: { idResidence?: string; message: unknown }) => {
-      const residenceId = data?.idResidence || socket.data.user?.idResidence;
-      if (residenceId && data?.message) {
-        io.to(`residence:${residenceId}`).emit("new_chat_message", data.message);
+    socket.on("send_message", (data: { idResidence?: string; idBatiment?: string; recipientId?: string; message: unknown }) => {
+      if (!data?.message) return;
+      if (data.recipientId) {
+        // Individual private chat: send to recipient and sender
+        io.to(`user:${data.recipientId}`).emit("new_chat_message", data.message);
+        socket.emit("new_chat_message", data.message);
+      } else if (data.idBatiment) {
+        // Building group chat: send to residents of the same bâtiment
+        io.to(`batiment:${data.idBatiment}`).emit("new_chat_message", data.message);
+      } else {
+        const residenceId = data?.idResidence || socket.data.user?.idResidence;
+        if (residenceId) {
+          io.to(`residence:${residenceId}`).emit("new_chat_message", data.message);
+        }
       }
     });
   });

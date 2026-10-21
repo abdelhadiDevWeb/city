@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, FileSignature, FileText, FolderOpen, Upload } from "lucide-react";
+import { Download, FileSignature, FileText, FolderOpen, Plus, Upload } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 import {
   createDocument,
@@ -35,7 +35,11 @@ import {
 
 type TabId = "contrats" | "documents";
 
-const CONTRAT_TONE: Record<Contrat["statut"], Tone> = { Actif: "success", "Expire bientôt": "warning", Expiré: "danger" };
+const CONTRAT_TONE: Record<Contrat["statut"], Tone> = {
+  Actif: "success",
+  "Expire bientôt": "warning",
+  Expiré: "danger",
+};
 
 export default function DocumentsPage() {
   const notify = useToast();
@@ -43,9 +47,16 @@ export default function DocumentsPage() {
   const [error, setError] = useState<string | null>(null);
   const [version, setVersion] = useState(0);
   const [tab, setTab] = useState<TabId>("contrats");
-  const [uploading, setUploading] = useState(false);
+
+  // Creation modals
+  const [addingContrat, setAddingContrat] = useState(false);
+  const [addingDoc, setAddingDoc] = useState(false);
+
+  // Edit modals
   const [editingContrat, setEditingContrat] = useState<Contrat | null>(null);
   const [editingDoc, setEditingDoc] = useState<DocumentResidence | null>(null);
+
+  // Delete modal
   const [deletingItem, setDeletingItem] = useState<{ id: string; name: string } | null>(null);
 
   useEffect(() => {
@@ -72,15 +83,47 @@ export default function DocumentsPage() {
     { id: "documents", label: "Documents résidence", icon: FileText, count: documentsResidence.length },
   ];
 
-  function handleDownload(nom: string) {
-    notify(`Téléchargement du document « ${nom} » en cours...`);
+  function handleDownload(nom: string, details?: string) {
+    try {
+      const content = `RÉSIDENCE LES PALMIERS - ARCHIVES DU SYNDIC
+================================================
+Document : ${nom}
+Date d'édition : ${new Date().toLocaleString("fr-FR")}
+Statut : Certifié conforme aux registres de la copropriété
+${details ? `\nSpécifications :\n${details}\n` : ""}
+Ce fichier atteste de la validité légale et comptable du document archivé sous la gestion City.
+================================================
+`;
+      const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = window.document.createElement("a");
+      link.href = url;
+      link.download = `${nom.toLowerCase().replace(/[^a-z0-9à-ÿ]/gi, "_")}.txt`;
+      window.document.body.appendChild(link);
+      link.click();
+      window.document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      notify(`Document « ${nom} » téléchargé.`);
+    } catch {
+      notify(`Téléchargement de « ${nom} » en cours...`);
+    }
   }
 
   const contratColumns: Column<Contrat>[] = [
-    { header: "Objet", cell: (c) => <span className="font-semibold text-ink">{c.objet}</span> },
-    { header: "Prestataire", cell: (c) => c.prestataire },
-    { header: "Début", cell: (c) => <span className="text-stone-500">{c.debut}</span> },
-    { header: "Fin", cell: (c) => <span className="text-stone-500">{c.fin}</span> },
+    {
+      header: "Objet du contrat",
+      cell: (c) => (
+        <span className="flex items-center gap-2.5">
+          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-orange-50 text-brand">
+            <FileSignature className="h-3.5 w-3.5" aria-hidden />
+          </span>
+          <span className="font-semibold text-ink">{c.objet}</span>
+        </span>
+      ),
+    },
+    { header: "Prestataire", cell: (c) => <span className="font-medium text-stone-700">{c.prestataire}</span> },
+    { header: "Date Début", cell: (c) => <span className="text-stone-500">{c.debut}</span> },
+    { header: "Date Fin", cell: (c) => <span className="text-stone-500">{c.fin}</span> },
     { header: "Statut", cell: (c) => <Pill tone={CONTRAT_TONE[c.statut]}>{c.statut}</Pill> },
     { header: "Montant annuel", align: "right", cell: (c) => <Mono strong>{formatDZD(c.montantAnnuel)}</Mono> },
     {
@@ -90,7 +133,7 @@ export default function DocumentsPage() {
         <div className="flex items-center justify-end gap-2">
           <button
             type="button"
-            onClick={() => handleDownload(c.objet)}
+            onClick={() => handleDownload(c.objet, `Prestataire: ${c.prestataire} | Montant annuel: ${c.montantAnnuel} DZD | Validité: ${c.debut} au ${c.fin}`)}
             className={button("secondary", "sm")}
           >
             Consulter
@@ -127,7 +170,7 @@ export default function DocumentsPage() {
         <div className="flex items-center justify-end gap-2">
           <button
             type="button"
-            onClick={() => handleDownload(d.nom)}
+            onClick={() => handleDownload(d.nom, `Catégorie: ${d.categorie} | Format: ${d.format} | Taille: ${d.taille} | Date dépôt: ${d.ajouteLe}`)}
             className={button("secondary", "sm")}
           >
             <Download className="h-3.5 w-3.5" aria-hidden />
@@ -147,12 +190,27 @@ export default function DocumentsPage() {
       <PageHeader
         icon={FolderOpen}
         title="Documents & Contrats"
-        subtitle="Contrats des prestataires, règlement intérieur, procès-verbaux et documents financiers"
+        subtitle="Contrats des prestataires, règlement intérieur, procès-verbaux d'AG et pièces officielles"
         actions={
-          <button type="button" onClick={() => setUploading(true)} className={button("primary")}>
-            <Upload className="h-4 w-4" aria-hidden />
-            Téléverser Document
-          </button>
+          tab === "contrats" ? (
+            <button
+              type="button"
+              onClick={() => setAddingContrat(true)}
+              className={button("primary")}
+            >
+              <Plus className="h-4 w-4" aria-hidden />
+              Nouveau Contrat Prestataire
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setAddingDoc(true)}
+              className={button("primary")}
+            >
+              <Plus className="h-4 w-4" aria-hidden />
+              Déposer Document Résidence
+            </button>
+          )
         }
       />
 
@@ -166,22 +224,51 @@ export default function DocumentsPage() {
         <>
           <Tabs tabs={tabs} active={tab} onChange={setTab} />
 
-          {tab === "contrats" && <DataTable columns={contratColumns} rows={contrats} rowKey={(c) => c.id} empty="Aucun contrat enregistré." />}
-          {tab === "documents" && <DataTable columns={documentColumns} rows={documentsResidence} rowKey={(d) => d.id} empty="Aucun document enregistré." />}
+          {tab === "contrats" && (
+            <DataTable
+              columns={contratColumns}
+              rows={contrats}
+              rowKey={(c) => c.id}
+              empty="Aucun contrat de prestataire enregistré pour le moment."
+            />
+          )}
+
+          {tab === "documents" && (
+            <DataTable
+              columns={documentColumns}
+              rows={documentsResidence}
+              rowKey={(d) => d.id}
+              empty="Aucun document officiel déposé pour la résidence."
+            />
+          )}
         </>
       )}
 
-      {uploading && (
-        <NouveauDocumentModal
-          onClose={() => setUploading(false)}
+      {/* Modal: Nouveau Contrat */}
+      {addingContrat && (
+        <NouveauContratModal
+          onClose={() => setAddingContrat(false)}
           onCreated={() => {
-            setUploading(false);
+            setAddingContrat(false);
             setVersion((v) => v + 1);
-            notify("Document enregistré avec succès.");
+            notify("Nouveau contrat prestataire enregistré avec succès.");
           }}
         />
       )}
 
+      {/* Modal: Déposer Document */}
+      {addingDoc && (
+        <NouveauDocumentModal
+          onClose={() => setAddingDoc(false)}
+          onCreated={() => {
+            setAddingDoc(false);
+            setVersion((v) => v + 1);
+            notify("Document de la résidence ajouté avec succès.");
+          }}
+        />
+      )}
+
+      {/* Modal: Modification Contrat */}
       {editingContrat && (
         <EditContratModal
           contrat={editingContrat}
@@ -194,6 +281,7 @@ export default function DocumentsPage() {
         />
       )}
 
+      {/* Modal: Modification Document */}
       {editingDoc && (
         <EditDocumentModal
           document={editingDoc}
@@ -206,11 +294,12 @@ export default function DocumentsPage() {
         />
       )}
 
+      {/* Modal: Suppression */}
       <ConfirmModal
         open={Boolean(deletingItem)}
         title="Confirmer la suppression"
-        message={`Êtes-vous sûr de vouloir supprimer ${deletingItem?.name} ? Cette action est irréversible.`}
-        confirmLabel="Supprimer"
+        message={`Êtes-vous certain de vouloir supprimer ${deletingItem?.name} ? Cette action est irréversible.`}
+        confirmLabel="Supprimer définitivement"
         onConfirm={async () => {
           if (!deletingItem) return;
           await deleteDocument(deletingItem.id);
@@ -224,6 +313,98 @@ export default function DocumentsPage() {
   );
 }
 
+function NouveauContratModal({
+  onClose,
+  onCreated,
+}: {
+  onClose: () => void;
+  onCreated: () => void;
+}) {
+  const { submitting, error, run } = useSubmit();
+
+  function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    const objet = formText(form, "objet");
+    const prestataire = formText(form, "prestataire");
+    const montantAnnuel = Number(form.get("montantAnnuel") ?? 0);
+    const debut = formText(form, "debut") || "01 Janvier 2026";
+    const fin = formText(form, "fin") || "31 Décembre 2026";
+
+    void run(async () => {
+      await createDocument({
+        typeDoc: "contrat",
+        nom: objet,
+        objet,
+        prestataire,
+        montantAnnuel,
+        debut,
+        fin,
+        categorie: "Contrat",
+        format: "PDF",
+        taille: "2.1 Mo",
+      });
+      onCreated();
+    });
+  }
+
+  return (
+    <Modal
+      title="Nouveau Contrat Prestataire"
+      description="Enregistrement d'un contrat de maintenance ou de service pour la résidence"
+      onClose={onClose}
+    >
+      <form onSubmit={onSubmit} className="space-y-4">
+        <Field
+          label="Objet du contrat"
+          name="objet"
+          required
+          placeholder="Ex: Maintenance ascenseurs Schindler & Otis"
+          autoFocus
+        />
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field
+            label="Nom du prestataire / Entreprise"
+            name="prestataire"
+            required
+            placeholder="Ex: Otis Algérie SARL"
+          />
+          <Field
+            label="Montant annuel (DZD)"
+            name="montantAnnuel"
+            type="number"
+            defaultValue={180000}
+            min={0}
+            step={1000}
+            required
+          />
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field
+            label="Date de prise d'effet (Début)"
+            name="debut"
+            defaultValue="01 Jan 2026"
+            placeholder="Ex: 01 Jan 2026"
+            required
+          />
+          <Field
+            label="Date d'échéance (Fin)"
+            name="fin"
+            defaultValue="31 Déc 2026"
+            placeholder="Ex: 31 Déc 2026"
+            required
+          />
+        </div>
+
+        <FormError error={error} />
+        <ModalActions submitting={submitting} label="Enregistrer le contrat" onCancel={onClose} />
+      </form>
+    </Modal>
+  );
+}
+
 function NouveauDocumentModal({
   onClose,
   onCreated,
@@ -232,58 +413,70 @@ function NouveauDocumentModal({
   onCreated: () => void;
 }) {
   const { submitting, error, run } = useSubmit();
-  const [typeDoc, setTypeDoc] = useState<"contrat" | "document">("document");
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
+    const nom = formText(form, "nom");
+    const categorie = formText(form, "categorie") || "Règlement";
+    const format = formText(form, "format") || "PDF";
+    const taille = formText(form, "taille") || "1.5 Mo";
+
     void run(async () => {
       await createDocument({
-        typeDoc,
-        nom: formText(form, "nom"),
-        objet: formText(form, "objet"),
-        prestataire: formText(form, "prestataire"),
-        categorie: formText(form, "categorie") || "Général",
-        montantAnnuel: Number(form.get("montantAnnuel") ?? 0),
-        debut: formText(form, "debut") || undefined,
-        fin: formText(form, "fin") || undefined,
-        format: formText(form, "format") || "PDF",
+        typeDoc: "document",
+        nom,
+        categorie,
+        format,
+        taille,
       });
       onCreated();
     });
   }
 
   return (
-    <Modal title="Ajouter un document" description="Ajout d'un contrat ou d'une pièce réglementaire" onClose={onClose}>
+    <Modal
+      title="Déposer un Document de la Résidence"
+      description="Archivage de procès-verbaux d'AG, règlements de copropriété, diagnostics et bilans"
+      onClose={onClose}
+    >
       <form onSubmit={onSubmit} className="space-y-4">
-        <SelectField label="Type de document" value={typeDoc} onChange={(e) => setTypeDoc(e.target.value as "contrat" | "document")}>
-          <option value="document">Document réglementaire / PV / Bilan</option>
-          <option value="contrat">Contrat prestataire de service</option>
-        </SelectField>
+        <Field
+          label="Titre / Nom du document"
+          name="nom"
+          required
+          placeholder="Ex: Procès-Verbal AG Ordinaire 2025"
+          autoFocus
+        />
 
-        <Field label="Titre / Nom du document" name="nom" required placeholder="Ex: Règlement intérieur, Facture Sonelgaz" autoFocus />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <SelectField label="Catégorie du document" name="categorie" defaultValue="Règlement">
+            <option value="Règlement de copropriété">Règlement de copropriété</option>
+            <option value="Procès-Verbal AG">Procès-Verbal AG</option>
+            <option value="Diagnostic Technique">Diagnostic Technique</option>
+            <option value="Assurance Immeuble">Assurance Immeuble</option>
+            <option value="Bilan Comptable & Audit">Bilan Comptable & Audit</option>
+            <option value="Plans d'architecture">Plans d'architecture</option>
+            <option value="Autre">Autre</option>
+          </SelectField>
 
-        {typeDoc === "contrat" ? (
-          <>
-            <Field label="Objet du contrat" name="objet" required placeholder="Ex: Maintenance ascenseurs Otis" />
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Prestataire" name="prestataire" required placeholder="Ex: Otis Algérie" />
-              <Field label="Montant annuel (DZD)" name="montantAnnuel" type="number" defaultValue={100000} />
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Date début" name="debut" placeholder="Ex: 01 Jan 2026" />
-              <Field label="Date fin" name="fin" placeholder="Ex: 31 Déc 2026" />
-            </div>
-          </>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Catégorie" name="categorie" defaultValue="Règlement" placeholder="Ex: Règlement, PV, Technique" />
-            <Field label="Format" name="format" defaultValue="PDF" placeholder="PDF, DOCX" />
-          </div>
-        )}
+          <SelectField label="Format du fichier" name="format" defaultValue="PDF">
+            <option value="PDF">Document PDF (.pdf)</option>
+            <option value="DOCX">Document Word (.docx)</option>
+            <option value="XLSX">Tableur Excel (.xlsx)</option>
+            <option value="JPG/PNG">Scan / Image (.jpg, .png)</option>
+          </SelectField>
+        </div>
+
+        <Field
+          label="Taille estimée du fichier"
+          name="taille"
+          defaultValue="1.8 Mo"
+          placeholder="Ex: 2.4 Mo, 650 Ko"
+        />
 
         <FormError error={error} />
-        <ModalActions submitting={submitting} label="Ajouter le document" onCancel={onClose} />
+        <ModalActions submitting={submitting} label="Déposer le document" onCancel={onClose} />
       </form>
     </Modal>
   );
@@ -317,14 +510,14 @@ function EditContratModal({
   }
 
   return (
-    <Modal title="Modifier le contrat" description={`Modification du contrat ${contrat.objet}`} onClose={onClose}>
+    <Modal title="Modifier le contrat" description={`Mise à jour des clauses du contrat ${contrat.objet}`} onClose={onClose}>
       <form onSubmit={onSubmit} className="space-y-4">
         <Field label="Objet du contrat" name="objet" defaultValue={contrat.objet} required autoFocus />
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Prestataire" name="prestataire" defaultValue={contrat.prestataire} required />
           <Field label="Montant annuel (DZD)" name="montantAnnuel" type="number" defaultValue={contrat.montantAnnuel} required />
         </div>
-        <SelectField label="Statut" name="statut" defaultValue={contrat.statut}>
+        <SelectField label="Statut du contrat" name="statut" defaultValue={contrat.statut}>
           <option value="Actif">Actif</option>
           <option value="Expire bientôt">Expire bientôt</option>
           <option value="Expiré">Expiré</option>
@@ -359,16 +552,35 @@ function EditDocumentModal({
       await updateDocument(document.id, {
         nom: formText(form, "nom"),
         categorie: formText(form, "categorie"),
+        format: formText(form, "format"),
+        taille: formText(form, "taille"),
       });
       onUpdated();
     });
   }
 
   return (
-    <Modal title="Modifier le document" description={`Modification de « ${document.nom} »`} onClose={onClose}>
+    <Modal title="Modifier le document" description={`Mise à jour de « ${document.nom} »`} onClose={onClose}>
       <form onSubmit={onSubmit} className="space-y-4">
         <Field label="Titre / Nom du document" name="nom" defaultValue={document.nom} required autoFocus />
-        <Field label="Catégorie" name="categorie" defaultValue={document.categorie} required />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <SelectField label="Catégorie" name="categorie" defaultValue={document.categorie}>
+            <option value="Règlement de copropriété">Règlement de copropriété</option>
+            <option value="Procès-Verbal AG">Procès-Verbal AG</option>
+            <option value="Diagnostic Technique">Diagnostic Technique</option>
+            <option value="Assurance Immeuble">Assurance Immeuble</option>
+            <option value="Bilan Comptable & Audit">Bilan Comptable & Audit</option>
+            <option value="Plans d'architecture">Plans d'architecture</option>
+            <option value="Autre">Autre</option>
+          </SelectField>
+          <SelectField label="Format" name="format" defaultValue={document.format}>
+            <option value="PDF">PDF</option>
+            <option value="DOCX">DOCX</option>
+            <option value="XLSX">XLSX</option>
+            <option value="JPG/PNG">JPG/PNG</option>
+          </SelectField>
+        </div>
+        <Field label="Taille" name="taille" defaultValue={document.taille} placeholder="Ex: 1.5 Mo" />
 
         <FormError error={error} />
         <ModalActions submitting={submitting} label="Enregistrer les modifications" onCancel={onClose} />
@@ -376,4 +588,3 @@ function EditDocumentModal({
     </Modal>
   );
 }
-

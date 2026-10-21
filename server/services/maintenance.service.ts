@@ -1,6 +1,8 @@
 import mongoose from "mongoose";
 import { Incident } from "../models/Incident";
 import { AppError } from "../utils/AppError";
+import { broadcastNotification } from "../socket";
+import { dispatchMobilePushForResidence } from "./push.service";
 
 export async function getMaintenance(idResidence: string) {
   const resId = new mongoose.Types.ObjectId(idResidence);
@@ -60,6 +62,9 @@ export async function createIncident(
     prestataire?: string;
     isPanneEquipement?: boolean;
     equipement?: string;
+    cout?: number;
+    statut?: "Nouveau" | "En cours" | "Résolu" | "Planifié";
+    clotureLe?: string;
   },
 ) {
   const now = new Date().toLocaleDateString("fr-FR");
@@ -72,10 +77,42 @@ export async function createIncident(
     signaleLe: now,
     priorite: input.priorite,
     prestataire: input.prestataire || "À désigner",
-    statut: "Nouveau",
+    statut: input.statut || "Nouveau",
+    cout: input.cout || 0,
     isPanneEquipement: input.isPanneEquipement ?? false,
     equipement: input.equipement || "",
+    clotureLe: input.clotureLe || (input.statut === "Résolu" ? now : undefined),
   });
+  const isAlerte = input.priorite === "Haute";
+  const notifTitle = isAlerte ? `🚨 [Maintenance Urgente] ${input.titre}` : `🔧 [Maintenance] ${input.titre}`;
+  const notifDetail = `${input.lieu} · Priorité: ${input.priorite}${input.prestataire && input.prestataire !== "À désigner" ? ` · Prestataire: ${input.prestataire}` : ""}`;
+
+  // 1. In-app real-time Socket.IO notification (Web & open mobile app)
+  broadcastNotification(String(idResidence), {
+    id: String(incident._id),
+    titre: notifTitle,
+    detail: notifDetail,
+    isAlerte,
+    niveau: isAlerte ? "critique" : input.priorite === "Moyenne" ? "attention" : "info",
+    audience: "Tous les résidents",
+    canaux: ["Application"],
+    date: now,
+    idResidence: String(idResidence),
+    webUrl: "/dashboard/maintenance",
+    mobileRoute: "/notifications",
+    kind: "maintenance",
+  });
+
+  // 2. Mobile push notification out of the application (Lock screen & Notification center)
+  void dispatchMobilePushForResidence(String(idResidence), {
+    id: String(incident._id),
+    titre: notifTitle,
+    detail: notifDetail,
+    isAlerte,
+    kind: "maintenance",
+    route: "/notifications",
+  });
+
   return incident.toJSON();
 }
 

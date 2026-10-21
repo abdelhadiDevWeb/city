@@ -99,3 +99,131 @@ export async function deleteChargeType(idResidence: string, chargeId: string) {
   await config.save();
   return { ok: true };
 }
+
+// -------------------------------------------------------------
+// TYPES D'INCIDENTS
+// -------------------------------------------------------------
+export async function addIncidentType(
+  idResidence: string,
+  input: { nom: string; delaiIntervention: string; prestataire: string },
+) {
+  const resId = new mongoose.Types.ObjectId(idResidence);
+  let config = await ConfigResidence.findOne({ idResidence: resId });
+  if (!config) {
+    await getConfig(idResidence);
+    config = await ConfigResidence.findOne({ idResidence: resId });
+  }
+  if (!config) return;
+  const newItem: TypeIncidentItem = {
+    id: `inc_${Date.now()}`,
+    nom: input.nom,
+    delaiIntervention: input.delaiIntervention || "24h",
+    prestataire: input.prestataire || "À désigner",
+    actif: true,
+  };
+  config.typesIncidents.push(newItem);
+  await config.save();
+  return newItem;
+}
+
+export async function toggleIncidentType(idResidence: string, incidentId: string) {
+  const resId = new mongoose.Types.ObjectId(idResidence);
+  const config = await ConfigResidence.findOne({ idResidence: resId });
+  if (!config) return;
+  const item = config.typesIncidents.find((i) => i.id === incidentId);
+  if (item) {
+    item.actif = !item.actif;
+    await config.save();
+  }
+  return item;
+}
+
+export async function updateIncidentType(
+  idResidence: string,
+  incidentId: string,
+  input: Partial<{ nom: string; delaiIntervention: string; prestataire: string; actif: boolean }>,
+) {
+  const resId = new mongoose.Types.ObjectId(idResidence);
+  const config = await ConfigResidence.findOne({ idResidence: resId });
+  if (!config) throw new AppError(404, "Configuration introuvable");
+  const item = config.typesIncidents.find((i) => i.id === incidentId);
+  if (!item) throw new AppError(404, "Type d'incident introuvable");
+  if (input.nom !== undefined) item.nom = input.nom;
+  if (input.delaiIntervention !== undefined) item.delaiIntervention = input.delaiIntervention;
+  if (input.prestataire !== undefined) item.prestataire = input.prestataire;
+  if (input.actif !== undefined) item.actif = input.actif;
+  await config.save();
+  return item;
+}
+
+export async function deleteIncidentType(idResidence: string, incidentId: string) {
+  const resId = new mongoose.Types.ObjectId(idResidence);
+  const config = await ConfigResidence.findOne({ idResidence: resId });
+  if (!config) throw new AppError(404, "Configuration introuvable");
+  config.typesIncidents = config.typesIncidents.filter((i) => i.id !== incidentId);
+  await config.save();
+  return { ok: true };
+}
+
+// -------------------------------------------------------------
+// MODES DE PAIEMENT
+// -------------------------------------------------------------
+export async function addPaymentMode(
+  idResidence: string,
+  input: { nom: string; frais: string },
+) {
+  const resId = new mongoose.Types.ObjectId(idResidence);
+  let config = await ConfigResidence.findOne({ idResidence: resId });
+  if (!config) {
+    await getConfig(idResidence);
+    config = await ConfigResidence.findOne({ idResidence: resId });
+  }
+  if (!config) return;
+  const newItem: ModePaiementItem = {
+    id: `pay_${Date.now()}`,
+    nom: input.nom,
+    frais: input.frais || "Sans frais",
+    actif: true,
+  };
+  config.modesPaiement.push(newItem);
+  await config.save();
+  return newItem;
+}
+
+export async function togglePaymentMode(idResidence: string, paymentId: string) {
+  const resId = new mongoose.Types.ObjectId(idResidence);
+  const config = await ConfigResidence.findOne({ idResidence: resId });
+  if (!config) return;
+  const item = config.modesPaiement.find((p) => p.id === paymentId);
+  if (item) {
+    item.actif = !item.actif;
+    await config.save();
+  }
+  return item;
+}
+
+export async function updatePaymentMode(
+  idResidence: string,
+  paymentId: string,
+  input: Partial<{ nom: string; frais: string; actif: boolean }>,
+) {
+  const resId = new mongoose.Types.ObjectId(idResidence);
+  const config = await ConfigResidence.findOne({ idResidence: resId });
+  if (!config) throw new AppError(404, "Configuration introuvable");
+  const item = config.modesPaiement.find((p) => p.id === paymentId);
+  if (!item) throw new AppError(404, "Mode de paiement introuvable");
+  if (input.nom !== undefined) item.nom = input.nom;
+  if (input.frais !== undefined) item.frais = input.frais;
+  if (input.actif !== undefined) item.actif = input.actif;
+  await config.save();
+  return item;
+}
+
+export async function deletePaymentMode(idResidence: string, paymentId: string) {
+  const resId = new mongoose.Types.ObjectId(idResidence);
+  const config = await ConfigResidence.findOne({ idResidence: resId });
+  if (!config) throw new AppError(404, "Configuration introuvable");
+  config.modesPaiement = config.modesPaiement.filter((p) => p.id !== paymentId);
+  await config.save();
+  return { ok: true };
+}

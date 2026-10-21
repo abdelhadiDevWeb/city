@@ -479,7 +479,6 @@ export function ActionGroup({
   onDelete,
   editLabel = "Modifier",
   deleteLabel = "Supprimer",
-  compact = false,
 }: {
   onEdit?: () => void;
   onDelete?: () => void;
@@ -495,10 +494,9 @@ export function ActionGroup({
           onClick={onEdit}
           title={editLabel}
           aria-label={editLabel}
-          className={button("secondary", "sm")}
+          className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-stone-200 bg-white text-stone-600 shadow-xs transition hover:border-stone-300 hover:bg-stone-50 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
         >
-          <Pencil className="h-3.5 w-3.5 text-stone-600" aria-hidden />
-          {!compact && <span>{editLabel}</span>}
+          <Pencil className="h-3.5 w-3.5" aria-hidden />
         </button>
       )}
       {onDelete && (
@@ -507,10 +505,9 @@ export function ActionGroup({
           onClick={onDelete}
           title={deleteLabel}
           aria-label={deleteLabel}
-          className={button("danger", "sm")}
+          className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-red-200 bg-red-50/70 text-red-600 shadow-xs transition hover:border-red-300 hover:bg-red-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
         >
-          <Trash2 className="h-3.5 w-3.5 text-red-600" aria-hidden />
-          {!compact && <span>{deleteLabel}</span>}
+          <Trash2 className="h-3.5 w-3.5" aria-hidden />
         </button>
       )}
     </div>

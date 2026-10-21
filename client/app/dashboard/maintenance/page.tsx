@@ -1,6 +1,6 @@
 "use client";
 
-import { Droplets, History, Siren, TriangleAlert, Wrench } from "lucide-react";
+import { Droplets, History, Plus, Siren, TriangleAlert, Wrench } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 import {
   createIncident,
@@ -16,7 +16,25 @@ import {
 } from "@/lib/maintenance-api";
 import { formatDZD } from "@/lib/format";
 import { ModalActions, SelectField, formText, useSubmit } from "../forms";
-import { ActionGroup, ConfirmModal, DataTable, Field, FormError, Modal, Mono, PageHeader, Pill, Tabs, button, card, describeError, useToast, type Column, type TabItem, type Tone } from "../ui";
+import {
+  ActionGroup,
+  ConfirmModal,
+  DataTable,
+  Field,
+  FormError,
+  Modal,
+  Mono,
+  PageHeader,
+  Pill,
+  Tabs,
+  button,
+  card,
+  describeError,
+  useToast,
+  type Column,
+  type TabItem,
+  type Tone,
+} from "../ui";
 
 type TabId = "incidents" | "pannes" | "historique";
 
@@ -28,7 +46,14 @@ export default function MaintenancePage() {
   const [error, setError] = useState<string | null>(null);
   const [version, setVersion] = useState(0);
   const [tab, setTab] = useState<TabId>("incidents");
+
+  // Creation modals
   const [reporting, setReporting] = useState(false);
+  const [addingPanne, setAddingPanne] = useState(false);
+  const [addingIntervention, setAddingIntervention] = useState(false);
+
+  // Edit / Close modals
+  const [cloturantIncident, setCloturantIncident] = useState<{ id: string; titre: string; prestataire: string } | null>(null);
   const [editingIncident, setEditingIncident] = useState<Incident | null>(null);
   const [deletingIncident, setDeletingIncident] = useState<{ id: string; titre?: string } | null>(null);
 
@@ -58,11 +83,10 @@ export default function MaintenancePage() {
     { id: "historique", label: "Historique", icon: History, count: historiqueInterventions.length },
   ];
 
-  async function handleChangerStatut(i: Incident) {
-    const nextStatut = i.statut === "Nouveau" ? "En cours" : "Résolu";
+  async function handlePrendreEnCharge(i: Incident) {
     try {
-      await updateIncidentStatut(i.id, nextStatut);
-      notify(`Incident « ${i.titre} » marqué comme : ${nextStatut}.`);
+      await updateIncidentStatut(i.id, "En cours");
+      notify(`Incident « ${i.titre} » pris en charge (En cours).`);
       setVersion((v) => v + 1);
     } catch (err) {
       notify(describeError(err).message);
@@ -83,19 +107,29 @@ export default function MaintenancePage() {
     { header: "Signalé le", cell: (i) => <span className="text-stone-500">{i.signaleLe}</span> },
     { header: "Priorité", cell: (i) => <Pill tone={PRIORITE_TONE[i.priorite]}>{i.priorite}</Pill> },
     { header: "Prestataire", cell: (i) => i.prestataire },
-    { header: "Statut", cell: (i) => <Pill tone="brand">{i.statut}</Pill> },
+    { header: "Statut", cell: (i) => <Pill tone={i.statut === "En cours" ? "warning" : "brand"}>{i.statut}</Pill> },
     {
       header: "Action",
       align: "right",
       cell: (i) => (
         <span className="inline-flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => void handleChangerStatut(i)}
-            className={button("secondary", "sm")}
-          >
-            {i.statut === "Nouveau" ? "Prendre en charge" : "Clôturer"}
-          </button>
+          {i.statut === "Nouveau" ? (
+            <button
+              type="button"
+              onClick={() => void handlePrendreEnCharge(i)}
+              className={button("secondary", "sm")}
+            >
+              Prendre en charge
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setCloturantIncident({ id: i.id, titre: i.titre, prestataire: i.prestataire })}
+              className={button("primary", "sm")}
+            >
+              Clôturer
+            </button>
+          )}
           <ActionGroup
             editLabel="Modifier incident"
             deleteLabel="Supprimer incident"
@@ -120,10 +154,17 @@ export default function MaintenancePage() {
         <span className="inline-flex items-center gap-2">
           <button
             type="button"
-            onClick={() => notify(`Notification envoyée au prestataire ${p.prestataire}.`)}
+            onClick={() => notify(`Notification de relance envoyée au prestataire ${p.prestataire}.`)}
             className={button("secondary", "sm")}
           >
             Relancer
+          </button>
+          <button
+            type="button"
+            onClick={() => setCloturantIncident({ id: p.id, titre: p.equipement, prestataire: p.prestataire })}
+            className={button("primary", "sm")}
+          >
+            Réparé
           </button>
           <ActionGroup
             editLabel="Modifier panne"
@@ -169,10 +210,26 @@ export default function MaintenancePage() {
         title="Maintenance & Pannes"
         subtitle="Incidents signalés, pannes d'équipement et suivi des interventions des prestataires"
         actions={
-          <button type="button" onClick={() => setReporting(true)} className={button("primary")}>
-            <TriangleAlert className="h-4 w-4" aria-hidden />
-            Signaler Incident
-          </button>
+          <>
+            {tab === "incidents" && (
+              <button type="button" onClick={() => setReporting(true)} className={button("primary")}>
+                <Plus className="h-4 w-4" aria-hidden />
+                Signaler Incident
+              </button>
+            )}
+            {tab === "pannes" && (
+              <button type="button" onClick={() => setAddingPanne(true)} className={button("primary")}>
+                <Plus className="h-4 w-4" aria-hidden />
+                Déclarer Panne d&apos;Équipement
+              </button>
+            )}
+            {tab === "historique" && (
+              <button type="button" onClick={() => setAddingIntervention(true)} className={button("primary")}>
+                <Plus className="h-4 w-4" aria-hidden />
+                Consigner Intervention Réalisée
+              </button>
+            )}
+          </>
         }
       />
 
@@ -197,21 +254,60 @@ export default function MaintenancePage() {
 
           {tab === "incidents" && <DataTable columns={incidentColumns} rows={incidents} rowKey={(i) => i.id} empty="Aucun incident actif." />}
           {tab === "pannes" && <DataTable columns={panneColumns} rows={pannesEquipement} rowKey={(p) => p.id} empty="Tous les équipements sont opérationnels." />}
-          {tab === "historique" && <DataTable columns={historiqueColumns} rows={historiqueInterventions} rowKey={(h) => h.id} />}
+          {tab === "historique" && <DataTable columns={historiqueColumns} rows={historiqueInterventions} rowKey={(h) => h.id} empty="Aucune intervention consignée." />}
         </>
       )}
 
+      {/* MODALE SIGNALER INCIDENT */}
       {reporting && (
         <SignalerIncidentModal
           onClose={() => setReporting(false)}
           onCreated={() => {
             setReporting(false);
             setVersion((v) => v + 1);
-            notify("Incident enregistré avec succès.");
+            notify("Incident enregistré et notifié aux résidents.");
           }}
         />
       )}
 
+      {/* MODALE DÉCLARER PANNE ÉQUIPEMENT */}
+      {addingPanne && (
+        <DeclarerPanneModal
+          onClose={() => setAddingPanne(false)}
+          onCreated={() => {
+            setAddingPanne(false);
+            setVersion((v) => v + 1);
+            notify("Panne d'équipement déclarée et notifiée aux résidents.");
+          }}
+        />
+      )}
+
+      {/* MODALE CONSIGNER INTERVENTION RÉALISÉE */}
+      {addingIntervention && (
+        <ConsignerInterventionModal
+          onClose={() => setAddingIntervention(false)}
+          onCreated={() => {
+            setAddingIntervention(false);
+            setVersion((v) => v + 1);
+            notify("Intervention archivée dans l'historique.");
+          }}
+        />
+      )}
+
+      {/* MODALE CLÔTURER AVEC COÛT */}
+      {cloturantIncident && (
+        <CloturerIncidentModal
+          incident={cloturantIncident}
+          onClose={() => setCloturantIncident(null)}
+          onClosed={() => {
+            setCloturantIncident(null);
+            setVersion((v) => v + 1);
+            notify("Incident clôturé avec succès et basculé dans l'historique.");
+          }}
+        />
+      )}
+
+      {/* MODALE ÉDITER */}
       {editingIncident && (
         <EditIncidentModal
           incident={editingIncident}
@@ -224,6 +320,7 @@ export default function MaintenancePage() {
         />
       )}
 
+      {/* MODALE SUPPRIMER */}
       {deletingIncident && (
         <ConfirmModal
           isOpen={true}
@@ -273,9 +370,9 @@ function SignalerIncidentModal({
   }
 
   return (
-    <Modal title="Signaler un incident" description="Enregistrement d'un incident ou d'une panne" onClose={onClose}>
+    <Modal title="Signaler un incident" description="Enregistrement d'un incident ou d'une anomalie générale" onClose={onClose}>
       <form onSubmit={onSubmit} className="space-y-4">
-        <Field label="Titre de l'incident" name="titre" required placeholder="Ex: Fuite d'eau, ampoule grillée" autoFocus />
+        <Field label="Titre de l'incident" name="titre" required placeholder="Ex: Fuite d'eau colonne générale, ampoules grillées" autoFocus />
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Localisation" name="lieu" required placeholder="Ex: Bloc A · 2e étage" />
           <Field label="Signalé par" name="signalePar" required defaultValue="Syndic / Gardien" />
@@ -290,6 +387,149 @@ function SignalerIncidentModal({
         </div>
         <FormError error={error} />
         <ModalActions submitting={submitting} label="Enregistrer l'incident" onCancel={onClose} />
+      </form>
+    </Modal>
+  );
+}
+
+function DeclarerPanneModal({
+  onClose,
+  onCreated,
+}: {
+  onClose: () => void;
+  onCreated: () => void;
+}) {
+  const { submitting, error, run } = useSubmit();
+  const [equipement, setEquipement] = useState("Ascenseur Bloc A");
+  const [priorite, setPriorite] = useState<Priorite>("Haute");
+
+  function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    const equipementNom = formText(form, "equipementCustom") || equipement;
+    void run(async () => {
+      await createIncident({
+        titre: `Panne ${equipementNom}`,
+        equipement: equipementNom,
+        isPanneEquipement: true,
+        lieu: formText(form, "lieu"),
+        signalePar: "Système / Syndic",
+        prestataire: formText(form, "prestataire") || "Prestataire sous contrat",
+        priorite,
+      });
+      onCreated();
+    });
+  }
+
+  return (
+    <Modal title="Déclarer une panne d'équipement" description="Équipements communs sous contrat ou lourds de la résidence" onClose={onClose}>
+      <form onSubmit={onSubmit} className="space-y-4">
+        <SelectField label="Équipement en panne" value={equipement} onChange={(e) => setEquipement(e.target.value)}>
+          <option value="Ascenseur Bloc A">Ascenseur Bloc A</option>
+          <option value="Ascenseur Bloc B">Ascenseur Bloc B</option>
+          <option value="Bâche à eau & Pompe de relevage">Bâche à eau & Pompe de relevage</option>
+          <option value="Groupe électrogène de secours">Groupe électrogène de secours</option>
+          <option value="Barrière automatique de parking">Barrière automatique de parking</option>
+          <option value="Interphone & Digicode entrée">Interphone & Digicode entrée</option>
+          <option value="Autre équipement">Autre équipement...</option>
+        </SelectField>
+        {equipement === "Autre équipement" && (
+          <Field label="Nom de l'équipement" name="equipementCustom" required placeholder="Ex: Porte automatique garage" autoFocus />
+        )}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Localisation" name="lieu" required placeholder="Ex: Sous-sol, Hall d'entrée" />
+          <Field label="Prestataire contractuel" name="prestataire" placeholder="Ex: SARL Otis Algérie, SARL Énergie" />
+        </div>
+        <SelectField label="Niveau d'urgence" value={priorite} onChange={(e) => setPriorite(e.target.value as Priorite)}>
+          <option value="Haute">Haute (Bloquant / Intervention sous 2h)</option>
+          <option value="Moyenne">Moyenne (Sous 24h)</option>
+          <option value="Basse">Basse</option>
+        </SelectField>
+        <FormError error={error} />
+        <ModalActions submitting={submitting} label="Déclarer la panne" onCancel={onClose} />
+      </form>
+    </Modal>
+  );
+}
+
+function ConsignerInterventionModal({
+  onClose,
+  onCreated,
+}: {
+  onClose: () => void;
+  onCreated: () => void;
+}) {
+  const { submitting, error, run } = useSubmit();
+
+  function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    void run(async () => {
+      await createIncident({
+        titre: formText(form, "titre"),
+        lieu: formText(form, "lieu"),
+        prestataire: formText(form, "prestataire") || "Prestataire",
+        signalePar: "Syndic",
+        priorite: "Moyenne",
+        statut: "Résolu",
+        cout: Number(formText(form, "cout")),
+        clotureLe: formText(form, "clotureLe") || new Date().toLocaleDateString("fr-FR"),
+      });
+      onCreated();
+    });
+  }
+
+  return (
+    <Modal title="Consigner une intervention réalisée" description="Archiver des travaux ou une réparation effectuée avec coût" onClose={onClose}>
+      <form onSubmit={onSubmit} className="space-y-4">
+        <Field label="Objet des travaux / réparation" name="titre" required placeholder="Ex: Remplacement vanne générale d'arrivée d'eau" autoFocus />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Localisation" name="lieu" required placeholder="Ex: Bloc A · Local technique" />
+          <Field label="Prestataire ayant intervenu" name="prestataire" required placeholder="Ex: Plomberie Express" />
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Coût de l'intervention (DZD)" name="cout" type="number" required placeholder="Ex: 18500" min={0} />
+          <Field label="Date d'achèvement" name="clotureLe" required defaultValue={new Date().toLocaleDateString("fr-FR")} />
+        </div>
+        <FormError error={error} />
+        <ModalActions submitting={submitting} label="Enregistrer dans l'historique" onCancel={onClose} />
+      </form>
+    </Modal>
+  );
+}
+
+function CloturerIncidentModal({
+  incident,
+  onClose,
+  onClosed,
+}: {
+  incident: { id: string; titre: string; prestataire: string };
+  onClose: () => void;
+  onClosed: () => void;
+}) {
+  const { submitting, error, run } = useSubmit();
+
+  function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    void run(async () => {
+      await updateIncident(incident.id, {
+        statut: "Résolu",
+        prestataire: formText(form, "prestataire") || incident.prestataire,
+        cout: Number(formText(form, "cout") || 0),
+        clotureLe: new Date().toLocaleDateString("fr-FR"),
+      });
+      onClosed();
+    });
+  }
+
+  return (
+    <Modal title={`Clôturer « ${incident.titre} »`} description="Valider la fin des réparations et enregistrer le coût" onClose={onClose}>
+      <form onSubmit={onSubmit} className="space-y-4">
+        <Field label="Prestataire ayant effectué la réparation" name="prestataire" defaultValue={incident.prestataire} required />
+        <Field label="Coût final de l'intervention (DZD)" name="cout" type="number" required defaultValue="0" min={0} autoFocus />
+        <FormError error={error} />
+        <ModalActions submitting={submitting} label="Valider et clôturer" onCancel={onClose} />
       </form>
     </Modal>
   );

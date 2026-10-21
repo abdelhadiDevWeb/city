@@ -12,6 +12,7 @@
     },
     "android": {
       "package": "com.city.resident",
+      "softwareKeyboardLayoutMode": "resize",
       "usesCleartextTraffic": true,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",

@@ -52,6 +52,14 @@ const sofiane: Author = { id: 'u-3', prenom: 'Sofiane', nom: 'Rahmani', role: 'r
 const lina: Author = { id: 'u-4', prenom: 'Lina', nom: 'Meziane', role: 'resident', logement: 'Bât. C · C-15' };
 const nassim: Author = { id: 'u-5', prenom: 'Nassim', nom: 'Ouali', role: 'resident', logement: 'Bât. B · B-02' };
 
+export const neighbors: Author[] = [
+  { id: 'a-1', prenom: 'Karim', nom: 'Hadjadj', role: 'syndic', logement: 'Syndic / Administration' },
+  { id: 'u-3', prenom: 'Sofiane', nom: 'Rahmani', role: 'resident', logement: 'Bât. B · B-07' },
+  { id: 'u-5', prenom: 'Nassim', nom: 'Ouali', role: 'resident', logement: 'Bât. B · B-02' },
+  { id: 'u-2', prenom: 'Amina', nom: 'Belkacem', role: 'resident', logement: 'Bât. A · A-04' },
+  { id: 'u-4', prenom: 'Lina', nom: 'Meziane', role: 'resident', logement: 'Bât. C · C-15' },
+];
+
 export const me: Author = {
   id: currentResident.id,
   prenom: currentResident.prenom,

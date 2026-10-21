@@ -3,13 +3,20 @@ import { DarkTheme, DefaultTheme, Stack, ThemeProvider, useRouter } from 'expo-r
 import * as Notifications from 'expo-notifications';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useColorScheme } from 'react-native';
+import { LogBox, useColorScheme } from 'react-native';
 
 import { SplashOverlay } from '@/components/splash-overlay';
 import { InAppNotificationBanner } from '@/components/in-app-banner';
 import { Brand } from '@/constants/theme';
 import { AppStateProvider, useAppState } from '@/context/app-state';
 import { useTheme } from '@/hooks/use-theme';
+
+LogBox.ignoreLogs([
+  '[expo-notifications] Push notifications (remote notifications) are unavailable in Expo Go',
+  '`expo-notifications` functionality is not fully supported in Expo Go',
+  '[PushNotifications] setNotificationChannelAsync skipped',
+  '[PushNotifications] Could not retrieve Expo push token',
+]);
 
 SplashScreen.preventAutoHideAsync();
 

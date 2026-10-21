@@ -6,13 +6,15 @@ export type JwtUser = {
   sub: string;
   roles: string[];
   idResidence?: string;
+  idBatiment?: string;
 };
 
 const ALGORITHM = "HS256";
 
-export function signAccessToken(accountId: string, roles: string[], idResidence?: string): string {
+export function signAccessToken(accountId: string, roles: string[], idResidence?: string, idBatiment?: string): string {
   const payload: Record<string, unknown> = { roles };
   if (idResidence) payload.idResidence = idResidence;
+  if (idBatiment) payload.idBatiment = idBatiment;
 
   return jwt.sign(payload, env.jwt.accessSecret, {
     algorithm: ALGORITHM,
@@ -36,8 +38,9 @@ export function verifyAccessToken(token: string): JwtUser {
   const payload = decoded as jwt.JwtPayload;
   const roles = Array.isArray(payload.roles) ? payload.roles.filter((r): r is string => typeof r === "string") : [];
   const idResidence = typeof payload.idResidence === "string" ? payload.idResidence : undefined;
+  const idBatiment = typeof payload.idBatiment === "string" ? payload.idBatiment : undefined;
   const sub = typeof payload.sub === "string" ? payload.sub : String(payload.sub);
-  return { sub, roles, idResidence };
+  return { sub, roles, idResidence, idBatiment };
 }
 
 export function generateOpaqueToken(bytes = 48): string {

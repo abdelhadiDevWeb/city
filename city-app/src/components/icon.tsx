@@ -43,6 +43,9 @@ const ICONS = {
   doneAll: { ios: 'checkmark', android: 'done_all', web: 'done_all' },
   info: { ios: 'info.circle.fill', android: 'info', web: 'info' },
   shield: { ios: 'checkmark.shield.fill', android: 'shield', web: 'shield' },
+  trash: { ios: 'trash.fill', android: 'delete', web: 'delete' },
+  plus: { ios: 'plus', android: 'add', web: 'add' },
+  wrench: { ios: 'wrench.and.screwdriver.fill', android: 'build', web: 'build' },
 } satisfies Record<string, SymbolName>;
 
 export type IconName = keyof typeof ICONS;

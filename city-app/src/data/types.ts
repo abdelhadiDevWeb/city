@@ -71,11 +71,12 @@ export type Post = {
   author: Author;
   kind: 'annonce' | 'post';
   text: string;
+  imageUrl?: string;
   createdAt: string;
   likes: number;
   liked: boolean;
   comments: Comment[];
-  event?: { titre: string; date: string; lieu: string };
+  event?: { titre: string; date: string; lieu: string; imageUrl?: string };
 };
 
 export type ChatMessage = {
@@ -83,9 +84,12 @@ export type ChatMessage = {
   author: Author;
   text: string;
   createdAt: string;
+  channelId?: string;
+  recipientId?: string;
+  batimentId?: string;
 };
 
-export type NotificationKind = 'like' | 'comment' | 'annonce' | 'alerte' | 'paiement' | 'chat' | 'abonnement';
+export type NotificationKind = 'like' | 'comment' | 'annonce' | 'alerte' | 'paiement' | 'chat' | 'abonnement' | 'maintenance';
 
 export type AppNotification = {
   id: string;
