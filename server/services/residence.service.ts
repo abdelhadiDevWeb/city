@@ -1,15 +1,26 @@
 import mongoose, { type Types } from "mongoose";
+import { AbonnementUser } from "../models/AbonnementUser";
 import { Admin, type AdminDocument } from "../models/Admin";
+import { Annonce } from "../models/Annonce";
 import { Appartement } from "../models/Appartement";
 import { Batiment } from "../models/Batiment";
+import { Charge } from "../models/Charge";
+import { ConfigResidence } from "../models/ConfigResidence";
+import { Depense } from "../models/Depense";
+import { DocumentSyndic } from "../models/DocumentSyndic";
+import { Incident } from "../models/Incident";
+import { Personnel } from "../models/Personnel";
+import { RefreshToken } from "../models/RefreshToken";
 import { Residence } from "../models/Residence";
+import { Tache } from "../models/Tache";
 import { User, type UserDocument } from "../models/User";
 import { AppError } from "../utils/AppError";
 import { isDuplicateKeyError } from "../utils/mongo";
 import { activeAccountIds } from "./accountStatus.service";
 
 // `sanitizeFilter` rejects raw `$` operators in filters; these ids come from our own queries.
-const inIds = (ids: Types.ObjectId[]) => mongoose.trusted({ $in: ids });
+const trusted = <T extends object>(filter: T) => mongoose.trusted(filter) as T;
+const inIds = (ids: Types.ObjectId[]) => trusted({ $in: ids });
 
 function responsable(admin: AdminDocument | undefined | null, activeIds: Set<string>) {
   if (!admin) return null;
@@ -118,13 +129,32 @@ export async function deleteResidence(id: string) {
   const batiments = await Batiment.find({ idResidence: residence._id });
   const batimentIds = batiments.map((b) => b._id);
 
-  await Promise.all([
+  const users = await User.find({ idResidence: residence._id });
+  const userIds = users.map((u) => u._id);
+
+  const deletions: Promise<unknown>[] = [
     Residence.findByIdAndDelete(id),
     Batiment.deleteMany({ idResidence: residence._id }),
-    Appartement.deleteMany({ idBatiment: { $in: batimentIds } }),
+    User.deleteMany({ idResidence: residence._id }),
+    Charge.deleteMany({ idResidence: residence._id }),
+    Depense.deleteMany({ idResidence: residence._id }),
+    Incident.deleteMany({ idResidence: residence._id }),
+    Personnel.deleteMany({ idResidence: residence._id }),
+    Tache.deleteMany({ idResidence: residence._id }),
+    Annonce.deleteMany({ idResidence: residence._id }),
+    DocumentSyndic.deleteMany({ idResidence: residence._id }),
+    ConfigResidence.deleteMany({ idResidence: residence._id }),
     Admin.updateMany({ idResidence: residence._id }, { $set: { idResidence: null, idBatiment: null } }),
-    User.updateMany({ idResidence: residence._id }, { $set: { idResidence: null, idBatiment: null, idAppartement: null } }),
-  ]);
+  ];
+
+  if (batimentIds.length > 0) {
+    deletions.push(Appartement.deleteMany({ idBatiment: inIds(batimentIds) }));
+  }
+  if (userIds.length > 0) {
+    deletions.push(RefreshToken.deleteMany({ userId: inIds(userIds) }));
+  }
+
+  await Promise.all(deletions);
 
   return { ok: true };
 }
@@ -147,12 +177,44 @@ export async function deleteBatiment(batimentId: string) {
   const batiment = await Batiment.findById(batimentId);
   if (!batiment) throw new AppError(404, "Bâtiment introuvable");
 
-  await Promise.all([
+  const appartements = await Appartement.find({ idBatiment: batiment._id });
+  const appartementIds = appartements.map((a) => a._id);
+
+  const userQuery = appartementIds.length > 0
+    ? trusted({ $or: [{ idBatiment: batiment._id }, { idAppartement: inIds(appartementIds) }] })
+    : { idBatiment: batiment._id };
+
+  const users = await User.find(userQuery);
+  const userIds = users.map((u) => u._id);
+  const userNames = users.flatMap((u) => [`${u.prenom} ${u.nom}`, u.prenom]).filter(Boolean);
+  const userPhones = users.map((u) => u.telephone).filter(Boolean);
+
+  const chargeOr: Record<string, unknown>[] = [{ idBatiment: batiment._id }];
+  if (appartementIds.length > 0) {
+    chargeOr.push({ idAppartement: inIds(appartementIds) });
+  }
+  if (userNames.length > 0) {
+    chargeOr.push({ resident: trusted({ $in: userNames }) });
+  }
+  if (userPhones.length > 0) {
+    chargeOr.push({ telephone: trusted({ $in: userPhones }) });
+  }
+
+  const deletions: Promise<unknown>[] = [
     Batiment.findByIdAndDelete(batimentId),
     Appartement.deleteMany({ idBatiment: batiment._id }),
+    Charge.deleteMany(chargeOr.length > 1 ? trusted({ $or: chargeOr }) : chargeOr[0]),
     Admin.updateMany({ idBatiment: batiment._id }, { $set: { idBatiment: null } }),
-    User.updateMany({ idBatiment: batiment._id }, { $set: { idBatiment: null, idAppartement: null } }),
-  ]);
+  ];
+
+  if (userIds.length > 0) {
+    deletions.push(
+      User.deleteMany({ _id: inIds(userIds) }),
+      RefreshToken.deleteMany({ userId: inIds(userIds) }),
+    );
+  }
+
+  await Promise.all(deletions);
 
   return { ok: true };
 }

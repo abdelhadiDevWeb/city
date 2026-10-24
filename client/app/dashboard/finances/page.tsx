@@ -159,6 +159,16 @@ export default function FinancesPage() {
     { header: "Mode", cell: (p) => <Pill tone={p.mode === "Edahabia" ? "brand" : "neutral"}>{p.mode}</Pill> },
     { header: "Référence", cell: (p) => <Mono>{p.reference}</Mono> },
     { header: "Montant", align: "right", cell: (p) => <Mono strong>+{formatDZD(p.montant)}</Mono> },
+    {
+      header: "Actions",
+      align: "right",
+      cell: (p) => (
+        <ActionGroup
+          deleteLabel="Supprimer paiement"
+          onDelete={() => setConfirmDelete({ kind: "charge", id: p.id, nom: `Paiement ${p.resident} (${p.logement})` })}
+        />
+      ),
+    },
   ];
 
   const depenseColumns: Column<Depense>[] = [
@@ -396,7 +406,7 @@ export default function FinancesPage() {
       {confirmDelete && (
         <ConfirmModal
           isOpen={true}
-          title={`Supprimer ${confirmDelete.kind === "charge" ? "la créance" : confirmDelete.kind === "depense" ? "la dépense" : "la facture"}`}
+          title={`Supprimer ${confirmDelete.nom.startsWith("Paiement") ? "le paiement" : confirmDelete.kind === "charge" ? "la créance" : confirmDelete.kind === "depense" ? "la dépense" : "la facture"}`}
           message={`Êtes-vous sûr de vouloir supprimer « ${confirmDelete.nom} » ? Cette action est irréversible.`}
           confirmLabel="Supprimer définitivement"
           onCancel={() => setConfirmDelete(null)}
@@ -404,7 +414,7 @@ export default function FinancesPage() {
             try {
               if (confirmDelete.kind === "charge") {
                 await deleteCharge(confirmDelete.id);
-                notify("Créance supprimée.");
+                notify(confirmDelete.nom.startsWith("Paiement") ? "Paiement supprimé." : "Créance supprimée.");
               } else {
                 await deleteDepense(confirmDelete.id);
                 notify("Dépense/Facture supprimée.");

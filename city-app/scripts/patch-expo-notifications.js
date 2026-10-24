@@ -59,9 +59,11 @@ if (!fs.existsSync(expoCoreSrc)) {
   const dest = path.resolve(__dirname, '../node_modules/expo-modules-core');
   if (fs.existsSync(dest)) {
     try {
+      const pkg = require(path.join(dest, 'package.json'));
+      const version = pkg.version || '58.0.26';
       const https = require('https');
       const { spawn } = require('child_process');
-      https.get('https://registry.npmjs.org/expo-modules-core/-/expo-modules-core-57.0.23.tgz', res => {
+      https.get(`https://registry.npmjs.org/expo-modules-core/-/expo-modules-core-${version}.tgz`, res => {
         const proc = spawn('tar', ['-xzf', '-', '--strip-components=1', 'package/src'], { cwd: dest, stdio: ['pipe', 'inherit', 'inherit'] });
         res.pipe(proc.stdin);
       });
@@ -75,9 +77,11 @@ if (!fs.existsSync(expoRouterAssets)) {
   const dest = path.resolve(__dirname, '../node_modules/expo-router');
   if (fs.existsSync(dest)) {
     try {
+      const pkg = require(path.join(dest, 'package.json'));
+      const version = pkg.version || '58.0.26';
       const https = require('https');
       const { spawn } = require('child_process');
-      https.get('https://registry.npmjs.org/expo-router/-/expo-router-57.0.28.tgz', res => {
+      https.get(`https://registry.npmjs.org/expo-router/-/expo-router-${version}.tgz`, res => {
         const proc = spawn('tar', ['-xzf', '-', '--strip-components=1', 'package/assets'], { cwd: dest, stdio: ['pipe', 'inherit', 'inherit'] });
         res.pipe(proc.stdin);
       });
@@ -91,9 +95,11 @@ if (!fs.existsSync(expoUiLazyColumn)) {
   const dest = path.resolve(__dirname, '../node_modules/@expo/ui');
   if (fs.existsSync(dest)) {
     try {
+      const pkg = require(path.join(dest, 'package.json'));
+      const version = pkg.version || '58.0.23';
       const https = require('https');
       const { spawn } = require('child_process');
-      https.get('https://registry.npmjs.org/@expo/ui/-/ui-57.0.25.tgz', res => {
+      https.get(`https://registry.npmjs.org/@expo/ui/-/ui-${version}.tgz`, res => {
         const proc = spawn('tar', ['-xzf', '-', '--strip-components=1', 'package/src'], { cwd: dest, stdio: ['pipe', 'inherit', 'inherit'] });
         res.pipe(proc.stdin);
       });

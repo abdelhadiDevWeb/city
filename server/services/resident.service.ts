@@ -2,6 +2,8 @@ import mongoose, { type Types } from "mongoose";
 import type { AdminDocument } from "../models/Admin";
 import { Appartement, type AppartementDocument } from "../models/Appartement";
 import { Batiment, type BatimentDocument } from "../models/Batiment";
+import { Charge } from "../models/Charge";
+import { RefreshToken } from "../models/RefreshToken";
 import { User, type UserDocument } from "../models/User";
 import { AppError } from "../utils/AppError";
 import { isDuplicateKeyError } from "../utils/mongo";
@@ -9,7 +11,8 @@ import { isLoginEmailTaken } from "./account.service";
 import { hashPassword } from "./auth.service";
 
 // `sanitizeFilter` rejects raw `$` operators in filters; these ids come from our own queries.
-const inIds = (ids: Types.ObjectId[]) => mongoose.trusted({ $in: ids });
+const trusted = <T extends object>(filter: T) => mongoose.trusted(filter) as T;
+const inIds = (ids: Types.ObjectId[]) => trusted({ $in: ids });
 const FLAT_COLLATION = { locale: "fr", strength: 1 };
 
 export type NewResident = {
@@ -57,7 +60,9 @@ export async function listResidents(actor: AdminDocument) {
   const batimentById = new Map(batiments.map((b) => [b.id as string, b]));
   const appartementById = new Map(appartements.map((a) => [a.id as string, a]));
 
-  return users.map((u) =>
+  const activeResidents = users.filter((u) => u.idBatiment && batimentById.has(String(u.idBatiment)));
+
+  return activeResidents.map((u) =>
     residentJson(u, batimentById.get(String(u.idBatiment)), appartementById.get(String(u.idAppartement))),
   );
 }
@@ -179,10 +184,39 @@ export async function deleteResident(id: string, actor: AdminDocument) {
   const allowed = "idResidence" in scope ? user.idResidence?.equals(scope.idResidence) : user.idBatiment?.equals(scope.idBatiment);
   if (!allowed) throw new AppError(403, "Action interdite sur ce résident");
 
-  await Promise.all([
+  const nameQueries = [
+    `${user.prenom} ${user.nom}`,
+    user.nom ? `${user.nom} ${user.prenom}` : "",
+    user.prenom,
+  ].filter(Boolean);
+
+  const chargeOr: Record<string, unknown>[] = [];
+  if (nameQueries.length > 0) {
+    chargeOr.push({ resident: trusted({ $in: nameQueries }) });
+  }
+  if (user.telephone) {
+    chargeOr.push({ telephone: user.telephone });
+  }
+  if (user.idAppartement) {
+    chargeOr.push({ idAppartement: user.idAppartement });
+  }
+
+  const deletions: Promise<unknown>[] = [
     User.findByIdAndDelete(id),
+    RefreshToken.deleteMany({ userId: user._id }),
     Appartement.updateMany({ idProprietaire: user._id }, { $set: { idProprietaire: null } }),
-  ]);
+  ];
+
+  if (user.idResidence && chargeOr.length > 0) {
+    deletions.push(
+      Charge.deleteMany({
+        idResidence: user.idResidence,
+        ...(chargeOr.length > 1 ? trusted({ $or: chargeOr }) : chargeOr[0]),
+      }),
+    );
+  }
+
+  await Promise.all(deletions);
 
   return { ok: true };
 }
