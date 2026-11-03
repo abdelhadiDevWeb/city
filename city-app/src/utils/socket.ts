@@ -5,7 +5,7 @@ import { io, type Socket } from 'socket.io-client';
 
 const STORAGE_KEY = '@city_server_url';
 export const DEFAULT_HOST_IP = '192.168.100.2';
-export const DEFAULT_SERVER_URL = `http://${DEFAULT_HOST_IP}:4000`;
+export const DEFAULT_SERVER_URL = process.env.EXPO_PUBLIC_API_URL || 'https://city-server-tn3s.onrender.com';
 
 let customServerUrl: string | null = null;
 let socketInstance: Socket | null = null;
