@@ -1,6 +1,25 @@
 "use client";
 
-import { Building, Building2, KeyRound, Layers, MapPin, Plus, ShieldCheck, UserPlus, UserRound } from "lucide-react";
+import {
+  Building,
+  Building2,
+  CheckCircle2,
+  ChevronRight,
+  KeyRound,
+  Layers,
+  Mail,
+  MapPin,
+  Phone,
+  Plus,
+  Search,
+  ShieldCheck,
+  UserPlus,
+  UserRound,
+  Users,
+  X,
+} from "lucide-react";
+import Link from "next/link";
+import { formatDZD } from "@/lib/format";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useState, type FormEvent } from "react";
 import {
@@ -10,6 +29,7 @@ import {
   deleteAccount,
   deleteBatiment,
   deleteResidence,
+  etageLabel,
   getResidence,
   listResidences,
   updateAccount,
@@ -24,16 +44,22 @@ import { ROLE_LABELS } from "@/lib/roles";
 import {
   AccountStatusPill,
   ActionGroup,
+  Breadcrumbs,
   ConfirmModal,
   DataTable,
+  FacetFilter,
   Field,
   FormError,
   Modal,
+  Mono,
   PageHeader,
+  PasswordGeneratorInput,
   Pill,
+  QuotaProgress,
   button,
   card,
   describeError,
+  inputClass,
   useToast,
   type Column,
 } from "../ui";
@@ -300,11 +326,31 @@ function ResidenceList({
   activeId: string | null;
   onSelect: (id: string) => void;
 }) {
+  const [search, setSearch] = useState("");
+  const needle = search.trim().toLowerCase();
+  const filtered = residences.filter(
+    (r) => !needle || r.nom.toLowerCase().includes(needle) || r.localisation.toLowerCase().includes(needle),
+  );
+
   return (
     <nav aria-label="Résidences" className="space-y-3">
-      <p className="text-[11px] font-bold uppercase tracking-wider text-stone-500">Résidences ({residences.length})</p>
+      <div className="flex items-center justify-between">
+        <p className="text-[11px] font-bold uppercase tracking-wider text-stone-500">Résidences ({residences.length})</p>
+      </div>
+
+      <div className="relative">
+        <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-stone-400" />
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Filtrer résidences..."
+          className="w-full rounded-xl border border-stone-200 bg-white py-1.5 pl-9 pr-3 text-xs text-ink placeholder:text-stone-400 focus:outline-none focus:ring-1 focus:ring-brand"
+        />
+      </div>
+
       <ul className="space-y-2">
-        {residences.map((r) => {
+        {filtered.map((r) => {
           const selected = r.id === activeId;
           return (
             <li key={r.id}>
@@ -312,25 +358,37 @@ function ResidenceList({
                 type="button"
                 onClick={() => onSelect(r.id)}
                 aria-current={selected ? "true" : undefined}
-                className={`w-full rounded-2xl border bg-white p-4 text-left transition ${
-                  selected ? "border-ink shadow-md ring-1 ring-ink" : "border-stone-200 hover:border-stone-300 hover:shadow-sm"
+                className={`w-full rounded-2xl border p-4 text-left transition ${
+                  selected
+                    ? "border-brand bg-orange-50/20 shadow-md ring-2 ring-brand/30"
+                    : "border-stone-200 bg-white hover:border-stone-300 hover:shadow-sm"
                 }`}
               >
-                <p className="truncate font-semibold text-ink">{r.nom}</p>
+                <div className="flex items-start justify-between gap-2">
+                  <p className="truncate font-bold text-ink">{r.nom}</p>
+                  {selected && <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-brand" />}
+                </div>
                 <p className="mt-0.5 flex items-center gap-1 truncate text-xs text-stone-500">
                   <MapPin className="h-3 w-3 shrink-0" aria-hidden />
                   {r.localisation}
                 </p>
                 <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs">
-                  <span className="text-stone-600">
+                  <span className="font-semibold text-stone-600">
                     {r.batiments} bâtiment{r.batiments > 1 ? "s" : ""}
                   </span>
-                  {r.admin ? <Pill tone="dark">{fullName(r.admin)}</Pill> : <Pill tone="warning">Sans admin</Pill>}
+                  {r.admin ? (
+                    <Pill tone="success">Admin: {fullName(r.admin)}</Pill>
+                  ) : (
+                    <Pill tone="warning">Sans admin</Pill>
+                  )}
                 </div>
               </button>
             </li>
           );
         })}
+        {filtered.length === 0 && (
+          <li className="py-6 text-center text-xs text-stone-400">Aucune résidence trouvée.</li>
+        )}
       </ul>
     </nav>
   );
@@ -416,6 +474,18 @@ function ResidenceDetailsView({
   const appartements = batiments.reduce((sum, b) => sum + b.appartements.length, 0);
   const sousAdmins = batiments.filter((b) => b.sousAdmin).length;
 
+  const [selectedBatimentId, setSelectedBatimentId] = useState<string | null>(null);
+  const [drilldownFilter, setDrilldownFilter] = useState<"all" | "occupes" | "impayes">("all");
+  const selectedBatiment = batiments.find((b) => b.id === selectedBatimentId);
+
+  const drilldownApts = (selectedBatiment?.appartements ?? []).filter((apt) => {
+    if (drilldownFilter === "occupes") return !!apt.proprietaire;
+    if (drilldownFilter === "impayes") return apt.paiement?.statut === "impaye";
+    return true;
+  });
+  const drilldownOccupesCount = (selectedBatiment?.appartements ?? []).filter((a) => a.proprietaire).length;
+  const drilldownImpayesCount = (selectedBatiment?.appartements ?? []).filter((a) => a.paiement?.statut === "impaye").length;
+
   const columns: Column<BatimentDetail>[] = [
     {
       header: "Bâtiment",
@@ -453,6 +523,30 @@ function ResidenceDetailsView({
             Créer le sub admin
           </button>
         ),
+    },
+    {
+      header: "Résidents & Cotisations",
+      cell: (b) => {
+        const isSelected = selectedBatimentId === b.id;
+        const total = b.appartements.length;
+        const occupes = b.appartements.filter((a) => a.proprietaire).length;
+        const impayes = b.appartements.filter((a) => a.paiement?.statut === "impaye").length;
+        return (
+          <button
+            type="button"
+            onClick={() => setSelectedBatimentId(isSelected ? null : b.id)}
+            className={`${button(isSelected ? "primary" : "secondary", "sm")} flex items-center gap-1.5`}
+          >
+            <Users className="h-3.5 w-3.5" aria-hidden />
+            <span>{isSelected ? "Fermer Détails" : `Voir Résidents (${occupes}/${total})`}</span>
+            {impayes > 0 && (
+              <span className="rounded-full bg-red-100 px-1.5 py-0.5 text-[10px] font-bold text-red-700">
+                {impayes} impayé{impayes > 1 ? "s" : ""}
+              </span>
+            )}
+          </button>
+        );
+      },
     },
     { header: "Ajouté le", cell: (b) => <span className="text-stone-500">{formatDate(b.createdAt)}</span> },
     {
@@ -508,7 +602,7 @@ function ResidenceDetailsView({
 
         <dl className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
           {[
-            { label: "Bâtiments", value: batiments.length, icon: Building },
+            { label: "Bâtiments", value: `${batiments.length} / ${residence.maxBatiments || 5}`, icon: Building },
             { label: "Étages", value: etages, icon: Layers },
             { label: "Appartements", value: appartements, icon: KeyRound },
             { label: "Sub Admins", value: `${sousAdmins} / ${batiments.length}`, icon: UserRound },
@@ -544,17 +638,165 @@ function ResidenceDetailsView({
       </section>
 
       <section className="space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        <QuotaProgress
+          current={batiments.length}
+          max={residence.maxBatiments || 5}
+          label={`Quota de bâtiments de « ${residence.nom} »`}
+          unit="bâtiments"
+        />
+        <QuotaProgress
+          current={appartements}
+          max={residence.maxResidents || 100}
+          label={`Capacité maximale de résidents (« ${residence.nom} »)`}
+          unit="résidents"
+        />
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
           <h3 className="flex items-center gap-2 text-sm font-bold text-ink">
             <Building className="h-4 w-4 text-brand" aria-hidden />
             Bâtiments ({batiments.length})
           </h3>
-          <button type="button" onClick={onAddBatiment} className={button("primary", "sm")}>
-            <Plus className="h-3.5 w-3.5" aria-hidden />
-            Ajouter un bâtiment
-          </button>
+          {batiments.length >= (residence.maxBatiments || 5) ? (
+            <span className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700">
+              Quota atteint ({residence.maxBatiments || 5} max)
+            </span>
+          ) : (
+            <button type="button" onClick={onAddBatiment} className={button("primary", "sm")}>
+              <Plus className="h-3.5 w-3.5" aria-hidden />
+              Ajouter un bâtiment
+            </button>
+          )}
         </div>
         <DataTable columns={columns} rows={batiments} rowKey={(b) => b.id} empty="Aucun bâtiment. Ajoutez le premier bâtiment de cette résidence." />
+
+        {selectedBatiment && (
+          <div className="rounded-2xl border-2 border-brand/30 bg-orange-50/20 p-5 space-y-4 animate-in fade-in duration-200">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-stone-200 pb-3">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="rounded-lg bg-brand p-1.5 text-white">
+                    <Building className="h-4 w-4" />
+                  </span>
+                  <h4 className="text-base font-bold text-ink">
+                    Bâtiment {selectedBatiment.nom} — Détail des Logements & Résidents
+                  </h4>
+                </div>
+                <p className="mt-0.5 text-xs text-stone-500">
+                  {selectedBatiment.etages} étages · {selectedBatiment.appartements.length} / {selectedBatiment.maxAppartements ?? 50} logements autorisés
+                  {selectedBatiment.sousAdmin ? ` · Sous-Admin : ${fullName(selectedBatiment.sousAdmin)} (${selectedBatiment.sousAdmin.telephone})` : " · Aucun Sous-Admin assigné"}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/dashboard/residents"
+                  className={button("secondary", "sm")}
+                >
+                  <Users className="h-3.5 w-3.5" aria-hidden />
+                  Gérer sur la page Résidents
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setSelectedBatimentId(null)}
+                  className="rounded-lg p-1.5 text-stone-400 hover:bg-stone-200 hover:text-ink"
+                  title="Fermer"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+
+            {selectedBatiment.appartements.length === 0 ? (
+              <p className="py-6 text-center text-sm text-stone-500">
+                Aucun appartement n&apos;a encore été créé dans ce bâtiment.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <FacetFilter
+                    value={drilldownFilter}
+                    onChange={setDrilldownFilter}
+                    options={[
+                      { id: "all", label: "Tous les logements", count: selectedBatiment.appartements.length },
+                      { id: "occupes", label: "Occupés", count: drilldownOccupesCount },
+                      { id: "impayes", label: "Cotisations impayées", count: drilldownImpayesCount },
+                    ]}
+                  />
+                  <span className="text-xs font-semibold text-stone-500">
+                    {drilldownApts.length} appartement{drilldownApts.length > 1 ? "s" : ""}
+                  </span>
+                </div>
+
+                <div className="overflow-x-auto rounded-xl border border-stone-200 bg-white">
+                  <table className="w-full text-left text-sm">
+                    <thead className="border-b border-stone-200 bg-stone-50/70 text-[11px] font-bold uppercase tracking-wider text-stone-500">
+                      <tr>
+                        <th className="px-4 py-3">Logement</th>
+                        <th className="px-4 py-3">Étage</th>
+                        <th className="px-4 py-3">Résident / Propriétaire</th>
+                        <th className="px-4 py-3">Contact</th>
+                        <th className="px-4 py-3">Statut Cotisation</th>
+                        <th className="px-4 py-3 text-right">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-stone-100">
+                      {drilldownApts.map((apt) => {
+                        const prop = apt.proprietaire;
+                        const p = apt.paiement;
+                        const isImpaye = p?.statut === "impaye";
+                        return (
+                          <tr key={apt.id} className="hover:bg-stone-50/60 transition">
+                            <td className="px-4 py-3 font-bold text-ink">{apt.nom}</td>
+                            <td className="px-4 py-3 text-stone-600">{etageLabel(apt.etage)}</td>
+                            <td className="px-4 py-3">
+                              {prop ? (
+                                <span className="font-semibold text-ink">{fullName(prop)}</span>
+                              ) : (
+                                <span className="text-xs text-stone-400 italic">Logement vacant</span>
+                              )}
+                            </td>
+                            <td className="px-4 py-3 text-xs">
+                              {prop ? (
+                                <div className="flex items-center gap-2">
+                                  <Mono>{prop.telephone}</Mono>
+                                  <span className="text-stone-400">·</span>
+                                  <span className="text-stone-500">{prop.email}</span>
+                                </div>
+                              ) : (
+                                "—"
+                              )}
+                            </td>
+                            <td className="px-4 py-3">
+                              {!prop ? (
+                                <Pill tone="neutral">Vacant</Pill>
+                              ) : isImpaye ? (
+                                <Pill tone="danger">
+                                  Impayé {p.totalDu > 0 ? `(${formatDZD(p.totalDu)})` : ""}
+                                </Pill>
+                              ) : (
+                                <Pill tone="success">À jour (Payé)</Pill>
+                              )}
+                            </td>
+                            <td className="px-4 py-3 text-right">
+                              {prop && (
+                                <a
+                                  href={`tel:${prop.telephone}`}
+                                  className={button("secondary", "sm")}
+                                  title={`Appeler ${fullName(prop)}`}
+                                >
+                                  <Phone className="h-3.5 w-3.5" />
+                                  Appeler
+                                </a>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </section>
     </div>
   );
@@ -566,14 +808,27 @@ function ResidenceModal({ onClose, onCreated }: { onClose: () => void; onCreated
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
-    void run(async () => onCreated(await createResidence({ nom: text(form, "nom"), localisation: text(form, "localisation") })));
+    void run(async () =>
+      onCreated(
+        await createResidence({
+          nom: text(form, "nom"),
+          localisation: text(form, "localisation"),
+          maxBatiments: Number(form.get("maxBatiments")) || 5,
+          maxResidents: Number(form.get("maxResidents")) || 100,
+        }),
+      ),
+    );
   }
 
   return (
-    <Modal title="Nouvelle résidence" description="Nom et localisation de la résidence." onClose={onClose}>
+    <Modal title="Nouvelle résidence" description="Nom, localisation et quotas autorisés." onClose={onClose}>
       <form onSubmit={onSubmit} className="space-y-4">
         <Field label="Nom de la résidence" name="nom" required minLength={2} maxLength={120} placeholder="Cité 1500 Logements AADL" autoFocus />
         <Field label="Localisation" name="localisation" required minLength={2} maxLength={200} placeholder="Bab Ezzouar, Alger" />
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Field label="Max bâtiments autorisés" name="maxBatiments" type="number" defaultValue="5" required min={1} max={500} step={1} />
+          <Field label="Max résidents autorisés" name="maxResidents" type="number" defaultValue="100" required min={1} max={10000} step={1} />
+        </div>
         <FormError error={error} />
         <ModalActions submitting={submitting} label="Créer la résidence" onCancel={onClose} />
       </form>
@@ -591,22 +846,61 @@ function BatimentModal({
   onCreated: (nom: string) => void;
 }) {
   const { submitting, error, run } = useSubmit();
+  const [etages, setEtages] = useState(5);
+  const [appartementsParEtage, setAppartementsParEtage] = useState(4);
+  const totalCalcule = etages * appartementsParEtage;
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     const nom = text(form, "nom");
+    const et = Number(form.get("etages") ?? etages);
+    const maxAppartements = Number(form.get("maxAppartements") || totalCalcule || 50);
     void run(async () => {
-      await createBatiment(residence.id, { nom, etages: Number(form.get("etages")) });
+      await createBatiment(residence.id, { nom, etages: et, maxAppartements });
       onCreated(nom);
     });
   }
 
   return (
-    <Modal title="Nouveau bâtiment" description={`Dans la résidence « ${residence.nom} ».`} onClose={onClose}>
+    <Modal title="Nouveau bâtiment (Bloc)" description={`Dans la résidence « ${residence.nom} ».`} onClose={onClose}>
       <form onSubmit={onSubmit} className="space-y-4">
-        <Field label="Nom du bâtiment" name="nom" required maxLength={60} placeholder="A1" autoFocus />
-        <Field label="Nombre d'étages" name="etages" type="number" required min={0} max={200} step={1} placeholder="9" />
+        <Field label="Nom du bâtiment" name="nom" required maxLength={60} placeholder="ex: Bloc B ou Tour 03" autoFocus />
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Field
+            label="Nombre d'étages"
+            name="etages"
+            type="number"
+            required
+            min={0}
+            max={200}
+            step={1}
+            value={etages}
+            onChange={(e) => setEtages(Number(e.target.value))}
+          />
+          <div className="space-y-1.5">
+            <label className="block text-xs font-semibold text-stone-700">Logements par étage (aide)</label>
+            <input
+              type="number"
+              min={1}
+              max={50}
+              value={appartementsParEtage}
+              onChange={(e) => setAppartementsParEtage(Number(e.target.value))}
+              className={inputClass}
+            />
+          </div>
+        </div>
+        <Field
+          label="Capacité maximale d'appartements"
+          name="maxAppartements"
+          type="number"
+          value={totalCalcule}
+          required
+          min={1}
+          max={2000}
+          step={1}
+          hint={`Calcul estimé : ${etages} étages × ${appartementsParEtage} logements = ${totalCalcule} appartements`}
+        />
         <FormError error={error} />
         <ModalActions submitting={submitting} label="Ajouter le bâtiment" onCancel={onClose} />
       </form>
@@ -626,7 +920,7 @@ function AccountModal({
   onCreated: (email: string) => void;
 }) {
   const { submitting, error, run } = useSubmit();
-  const [password, setPassword] = useState("");
+  const [password, setPassword] = useState("City@2026!Sec");
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -639,7 +933,7 @@ function AccountModal({
       wilaya: text(form, "wilaya"),
       daira: text(form, "daira"),
       baladia: text(form, "baladia"),
-      password,
+      password: password || "City@2026!",
     };
     void run(async () => {
       await createAccount(role === "admin" ? { ...profile, role, idResidence: target.id } : { ...profile, role, idBatiment: target.id });
@@ -649,8 +943,8 @@ function AccountModal({
 
   return (
     <Modal
-      title={role === "admin" ? "Nouvel Admin" : "Nouveau Sub Admin"}
-      description={`${role === "admin" ? "Responsable de la résidence" : "Responsable du bâtiment"} « ${target.nom} ». Il pourra se connecter avec cet email et ce mot de passe dès qu'un abonnement payé sera en cours${role === "admin" ? "" : " pour l'Admin de la résidence"}.`}
+      title={role === "admin" ? "Nouvel Admin (Syndic de Résidence)" : "Nouveau Sous-Admin (Gestionnaire de Bloc)"}
+      description={`${role === "admin" ? "Responsable de la résidence" : "Responsable du bâtiment"} « ${target.nom} ». Il pourra se connecter dès qu'un abonnement payé sera en cours.`}
       onClose={onClose}
     >
       <form onSubmit={onSubmit} className="space-y-4">
@@ -668,11 +962,15 @@ function AccountModal({
           <Field label="Téléphone" name="telephone" type="tel" required pattern="\+?[0-9]{8,15}" title="8 à 15 chiffres, + facultatif" placeholder="0555123456" />
         </div>
         <div className="grid gap-4 sm:grid-cols-3">
-          <Field label="Wilaya" name="wilaya" required maxLength={80} />
-          <Field label="Daïra" name="daira" required maxLength={80} />
-          <Field label="Baladia" name="baladia" required maxLength={80} />
+          <Field label="Wilaya" name="wilaya" required maxLength={80} defaultValue="Alger" />
+          <Field label="Daïra" name="daira" required maxLength={80} defaultValue="Sidi M'Hamed" />
+          <Field label="Baladia" name="baladia" required maxLength={80} defaultValue="Alger Centre" />
         </div>
-        <PasswordField value={password} onChange={setPassword} />
+        <PasswordGeneratorInput
+          value={password}
+          onChange={setPassword}
+          hint="Copiez ce mot de passe pour le transmettre directement à l'administrateur avec ses accès."
+        />
         <FormError error={error} />
         <ModalActions submitting={submitting} label="Créer le compte" onCancel={onClose} />
       </form>
@@ -692,20 +990,31 @@ function EditResidenceModal({
   const { submitting, error, run } = useSubmit();
   const [nom, setNom] = useState(residence.nom);
   const [localisation, setLocalisation] = useState(residence.localisation);
+  const [maxBatiments, setMaxBatiments] = useState(residence.maxBatiments || 5);
+  const [maxResidents, setMaxResidents] = useState(residence.maxResidents || 100);
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     void run(async () => {
-      await updateResidence(residence.id, { nom, localisation });
+      await updateResidence(residence.id, {
+        nom,
+        localisation,
+        maxBatiments: Number(maxBatiments),
+        maxResidents: Number(maxResidents),
+      });
       onUpdated(nom);
     });
   }
 
   return (
-    <Modal title="Modifier la résidence" description="Modifiez le nom et l'emplacement." onClose={onClose}>
+    <Modal title="Modifier la résidence" description="Modifiez le nom, l'emplacement et les quotas autorisés." onClose={onClose}>
       <form onSubmit={onSubmit} className="space-y-4">
         <Field label="Nom de la résidence" value={nom} onChange={(e) => setNom(e.target.value)} required minLength={2} maxLength={120} autoFocus />
         <Field label="Localisation" value={localisation} onChange={(e) => setLocalisation(e.target.value)} required minLength={2} maxLength={200} />
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Field label="Max bâtiments autorisés" value={maxBatiments} onChange={(e) => setMaxBatiments(Number(e.target.value))} type="number" required min={1} max={500} />
+          <Field label="Max résidents autorisés" value={maxResidents} onChange={(e) => setMaxResidents(Number(e.target.value))} type="number" required min={1} max={10000} />
+        </div>
         <FormError error={error} />
         <ModalActions submitting={submitting} label="Enregistrer les modifications" onCancel={onClose} />
       </form>

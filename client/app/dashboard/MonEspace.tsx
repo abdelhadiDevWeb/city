@@ -153,6 +153,28 @@ export function MonEspace() {
     );
   }
 
+  if (role === "admin" && !espace?.abonnement) {
+    return (
+      <div className="space-y-6">
+        <section className={`${card} p-12 text-center`}>
+          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-50 text-amber-600">
+            <CreditCard className="h-7 w-7" aria-hidden />
+          </span>
+          <h2 className="mt-4 text-2xl font-bold text-ink">Abonnement en attente de validation</h2>
+          <p className="mt-2 max-w-lg mx-auto text-sm text-stone-500 leading-relaxed">
+            Votre compte administrateur pour la résidence <span className="font-semibold text-ink">« {residence.nom} »</span> n&apos;a pas d&apos;abonnement actif payé en cours.
+            Le Super Administrateur doit valider votre formule d&apos;abonnement pour débloquer l&apos;accès complet à votre tableau de bord.
+          </p>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+            <Link href="/dashboard/profil" className={button("secondary")}>
+              Consulter mon profil
+            </Link>
+          </div>
+        </section>
+      </div>
+    );
+  }
+
   // Calculations
   const batiments = espace.batiments ?? [];
   const appartements = batiments.flatMap((b) => b.appartements);
@@ -228,6 +250,12 @@ export function MonEspace() {
             <Wallet className="h-3.5 w-3.5" aria-hidden />
             Encaisser Paiement
           </Link>
+          {role === "admin" && (
+            <Link href="/dashboard/residences" className={button("secondary", "sm")}>
+              <UserCheck className="h-3.5 w-3.5" aria-hidden />
+              Gérer Sous-Admins
+            </Link>
+          )}
           <Link href="/dashboard/maintenance" className={button("secondary", "sm")}>
             <Wrench className="h-3.5 w-3.5" aria-hidden />
             Signaler Incident

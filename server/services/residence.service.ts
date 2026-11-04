@@ -58,6 +58,8 @@ export async function listResidences() {
 
   return residences.map((r) => ({
     ...r.toJSON(),
+    maxBatiments: r.maxBatiments ?? 5,
+    maxResidents: r.maxResidents ?? 100,
     batiments: countByResidence.get(r.id) ?? 0,
     admin: responsable(adminByResidence.get(r.id), activeIds),
   }));
@@ -70,10 +72,11 @@ export async function getResidenceDetails(id: string) {
   const batiments = await Batiment.find({ idResidence: residence._id }).sort({ nom: 1 }).collation({ locale: "fr", numericOrdering: true });
   const batimentIds = batiments.map((b) => b._id);
 
-  const [admin, sousAdmins, appartements] = await Promise.all([
+  const [admin, sousAdmins, appartements, charges] = await Promise.all([
     Admin.findOne({ role: "admin", idResidence: residence._id }),
     Admin.find({ role: "sub_admin", idBatiment: inIds(batimentIds) }),
     Appartement.find({ idBatiment: inIds(batimentIds) }).sort({ etage: 1, nom: 1 }).collation({ locale: "fr", numericOrdering: true }),
+    Charge.find({ idResidence: residence._id }),
   ]);
 
   const ownerIds = appartements.flatMap((a) => (a.idProprietaire ? [a.idProprietaire] : []));
@@ -82,30 +85,84 @@ export async function getResidenceDetails(id: string) {
   const sousAdminByBatiment = new Map(sousAdmins.map((a) => [String(a.idBatiment), a]));
   const activeIds = await activeAccountIds(admin ? [admin, ...sousAdmins] : sousAdmins);
 
+  // Index charges by apartment ID
+  const chargesByAppartement = new Map<string, typeof charges>();
+  for (const c of charges) {
+    if (c.idAppartement) {
+      const aptKey = String(c.idAppartement);
+      const list = chargesByAppartement.get(aptKey) ?? [];
+      list.push(c);
+      chargesByAppartement.set(aptKey, list);
+    }
+  }
+
   return {
-    residence: residence.toJSON(),
+    residence: {
+      ...residence.toJSON(),
+      maxBatiments: residence.maxBatiments ?? 5,
+      maxResidents: residence.maxResidents ?? 100,
+    },
     admin: responsable(admin, activeIds),
     batiments: batiments.map((b) => ({
       ...b.toJSON(),
       id: b.id as string,
+      maxAppartements: b.maxAppartements ?? 50,
       sousAdmin: responsable(sousAdminByBatiment.get(b.id), activeIds),
       appartements: appartements
         .filter((a) => a.idBatiment.equals(b._id))
-        .map((a) => ({ id: a.id as string, nom: a.nom, etage: a.etage, proprietaire: proprietaire(a.idProprietaire ? ownerById.get(String(a.idProprietaire)) : undefined) })),
+        .map((a) => {
+          const aptCharges = chargesByAppartement.get(String(a._id)) ?? [];
+          const unpaid = aptCharges.filter((c) => c.statut === "impaye");
+          const totalDu = unpaid.reduce((sum, c) => sum + (c.totalDu || 0), 0);
+          const moisImpayes = unpaid.reduce((sum, c) => sum + (c.moisImpayes || 0), 0);
+          const hasOwner = Boolean(a.idProprietaire);
+          return {
+            id: a.id as string,
+            nom: a.nom,
+            etage: a.etage,
+            proprietaire: proprietaire(a.idProprietaire ? ownerById.get(String(a.idProprietaire)) : undefined),
+            paiement: {
+              statut: hasOwner ? (unpaid.length > 0 ? "impaye" : "paye") : "aucun",
+              moisImpayes,
+              totalDu,
+            },
+          };
+        }),
     })),
   };
 }
 
-export async function createResidence(input: { nom: string; localisation: string }) {
-  const residence = await Residence.create({ nom: input.nom, localisation: input.localisation });
+export async function createResidence(input: { nom: string; localisation: string; maxBatiments?: number; maxResidents?: number }) {
+  const residence = await Residence.create({
+    nom: input.nom,
+    localisation: input.localisation,
+    maxBatiments: input.maxBatiments ?? 5,
+    maxResidents: input.maxResidents ?? 100,
+  });
   return { ...residence.toJSON(), batiments: 0, admin: null };
 }
 
-export async function createBatiment(residenceId: string, input: { nom: string; etages: number }) {
-  if (!(await Residence.exists({ _id: residenceId }))) throw new AppError(404, "Résidence introuvable");
+export async function createBatiment(
+  residenceId: string,
+  input: { nom: string; etages: number; maxAppartements?: number },
+  isSuperAdmin = false,
+) {
+  const residence = await Residence.findById(residenceId);
+  if (!residence) throw new AppError(404, "Résidence introuvable");
+
+  const currentCount = await Batiment.countDocuments({ idResidence: residence._id });
+  const maxAllowed = residence.maxBatiments ?? 5;
+  if (!isSuperAdmin && currentCount >= maxAllowed) {
+    throw new AppError(403, `Quota atteint : cette résidence est limitée à ${maxAllowed} bâtiment(s). Seul le Super Admin peut modifier cette limite.`);
+  }
 
   try {
-    const batiment = await Batiment.create({ nom: input.nom, etages: input.etages, idResidence: residenceId });
+    const batiment = await Batiment.create({
+      nom: input.nom,
+      etages: input.etages,
+      idResidence: residenceId,
+      maxAppartements: input.maxAppartements ?? 50,
+    });
     return batiment.toJSON();
   } catch (err) {
     if (isDuplicateKeyError(err)) throw new AppError(409, "Un bâtiment porte déjà ce nom dans cette résidence");
@@ -113,11 +170,21 @@ export async function createBatiment(residenceId: string, input: { nom: string; 
   }
 }
 
-export async function updateResidence(id: string, input: { nom?: string; localisation?: string }) {
+export async function updateResidence(
+  id: string,
+  input: { nom?: string; localisation?: string; maxBatiments?: number; maxResidents?: number },
+  isSuperAdmin = false,
+) {
   const residence = await Residence.findById(id);
   if (!residence) throw new AppError(404, "Résidence introuvable");
   if (input.nom !== undefined) residence.nom = input.nom;
   if (input.localisation !== undefined) residence.localisation = input.localisation;
+  if (input.maxBatiments !== undefined && isSuperAdmin) {
+    residence.maxBatiments = input.maxBatiments;
+  }
+  if (input.maxResidents !== undefined && isSuperAdmin) {
+    residence.maxResidents = input.maxResidents;
+  }
   await residence.save();
   return residence.toJSON();
 }
@@ -159,11 +226,12 @@ export async function deleteResidence(id: string) {
   return { ok: true };
 }
 
-export async function updateBatiment(batimentId: string, input: { nom?: string; etages?: number }) {
+export async function updateBatiment(batimentId: string, input: { nom?: string; etages?: number; maxAppartements?: number }) {
   const batiment = await Batiment.findById(batimentId);
   if (!batiment) throw new AppError(404, "Bâtiment introuvable");
   if (input.nom !== undefined) batiment.nom = input.nom;
   if (input.etages !== undefined) batiment.etages = input.etages;
+  if (input.maxAppartements !== undefined) batiment.maxAppartements = input.maxAppartements;
   try {
     await batiment.save();
     return batiment.toJSON();

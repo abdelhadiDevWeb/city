@@ -20,6 +20,7 @@ export async function getMaintenance(idResidence: string) {
       prestataire: i.prestataire,
       statut: i.statut,
       signalePar: i.signalePar,
+      photoUrl: i.photoUrl || "",
     }));
 
   const pannes = allIncidents
@@ -31,6 +32,7 @@ export async function getMaintenance(idResidence: string) {
       depuis: i.signaleLe,
       prestataire: i.prestataire,
       statut: i.statut,
+      photoUrl: i.photoUrl || "",
     }));
 
   const historique = allIncidents
@@ -42,6 +44,7 @@ export async function getMaintenance(idResidence: string) {
       clotureLe: i.clotureLe || "Récemment",
       prestataire: i.prestataire,
       cout: i.cout,
+      photoUrl: i.photoUrl || "",
     }));
 
   return {
@@ -64,6 +67,7 @@ export async function createIncident(
     equipement?: string;
     cout?: number;
     statut?: "Nouveau" | "En cours" | "Résolu" | "Planifié";
+    photoUrl?: string;
     clotureLe?: string;
   },
 ) {
@@ -81,6 +85,7 @@ export async function createIncident(
     cout: input.cout || 0,
     isPanneEquipement: input.isPanneEquipement ?? false,
     equipement: input.equipement || "",
+    photoUrl: input.photoUrl || "",
     clotureLe: input.clotureLe || (input.statut === "Résolu" ? now : undefined),
   });
   const isAlerte = input.priorite === "Haute";
@@ -139,6 +144,7 @@ export async function updateIncident(
     prestataire: string;
     statut: "Nouveau" | "En cours" | "Résolu" | "Planifié";
     cout: number;
+    photoUrl: string;
   }>,
 ) {
   const incident = await Incident.findOne({ _id: incidentId, idResidence });
@@ -149,6 +155,7 @@ export async function updateIncident(
   if (input.priorite !== undefined) incident.priorite = input.priorite;
   if (input.prestataire !== undefined) incident.prestataire = input.prestataire;
   if (input.cout !== undefined) incident.cout = input.cout;
+  if (input.photoUrl !== undefined) incident.photoUrl = input.photoUrl;
   if (input.statut !== undefined) {
     incident.statut = input.statut;
     if (input.statut === "Résolu" && !incident.clotureLe) {

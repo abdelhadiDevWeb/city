@@ -5,7 +5,7 @@ import { csrfProtection } from "../middleware/csrf";
 
 export const personnelRouter = Router();
 
-personnelRouter.use(requireAuth, requireRole("admin", "sub_admin"), csrfProtection);
+personnelRouter.use(requireAuth, requireRole("super_admin", "admin", "sub_admin"), csrfProtection);
 
 personnelRouter.get("/", personnel.getPersonnel);
 

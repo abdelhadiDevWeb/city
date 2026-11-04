@@ -11,6 +11,7 @@ export type Incident = {
   prestataire: string;
   statut: string;
   signalePar: string;
+  photoUrl?: string;
 };
 
 export type PanneEquipement = {
@@ -20,6 +21,7 @@ export type PanneEquipement = {
   depuis: string;
   prestataire: string;
   statut: string;
+  photoUrl?: string;
 };
 
 export type InterventionPassee = {
@@ -29,6 +31,7 @@ export type InterventionPassee = {
   clotureLe: string;
   prestataire: string;
   cout: number;
+  photoUrl?: string;
 };
 
 export type MaintenanceData = {
@@ -52,6 +55,7 @@ export async function createIncident(input: {
   equipement?: string;
   cout?: number;
   statut?: "Nouveau" | "En cours" | "Résolu" | "Planifié";
+  photoUrl?: string;
   clotureLe?: string;
 }): Promise<void> {
   await apiRequest("/maintenance/incidents", { method: "POST", body: input });
@@ -61,7 +65,7 @@ export async function updateIncidentStatut(id: string, statut: "Nouveau" | "En c
   await apiRequest(`/maintenance/incidents/${encodeURIComponent(id)}/statut`, { method: "PATCH", body: { statut } });
 }
 
-export async function updateIncident(id: string, input: { titre?: string; description?: string; lieu?: string; priorite?: Priorite; prestataire?: string; statut?: string; cout?: number; clotureLe?: string }): Promise<void> {
+export async function updateIncident(id: string, input: { titre?: string; description?: string; lieu?: string; priorite?: Priorite; prestataire?: string; statut?: string; cout?: number; photoUrl?: string; clotureLe?: string }): Promise<void> {
   await apiRequest(`/maintenance/incidents/${encodeURIComponent(id)}`, { method: "PUT", body: input });
 }
 

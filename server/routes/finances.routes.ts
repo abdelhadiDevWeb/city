@@ -5,7 +5,7 @@ import { csrfProtection } from "../middleware/csrf";
 
 export const financesRouter = Router();
 
-financesRouter.use(requireAuth, requireRole("admin", "sub_admin"), csrfProtection);
+financesRouter.use(requireAuth, requireRole("super_admin", "admin", "sub_admin"), csrfProtection);
 
 financesRouter.get("/", finances.getFinances);
 financesRouter.post("/encaisser/:id", finances.encaisser);

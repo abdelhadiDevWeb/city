@@ -15,6 +15,7 @@ export interface ChargeDocument extends Document {
   modePaiement?: string;
   reference?: string;
   datePaiement?: Date;
+  encaissePar?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -34,6 +35,7 @@ const chargeSchema = new Schema<ChargeDocument>(
     modePaiement: { type: String, trim: true },
     reference: { type: String, trim: true },
     datePaiement: { type: Date },
+    encaissePar: { type: String, trim: true },
   },
   {
     timestamps: true,

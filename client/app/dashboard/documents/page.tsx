@@ -1,6 +1,22 @@
 "use client";
 
-import { Download, FileSignature, FileText, FolderOpen, Plus, Upload } from "lucide-react";
+import {
+  AlertTriangle,
+  CalendarDays,
+  CheckCircle2,
+  Clock,
+  Download,
+  FileSignature,
+  FileSpreadsheet,
+  FileText,
+  FolderOpen,
+  Lock,
+  Plus,
+  Printer,
+  Search,
+  ShieldCheck,
+  Upload,
+} from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 import {
   createDocument,
@@ -17,6 +33,8 @@ import {
   ActionGroup,
   ConfirmModal,
   DataTable,
+  ExportPeriodToolbar,
+  FacetFilter,
   Field,
   FormError,
   Modal,
@@ -27,6 +45,7 @@ import {
   button,
   card,
   describeError,
+  downloadCsv,
   useToast,
   type Column,
   type TabItem,
@@ -47,6 +66,18 @@ export default function DocumentsPage() {
   const [error, setError] = useState<string | null>(null);
   const [version, setVersion] = useState(0);
   const [tab, setTab] = useState<TabId>("contrats");
+
+  // Filters & Period
+  const [queryContrats, setQueryContrats] = useState("");
+  const [filterContrats, setFilterContrats] = useState<"all" | "actif" | "bientot" | "expire">("all");
+
+  const [queryDocs, setQueryDocs] = useState("");
+  const [filterDocs, setFilterDocs] = useState<string>("all");
+
+  const now = new Date();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const [startDate, setStartDate] = useState(`${now.getFullYear()}-01-01`);
+  const [endDate, setEndDate] = useState(`${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`);
 
   // Creation modals
   const [addingContrat, setAddingContrat] = useState(false);
@@ -78,10 +109,56 @@ export default function DocumentsPage() {
   const contrats = data?.contrats ?? [];
   const documentsResidence = data?.documentsResidence ?? [];
 
+  const sum = (values: number[]) => values.reduce((total, v) => total + v, 0);
+  const totalBudgetContrats = sum(contrats.map((c) => c.montantAnnuel));
+  const contratsActifsCount = contrats.filter((c) => c.statut === "Actif").length;
+  const contratsExpireBientotCount = contrats.filter((c) => c.statut === "Expire bientôt" || c.statut === "Expiré").length;
+
+  const needleContrats = queryContrats.trim().toLowerCase();
+  const filteredContrats = contrats.filter((c) => {
+    if (filterContrats === "actif" && c.statut !== "Actif") return false;
+    if (filterContrats === "bientot" && c.statut !== "Expire bientôt") return false;
+    if (filterContrats === "expire" && c.statut !== "Expiré") return false;
+    if (!needleContrats) return true;
+    return [c.objet, c.prestataire, c.debut, c.fin].some((v) => v.toLowerCase().includes(needleContrats));
+  });
+
+  const needleDocs = queryDocs.trim().toLowerCase();
+  const filteredDocs = documentsResidence.filter((d) => {
+    if (filterDocs !== "all" && d.categorie.toLowerCase() !== filterDocs.toLowerCase()) return false;
+    if (!needleDocs) return true;
+    return [d.nom, d.categorie, d.format].some((v) => v.toLowerCase().includes(needleDocs));
+  });
+
   const tabs: TabItem<TabId>[] = [
     { id: "contrats", label: "Contrats prestataires", icon: FileSignature, count: contrats.length },
-    { id: "documents", label: "Documents résidence", icon: FileText, count: documentsResidence.length },
+    { id: "documents", label: "Coffre-fort & Documents", icon: FolderOpen, count: documentsResidence.length },
   ];
+
+  function handleExportCsv() {
+    if (tab === "contrats") {
+      const rows = filteredContrats.map((c) => ({
+        "Objet du contrat": c.objet,
+        Prestataire: c.prestataire,
+        "Date début": c.debut,
+        "Date fin": c.fin,
+        Statut: c.statut,
+        "Montant annuel (DZD)": c.montantAnnuel,
+      }));
+      downloadCsv(rows, `contrats-prestataires-${startDate}_${endDate}.csv`);
+      notify("Export CSV des contrats prestataires généré.");
+    } else {
+      const rows = filteredDocs.map((d) => ({
+        "Nom du document": d.nom,
+        Catégorie: d.categorie,
+        Format: d.format,
+        Taille: d.taille,
+        "Ajouté le": d.ajouteLe,
+      }));
+      downloadCsv(rows, `coffre-fort-documents-${startDate}_${endDate}.csv`);
+      notify("Export CSV du coffre-fort numérique généré.");
+    }
+  }
 
   function handleDownload(nom: string, details?: string) {
     try {
@@ -222,23 +299,132 @@ Ce fichier atteste de la validité légale et comptable du document archivé sou
         </div>
       ) : (
         <>
+          {/* Executive Document & Vault KPIs */}
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <div className={`${card} p-5`}>
+              <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wide text-stone-500">
+                <span>Contrats Actifs</span>
+                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
+                  <FileSignature className="h-3.5 w-3.5" />
+                </span>
+              </div>
+              <p className="mt-2 font-mono text-2xl font-bold tracking-tight text-ink">
+                {contratsActifsCount} / {contrats.length}
+              </p>
+              <p className="mt-1 text-xs text-stone-500">Contrats prestataires en vigueur</p>
+            </div>
+
+            <div className={`${card} p-5`}>
+              <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wide text-stone-500">
+                <span>Budget Annuel Engagé</span>
+                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-orange-50 text-brand">
+                  <ShieldCheck className="h-3.5 w-3.5" />
+                </span>
+              </div>
+              <p className="mt-2 font-mono text-2xl font-bold tracking-tight text-ink">{formatDZD(totalBudgetContrats)}</p>
+              <p className="mt-1 text-xs text-stone-500">Engagements contractuels annuels</p>
+            </div>
+
+            <div className={`${card} p-5`}>
+              <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wide text-stone-500">
+                <span>Échéances & Renouvellements</span>
+                <span className={`flex h-7 w-7 items-center justify-center rounded-lg ${contratsExpireBientotCount > 0 ? "bg-amber-50 text-amber-600" : "bg-stone-100 text-stone-600"}`}>
+                  <AlertTriangle className="h-3.5 w-3.5" />
+                </span>
+              </div>
+              <p className="mt-2 font-mono text-2xl font-bold tracking-tight text-ink">{contratsExpireBientotCount}</p>
+              <p className="mt-1 text-xs text-stone-500">Contrat(s) expirant sous 60 jours ou échus</p>
+            </div>
+
+            <div className={`${card} p-5`}>
+              <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wide text-stone-500">
+                <span>Coffre-fort Numérique</span>
+                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                  <Lock className="h-3.5 w-3.5" />
+                </span>
+              </div>
+              <p className="mt-2 font-mono text-2xl font-bold tracking-tight text-ink">{documentsResidence.length} Pièces</p>
+              <p className="mt-1 text-xs text-stone-500">Archives officielles certifiées conformes</p>
+            </div>
+          </div>
+
+          <ExportPeriodToolbar
+            startDate={startDate}
+            endDate={endDate}
+            onPeriodChange={(start, end) => {
+              setStartDate(start);
+              setEndDate(end);
+            }}
+            onExportCsv={handleExportCsv}
+            onPrint={() => window.print()}
+            title="Période des Contrats"
+          />
+
           <Tabs tabs={tabs} active={tab} onChange={setTab} />
 
           {tab === "contrats" && (
             <DataTable
               columns={contratColumns}
-              rows={contrats}
+              rows={filteredContrats}
               rowKey={(c) => c.id}
-              empty="Aucun contrat de prestataire enregistré pour le moment."
+              toolbar={
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <FacetFilter
+                    value={filterContrats}
+                    onChange={setFilterContrats}
+                    options={[
+                      { id: "all", label: "Tous les contrats", count: contrats.length },
+                      { id: "actif", label: "Actifs", count: contratsActifsCount },
+                      { id: "bientot", label: "Expire bientôt", count: contrats.filter((c) => c.statut === "Expire bientôt").length },
+                      { id: "expire", label: "Expirés", count: contrats.filter((c) => c.statut === "Expiré").length },
+                    ]}
+                  />
+                  <div className="relative min-w-[240px]">
+                    <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-stone-400" />
+                    <input
+                      type="text"
+                      value={queryContrats}
+                      onChange={(e) => setQueryContrats(e.target.value)}
+                      placeholder="Rechercher contrat, prestataire..."
+                      className="w-full rounded-xl border border-stone-200 bg-white py-1.5 pl-9 pr-3 text-xs text-ink placeholder:text-stone-400 focus:outline-none focus:ring-1 focus:ring-brand"
+                    />
+                  </div>
+                </div>
+              }
+              empty="Aucun contrat de prestataire ne correspond aux critères sélectionnés."
             />
           )}
 
           {tab === "documents" && (
             <DataTable
               columns={documentColumns}
-              rows={documentsResidence}
+              rows={filteredDocs}
               rowKey={(d) => d.id}
-              empty="Aucun document officiel déposé pour la résidence."
+              toolbar={
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <FacetFilter
+                    value={filterDocs}
+                    onChange={setFilterDocs}
+                    options={[
+                      { id: "all", label: "Tous les documents", count: documentsResidence.length },
+                      { id: "règlement", label: "Règlements", count: documentsResidence.filter((d) => d.categorie.toLowerCase().includes("règlement")).length },
+                      { id: "assemblée générale", label: "PV d'AG", count: documentsResidence.filter((d) => d.categorie.toLowerCase().includes("assemblée")).length },
+                      { id: "technique", label: "Technique", count: documentsResidence.filter((d) => d.categorie.toLowerCase().includes("technique")).length },
+                    ]}
+                  />
+                  <div className="relative min-w-[240px]">
+                    <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-stone-400" />
+                    <input
+                      type="text"
+                      value={queryDocs}
+                      onChange={(e) => setQueryDocs(e.target.value)}
+                      placeholder="Rechercher document, catégorie..."
+                      className="w-full rounded-xl border border-stone-200 bg-white py-1.5 pl-9 pr-3 text-xs text-ink placeholder:text-stone-400 focus:outline-none focus:ring-1 focus:ring-brand"
+                    />
+                  </div>
+                </div>
+              }
+              empty="Aucun document officiel ne correspond aux critères sélectionnés."
             />
           )}
         </>

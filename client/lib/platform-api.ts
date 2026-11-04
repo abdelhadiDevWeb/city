@@ -23,7 +23,15 @@ export type Stats = {
   abonnementsParFormule: { nom: string; souscriptions: number }[];
 };
 
-export type Formule = { id: string; nom: string; prix: number; duree: number; souscriptions: number; createdAt: string };
+export type Formule = {
+  id: string;
+  nom: string;
+  prix: number;
+  duree: number;
+  cible?: "admin" | "sub_admin";
+  souscriptions: number;
+  createdAt: string;
+};
 
 export type Souscription = {
   id: string;
@@ -31,6 +39,9 @@ export type Souscription = {
   debut: string;
   fin: string;
   statutPaiement: boolean;
+  modePaiement?: string;
+  montantPaye?: number;
+  notesPaiement?: string;
 };
 
 export type AdminAbonne = {
@@ -44,17 +55,31 @@ export type AdminAbonne = {
   souscriptions: Souscription[];
 };
 
+export type SousAdminAbonne = {
+  id: string;
+  prenom: string;
+  nom: string;
+  email: string;
+  telephone: string;
+  residence: { id: string; nom: string } | null;
+  batiment: { id: string; nom: string } | null;
+  actif: boolean;
+  aJour: boolean;
+  souscriptions: Souscription[];
+};
+
 export type SuperAdminAccount = { id: string; nomComplet: string; email: string; createdAt: string };
 
 export async function getStats(): Promise<Stats> {
   return apiRequest<Stats>("/stats");
 }
 
-export async function listFormules(): Promise<Formule[]> {
-  return (await apiRequest<{ abonnements: Formule[] }>("/abonnements")).abonnements;
+export async function listFormules(cible?: "admin" | "sub_admin"): Promise<Formule[]> {
+  const query = cible ? `?cible=${encodeURIComponent(cible)}` : "";
+  return (await apiRequest<{ abonnements: Formule[] }>(`/abonnements${query}`)).abonnements;
 }
 
-export async function createFormule(input: { nom: string; prix: number; duree: number }): Promise<void> {
+export async function createFormule(input: { nom: string; prix: number; duree: number; cible?: "admin" | "sub_admin" }): Promise<void> {
   await apiRequest("/abonnements", { method: "POST", body: input });
 }
 
@@ -62,7 +87,23 @@ export async function listAdminsAbonnes(): Promise<AdminAbonne[]> {
   return (await apiRequest<{ admins: AdminAbonne[] }>("/abonnements/admins")).admins;
 }
 
-export async function createSouscription(input: { idAdmin: string; idAbonnement: string; debut: string; statutPaiement: boolean }): Promise<void> {
+export async function listSousAdminsAbonnes(): Promise<SousAdminAbonne[]> {
+  return (await apiRequest<{ sousAdmins: SousAdminAbonne[] }>("/abonnements/sous-admins")).sousAdmins;
+}
+
+export async function getSousAdminKPIs(): Promise<{ total: number; payes: number; impayes: number }> {
+  return (await apiRequest<{ kpis: { total: number; payes: number; impayes: number } }>("/abonnements/sous-admins/kpis")).kpis;
+}
+
+export async function createSouscription(input: {
+  idAdmin: string;
+  idAbonnement: string;
+  debut: string;
+  statutPaiement: boolean;
+  modePaiement?: string;
+  montantPaye?: number;
+  notesPaiement?: string;
+}): Promise<void> {
   await apiRequest("/abonnements/souscriptions", { method: "POST", body: input });
 }
 
@@ -78,7 +119,7 @@ export async function createSuperAdmin(input: { nomComplet: string; email: strin
   await apiRequest("/super-admins", { method: "POST", body: input });
 }
 
-export async function updateFormule(id: string, input: { nom?: string; prix?: number; duree?: number }): Promise<void> {
+export async function updateFormule(id: string, input: { nom?: string; prix?: number; duree?: number; cible?: "admin" | "sub_admin" }): Promise<void> {
   await apiRequest(`/abonnements/${encodeURIComponent(id)}`, { method: "PUT", body: input });
 }
 
@@ -97,4 +138,3 @@ export async function updateSuperAdmin(id: string, input: { nomComplet?: string;
 export async function deleteSuperAdmin(id: string): Promise<void> {
   await apiRequest(`/super-admins/${encodeURIComponent(id)}`, { method: "DELETE" });
 }
-

@@ -4,6 +4,8 @@ import { publicJson } from "./fields";
 export interface IResidence {
   nom: string;
   localisation: string;
+  maxBatiments: number;
+  maxResidents?: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -14,6 +16,8 @@ const residenceSchema = new Schema<IResidence>(
   {
     nom: { type: String, required: true, trim: true, maxlength: 120 },
     localisation: { type: String, required: true, trim: true, maxlength: 200 },
+    maxBatiments: { type: Number, required: true, min: 1, max: 1000, default: 5 },
+    maxResidents: { type: Number, required: true, min: 1, max: 10000, default: 100 },
   },
   { timestamps: true, toJSON: publicJson },
 );

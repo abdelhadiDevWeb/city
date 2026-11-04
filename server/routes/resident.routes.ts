@@ -16,11 +16,7 @@ const createResidentSchema = Joi.object({
       .pattern(/^\+?[0-9]{8,15}$/)
       .required()
       .messages({ "string.pattern.base": "Le téléphone doit contenir 8 à 15 chiffres (+ facultatif)" }),
-    nin: Joi.string()
-      .trim()
-      .pattern(/^[0-9]{18}$/)
-      .required()
-      .messages({ "string.pattern.base": "Le NIN doit contenir exactement 18 chiffres" }),
+    nin: Joi.string().trim().allow("", null).optional(),
     idBatiment: Joi.string().hex().length(24).required(),
     etage: Joi.number().integer().min(0).max(200).required(),
     appartement: Joi.string().trim().min(1).max(20).required(),
@@ -30,7 +26,7 @@ const createResidentSchema = Joi.object({
 
 export const residentRouter = Router();
 
-residentRouter.use(requireAuth, requireRole("admin", "sub_admin"), csrfProtection);
+residentRouter.use(requireAuth, requireRole("super_admin", "admin", "sub_admin"), csrfProtection);
 
 residentRouter.get("/", residents.list);
 residentRouter.post("/", validate(createResidentSchema), residents.create);

@@ -6,7 +6,7 @@ export interface IUser {
   nom: string;
   email: string;
   telephone: string;
-  nin: string;
+  nin?: string | null;
   motDePasseHash?: string;
   tentativesEchouees?: number;
   verrouilleJusqua?: Date | null;
@@ -26,8 +26,7 @@ const userSchema = new Schema<IUser>(
     nom: nameField,
     email: emailField,
     telephone: telephoneField,
-    // Numéro d'identification nationale: 18 digits on the Algerian biometric ID card.
-    nin: { type: String, required: true, trim: true, match: /^[0-9]{18}$/ },
+    nin: { type: String, required: false, trim: true, default: null },
     motDePasseHash: { type: String, select: false },
     tentativesEchouees: { type: Number, default: 0, select: false },
     verrouilleJusqua: { type: Date, default: null, select: false },
@@ -39,6 +38,6 @@ const userSchema = new Schema<IUser>(
   { timestamps: true, toJSON: publicJson },
 );
 
-userSchema.index({ nin: 1 }, { unique: true, partialFilterExpression: { nin: { $type: "string" } } });
+userSchema.index({ nin: 1 }, { unique: true, partialFilterExpression: { nin: { $type: "string", $gt: "" } } });
 
 export const User = model<IUser>("User", userSchema);

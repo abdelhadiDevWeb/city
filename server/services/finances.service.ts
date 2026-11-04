@@ -8,11 +8,16 @@ import { AppError } from "../utils/AppError";
 
 const trusted = <T extends object>(filter: T) => mongoose.trusted(filter) as T;
 
-export async function getFinances(idResidence: string) {
+export async function getFinances(idResidence: string, idBatiment?: string) {
   const resId = new mongoose.Types.ObjectId(idResidence);
 
+  const chargeFilter: Record<string, unknown> = { idResidence: resId };
+  if (idBatiment) {
+    chargeFilter.idBatiment = new mongoose.Types.ObjectId(idBatiment);
+  }
+
   const [charges, allDepenses] = await Promise.all([
-    Charge.find({ idResidence: resId }).sort({ createdAt: -1 }),
+    Charge.find(chargeFilter).sort({ createdAt: -1 }),
     Depense.find({ idResidence: resId }).sort({ createdAt: -1 }),
   ]);
 
@@ -33,11 +38,14 @@ export async function getFinances(idResidence: string) {
     .map((c) => ({
       id: String(c._id),
       date: c.datePaiement ? new Date(c.datePaiement).toLocaleDateString("fr-FR") : "Récemment",
+      dateIso: c.datePaiement ? c.datePaiement.toISOString() : c.createdAt?.toISOString(),
       logement: c.logement,
       resident: c.resident,
+      telephone: c.telephone,
       mode: c.modePaiement ?? "Espèces",
       reference: c.reference ?? `REF-${String(c._id).slice(-6)}`,
       montant: c.totalDu,
+      encaissePar: c.encaissePar ?? "Syndic",
     }));
 
   const depensesList = allDepenses
@@ -67,9 +75,19 @@ export async function getFinances(idResidence: string) {
   return { impayes, paiements, depenses: depensesList, factures: facturesList };
 }
 
-export async function encaisser(idResidence: string, chargeId: string, input: { modePaiement?: string; reference?: string }) {
-  const charge = await Charge.findOne({ _id: chargeId, idResidence });
-  if (!charge) throw new AppError(404, "Charge introuvable");
+export async function encaisser(
+  idResidence: string,
+  chargeId: string,
+  input: { modePaiement?: string; reference?: string; encaissePar?: string },
+  idBatiment?: string,
+) {
+  const query: Record<string, unknown> = { _id: chargeId, idResidence };
+  if (idBatiment) {
+    query.idBatiment = new mongoose.Types.ObjectId(idBatiment);
+  }
+
+  const charge = await Charge.findOne(query);
+  if (!charge) throw new AppError(404, "Charge introuvable ou en dehors de votre périmètre");
 
   charge.statut = "paye";
   charge.moisImpayes = 0;
@@ -77,6 +95,7 @@ export async function encaisser(idResidence: string, chargeId: string, input: { 
   charge.modePaiement = input.modePaiement ?? "Espèces";
   charge.reference = input.reference ?? `ENC-${Date.now().toString().slice(-6)}`;
   charge.dernierReglement = new Date().toLocaleDateString("fr-FR");
+  if (input.encaissePar) charge.encaissePar = input.encaissePar;
   await charge.save();
 
   return charge.toJSON();
@@ -84,10 +103,11 @@ export async function encaisser(idResidence: string, chargeId: string, input: { 
 
 export async function createPaiement(
   idResidence: string,
-  input: { logement: string; resident: string; telephone: string; montant: number; modePaiement: string; reference?: string },
+  input: { logement: string; resident: string; telephone: string; montant: number; modePaiement: string; reference?: string; idBatiment?: string; encaissePar?: string },
 ) {
   const charge = await Charge.create({
     idResidence,
+    idBatiment: input.idBatiment ? new mongoose.Types.ObjectId(input.idBatiment) : undefined,
     logement: input.logement,
     resident: input.resident,
     telephone: input.telephone,
@@ -98,6 +118,7 @@ export async function createPaiement(
     reference: input.reference || `PAY-${Date.now().toString().slice(-6)}`,
     datePaiement: new Date(),
     dernierReglement: new Date().toLocaleDateString("fr-FR"),
+    encaissePar: input.encaissePar || "Syndic",
   });
   return charge.toJSON();
 }
@@ -141,9 +162,14 @@ export async function payerFacture(idResidence: string, factureId: string) {
   return facture.toJSON();
 }
 
-export async function genererCharges(idResidence: string, moisNom: string) {
+export async function genererCharges(idResidence: string, moisNom: string, idBatiment?: string) {
   const resId = new mongoose.Types.ObjectId(idResidence);
-  const batiments = await Batiment.find({ idResidence: resId });
+  const batQuery: Record<string, unknown> = { idResidence: resId };
+  if (idBatiment) {
+    batQuery._id = new mongoose.Types.ObjectId(idBatiment);
+  }
+
+  const batiments = await Batiment.find(batQuery);
   const batimentIds = batiments.map((b) => b._id);
   const appartements = await Appartement.find({ idBatiment: trusted({ $in: batimentIds }) });
   const batimentMap = new Map(batiments.map((b) => [String(b._id), b.nom]));

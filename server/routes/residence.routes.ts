@@ -14,6 +14,18 @@ const createResidenceSchema = Joi.object({
   body: Joi.object({
     nom: Joi.string().trim().min(2).max(120).required(),
     localisation: Joi.string().trim().min(2).max(200).required(),
+    maxBatiments: Joi.number().integer().min(1).max(1000).default(5),
+    maxResidents: Joi.number().integer().min(1).max(10000).default(100),
+  }).required(),
+});
+
+const updateResidenceSchema = Joi.object({
+  params: idParams,
+  body: Joi.object({
+    nom: Joi.string().trim().min(2).max(120).optional(),
+    localisation: Joi.string().trim().min(2).max(200).optional(),
+    maxBatiments: Joi.number().integer().min(1).max(1000).optional(),
+    maxResidents: Joi.number().integer().min(1).max(10000).optional(),
   }).required(),
 });
 
@@ -22,6 +34,7 @@ const createBatimentSchema = Joi.object({
   body: Joi.object({
     nom: Joi.string().trim().min(1).max(60).required(),
     etages: Joi.number().integer().min(0).max(200).required(),
+    maxAppartements: Joi.number().integer().min(1).max(2000).optional(),
   }).required(),
 });
 
@@ -32,10 +45,9 @@ residenceRouter.use(requireAuth, csrfProtection);
 residenceRouter.get("/", requireRole("super_admin"), residences.list);
 residenceRouter.post("/", requireRole("super_admin"), validate(createResidenceSchema), residences.create);
 residenceRouter.get("/:id", requireRole("super_admin", "admin"), validate(Joi.object({ params: idParams })), residences.details);
-residenceRouter.put("/:id", requireRole("super_admin", "admin"), residences.update);
+residenceRouter.put("/:id", requireRole("super_admin", "admin"), validate(updateResidenceSchema), residences.update);
 residenceRouter.delete("/:id", requireRole("super_admin"), residences.remove);
 
 residenceRouter.post("/:id/batiments", requireRole("super_admin", "admin"), validate(createBatimentSchema), residences.createBatiment);
 residenceRouter.put("/:id/batiments/:batimentId", requireRole("super_admin", "admin"), residences.updateBatiment);
 residenceRouter.delete("/:id/batiments/:batimentId", requireRole("super_admin", "admin"), residences.removeBatiment);
-

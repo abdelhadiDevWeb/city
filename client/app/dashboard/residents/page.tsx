@@ -1,12 +1,18 @@
 "use client";
 
-import { Building2, Check, Copy, KeyRound, Search, UserPlus, Users } from "lucide-react";
+import { Building2, Check, CheckCircle2, Copy, CreditCard, KeyRound, Mail, Phone, Search, UserPlus, Users } from "lucide-react";
+import { encaisserCharge, getFinances, type Impaye } from "@/lib/finances-api";
+import { formatDZD } from "@/lib/format";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import {
   createResident,
   deleteResident,
   etageLabel,
   getMonEspace,
+  getResidence,
+  listResidences,
+  type ResidenceDetails,
+  type ResidenceSummary,
   listResidents,
   updateResident,
   type BatimentDetail,
@@ -15,14 +21,41 @@ import {
 } from "@/lib/residences-api";
 import { ModalActions, SelectField, formText, useSubmit } from "../forms";
 import { useSession } from "../session";
-import { ActionGroup, Avatar, ConfirmModal, DataTable, Field, FormError, Modal, Mono, PageHeader, Pill, button, card, describeError, useToast, type Column } from "../ui";
+import {
+  ActionGroup,
+  Avatar,
+  Breadcrumbs,
+  ConfirmModal,
+  DataTable,
+  ExportPeriodToolbar,
+  FacetFilter,
+  Field,
+  FormError,
+  Modal,
+  Mono,
+  PageHeader,
+  PasswordGeneratorInput,
+  Pill,
+  button,
+  card,
+  describeError,
+  downloadCsv,
+  useToast,
+  type Column,
+} from "../ui";
 
 const fullName = (p: { prenom: string; nom: string }) => `${p.prenom} ${p.nom}`;
 
 export default function ResidentsPage() {
   const notify = useToast();
   const { account } = useSession();
+  const isSuperAdmin = account.type === "SuperAdmin";
   const isSubAdmin = account.type === "Admin" && account.role === "sub_admin";
+  const [residencesList, setResidencesList] = useState<ResidenceSummary[]>([]);
+  const [selectedResidenceId, setSelectedResidenceId] = useState<string>("all");
+  const [superAdminBatiments, setSuperAdminBatiments] = useState<BatimentDetail[]>([]);
+  const [impayesMap, setImpayesMap] = useState<Map<string, Impaye>>(new Map());
+  const [busyId, setBusyId] = useState<string | null>(null);
   const [espace, setEspace] = useState<MonEspace | null>(null);
   const [residents, setResidents] = useState<Resident[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -32,15 +65,40 @@ export default function ResidentsPage() {
   const [deletingResident, setDeletingResident] = useState<Resident | null>(null);
   const [createdCredentials, setCreatedCredentials] = useState<{ resident: Resident; password: string } | null>(null);
   const [query, setQuery] = useState("");
+  const [statutFilter, setStatutFilter] = useState<"all" | "paye" | "impaye">("all");
   const closeModal = useCallback(() => setAdding(false), []);
+
+  const now = new Date();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const [startDate, setStartDate] = useState(`${now.getFullYear()}-01-01`);
+  const [endDate, setEndDate] = useState(`${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`);
 
   useEffect(() => {
     let active = true;
-    Promise.all([getMonEspace(), listResidents()])
-      .then(([e, r]) => {
+    const reqs: Promise<unknown>[] = [
+      isSuperAdmin ? Promise.resolve(null) : getMonEspace(),
+      listResidents(isSuperAdmin && selectedResidenceId !== "all" ? selectedResidenceId : undefined),
+      getFinances().catch(() => null),
+    ];
+    if (isSuperAdmin) {
+      reqs.push(listResidences());
+    }
+    Promise.all(reqs)
+      .then(([e, r, fin, resList]) => {
         if (!active) return;
-        setEspace(e);
-        setResidents(r);
+        if (e) setEspace(e as MonEspace);
+        if (fin) {
+          const map = new Map<string, Impaye>();
+          for (const imp of (fin as { impayes: Impaye[] }).impayes ?? []) {
+            if (imp.telephone) map.set(imp.telephone, imp);
+            if (imp.resident) map.set(imp.resident.trim().toLowerCase(), imp);
+          }
+          setImpayesMap(map);
+        }
+        if (resList) {
+          setResidencesList(resList as ResidenceSummary[]);
+        }
+        setResidents(r as Resident[]);
         setError(null);
       })
       .catch((err) => {
@@ -49,14 +107,49 @@ export default function ResidentsPage() {
     return () => {
       active = false;
     };
-  }, [version]);
+  }, [version, isSuperAdmin, selectedResidenceId]);
+
+  useEffect(() => {
+    if (!isSuperAdmin) return;
+    const targetId = selectedResidenceId !== "all" ? selectedResidenceId : residencesList[0]?.id;
+    if (targetId) {
+      getResidence(targetId)
+        .then((res) => {
+          setSuperAdminBatiments(res.batiments);
+        })
+        .catch(() => {});
+    }
+  }, [isSuperAdmin, selectedResidenceId, residencesList]);
+
+  async function handleValiderPaiement(r: Resident, impaye: Impaye) {
+    try {
+      setBusyId(r.id);
+      await encaisserCharge(impaye.id);
+      notify(`Paiement de ${formatDZD(impaye.totalDu)} validé pour ${fullName(r)} — accès débloqué.`);
+      setVersion((v) => v + 1);
+    } catch (err) {
+      notify(describeError(err).message);
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  const totalCount = residents?.length ?? 0;
+  const impayesCount = (residents ?? []).filter(
+    (r) => impayesMap.has(r.telephone) || impayesMap.has(fullName(r).trim().toLowerCase()),
+  ).length;
+  const payesCount = totalCount - impayesCount;
 
   const needle = query.trim().toLowerCase();
-  const rows = (residents ?? []).filter(
-    (r) =>
-      !needle ||
-      [fullName(r), r.email, r.nin, r.telephone, r.batiment?.nom ?? "", r.appartement?.nom ?? ""].some((v) => v.toLowerCase().includes(needle)),
-  );
+  const rows = (residents ?? []).filter((r) => {
+    const isImpaye = impayesMap.has(r.telephone) || impayesMap.has(fullName(r).trim().toLowerCase());
+    if (statutFilter === "paye" && isImpaye) return false;
+    if (statutFilter === "impaye" && !isImpaye) return false;
+    if (!needle) return true;
+    return [fullName(r), r.email, r.nin ?? "", r.telephone, r.batiment?.nom ?? "", r.appartement?.nom ?? ""].some((v) =>
+      v.toLowerCase().includes(needle),
+    );
+  });
 
   const columns: Column<Resident>[] = [
     {
@@ -71,7 +164,7 @@ export default function ResidentsPage() {
         </span>
       ),
     },
-    { header: "NIN", cell: (r) => <Mono>{r.nin}</Mono> },
+    { header: "NIN", cell: (r) => r.nin ? <Mono>{r.nin}</Mono> : <span className="text-stone-400">—</span> },
     { header: "Téléphone", cell: (r) => <Mono>{r.telephone}</Mono> },
     { header: "Bâtiment", cell: (r) => (r.batiment ? <span className="font-semibold text-ink">{r.batiment.nom}</span> : "—") },
     {
@@ -86,23 +179,66 @@ export default function ResidentsPage() {
           "—"
         ),
     },
+    {
+      header: "Cotisations & Charges",
+      cell: (r) => {
+        const impaye = impayesMap.get(r.telephone) ?? impayesMap.get(fullName(r).trim().toLowerCase());
+        const isBusy = busyId === r.id;
+        if (!impaye) {
+          return <Pill tone="success">À jour (Payé)</Pill>;
+        }
+        return (
+          <div className="flex flex-wrap items-center gap-1.5">
+            <Pill tone="danger">Impayé ({formatDZD(impaye.totalDu)})</Pill>
+            <button
+              type="button"
+              disabled={isBusy}
+              onClick={() => handleValiderPaiement(r, impaye)}
+              className={button("primary", "sm")}
+              title="Valider la réception de la cotisation et débloquer l'accès"
+            >
+              <CheckCircle2 className="h-3.5 w-3.5" aria-hidden />
+              {isBusy ? "..." : "Valider"}
+            </button>
+          </div>
+        );
+      },
+    },
     { header: "Statut", cell: () => <Pill tone="dark">Propriétaire</Pill> },
     { header: "Ajouté le", cell: (r) => <span className="text-stone-500">{new Date(r.createdAt).toLocaleDateString("fr-FR")}</span> },
     {
       header: "Actions",
       align: "right",
       cell: (r) => (
-        <ActionGroup
-          editLabel="Modifier résident"
-          deleteLabel="Supprimer résident"
-          onEdit={() => setEditingResident(r)}
-          onDelete={() => setDeletingResident(r)}
-        />
+        <div className="flex items-center justify-end gap-1.5">
+          <a href={`tel:${r.telephone}`} title={`Appeler ${fullName(r)}`} className={button("secondary", "sm")}>
+            <Phone className="h-3.5 w-3.5" aria-hidden />
+            Appeler
+          </a>
+          <a href={`mailto:${r.email}`} title={`Envoyer un email à ${fullName(r)}`} className={button("secondary", "sm")}>
+            <Mail className="h-3.5 w-3.5" aria-hidden />
+            Email
+          </a>
+          <ActionGroup
+            editLabel="Modifier résident"
+            deleteLabel="Supprimer résident"
+            onEdit={() => setEditingResident(r)}
+            onDelete={() => setDeletingResident(r)}
+          />
+        </div>
       ),
     },
   ];
 
-  const canAdd = !!espace?.residence && espace.batiments.length > 0;
+  const canAdd = isSuperAdmin
+    ? residencesList.length > 0 && superAdminBatiments.length > 0
+    : !!espace?.residence && espace.batiments.length > 0;
+
+  const currentResidenceNom = isSuperAdmin
+    ? residencesList.find((r) => r.id === selectedResidenceId)?.nom ?? residencesList[0]?.nom ?? "Plateforme"
+    : espace?.residence?.nom ?? "";
+
+  const availableBatiments = isSuperAdmin ? superAdminBatiments : espace?.batiments ?? [];
 
   return (
     <div className="space-y-6">
@@ -110,9 +246,11 @@ export default function ResidentsPage() {
         icon={Users}
         title="Résidents & Propriétaires"
         subtitle={
-          espace?.residence
-            ? `${isSubAdmin ? `Bâtiment ${espace.batiments[0]?.nom ?? ""} · ` : ""}${espace.residence.nom} — ajoutez les propriétaires et leur appartement.`
-            : "Ajoutez les propriétaires et leur appartement."
+          isSuperAdmin
+            ? "Gestion globale des résidents et propriétaires de toutes les résidences."
+            : espace?.residence
+            ? `${isSubAdmin ? `Bâtiment ${espace.batiments[0]?.nom ?? ""} · ` : ""}${espace.residence.nom} — gestion des propriétaires et logements.`
+            : "Gestion des propriétaires et de leurs appartements."
         }
         actions={
           <button type="button" disabled={!canAdd} onClick={() => setAdding(true)} className={button("primary")}>
@@ -141,29 +279,100 @@ export default function ResidentsPage() {
         </section>
       ) : residents ? (
         <>
+          {isSuperAdmin && (
+            <div className={`${card} flex flex-wrap items-center justify-between gap-3 p-4`}>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold uppercase tracking-wide text-stone-500">Filtrer par résidence :</span>
+                <select
+                  value={selectedResidenceId}
+                  onChange={(e) => setSelectedResidenceId(e.target.value)}
+                  className="rounded-xl border border-stone-200 bg-white px-3 py-1.5 text-sm font-semibold text-ink shadow-xs"
+                >
+                  <option value="all">Toutes les résidences ({residents.length} résidents)</option>
+                  {residencesList.map((r) => (
+                    <option key={r.id} value={r.id}>
+                      {r.nom} ({r.localisation})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <span className="text-xs text-stone-500">
+                {rows.length} résident{rows.length > 1 ? "s" : ""} affiché{rows.length > 1 ? "s" : ""}
+              </span>
+            </div>
+          )}
           <label className={`${card} flex items-center gap-3 px-4 py-3`}>
             <Search className="h-4 w-4 text-stone-400" aria-hidden />
             <span className="sr-only">Rechercher</span>
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Rechercher par nom, email, NIN, bâtiment ou appartement…"
+              placeholder="Rechercher par nom, email, téléphone, bâtiment ou appartement…"
               className="w-full bg-transparent text-sm text-ink placeholder:text-stone-400 focus:outline-none"
             />
           </label>
+
+          <ExportPeriodToolbar
+            startDate={startDate}
+            endDate={endDate}
+            onPeriodChange={(s, e) => {
+              setStartDate(s);
+              setEndDate(e);
+            }}
+            onExportCsv={() => {
+              const dataToExport = rows.map((r) => {
+                const impaye = impayesMap.get(r.id);
+                return {
+                  "Nom complet": fullName(r),
+                  Email: r.email,
+                  Téléphone: r.telephone,
+                  Bâtiment: r.batiment?.nom ?? "Non assigné",
+                  Appartement: r.appartement?.nom ?? "Non assigné",
+                  Étage: r.appartement?.etage !== undefined ? etageLabel(r.appartement.etage) : "-",
+                  "Statut Cotisations": impaye ? `En retard (${impaye.moisImpayes} mois)` : "À jour",
+                  "Total dû (DZD)": impaye ? impaye.totalDu : 0,
+                };
+              });
+              downloadCsv(dataToExport, `registre-residents-${startDate}_${endDate}.csv`);
+              notify("Registre des résidents exporté en CSV.");
+            }}
+            onPrint={() => window.print()}
+            title="Période du registre"
+          />
+
           <DataTable
             columns={columns}
             rows={rows}
             rowKey={(r) => r.id}
-            empty={residents.length === 0 ? "Aucun résident pour le moment. Cliquez sur « Ajouter un résident »." : "Aucun résident ne correspond à la recherche."}
+            toolbar={
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <FacetFilter
+                  value={statutFilter}
+                  onChange={setStatutFilter}
+                  options={[
+                    { id: "all", label: "Tous les résidents", count: totalCount },
+                    { id: "paye", label: "À jour (Cotisations payées)", count: payesCount },
+                    { id: "impaye", label: "Cotisations impayées", count: impayesCount },
+                  ]}
+                />
+                <span className="text-xs font-semibold text-stone-500">
+                  {rows.length} résident{rows.length > 1 ? "s" : ""} affiché{rows.length > 1 ? "s" : ""}
+                </span>
+              </div>
+            }
+            empty={
+              residents.length === 0
+                ? "Aucun résident pour le moment. Cliquez sur « Ajouter un résident »."
+                : "Aucun résident ne correspond aux critères de recherche ou de filtre."
+            }
           />
         </>
       ) : null}
 
-      {adding && espace?.residence && (
+      {adding && (espace?.residence || (isSuperAdmin && availableBatiments.length > 0)) && (
         <ResidentModal
-          residenceNom={espace.residence.nom}
-          batiments={espace.batiments}
+          residenceNom={currentResidenceNom}
+          batiments={availableBatiments}
           onClose={closeModal}
           onCreated={(r) => {
             setAdding(false);
@@ -174,10 +383,10 @@ export default function ResidentsPage() {
         />
       )}
 
-      {editingResident && espace?.residence && (
+      {editingResident && (espace?.residence || isSuperAdmin) && (
         <EditResidentModal
           resident={editingResident}
-          batiments={espace.batiments}
+          batiments={availableBatiments}
           onClose={() => setEditingResident(null)}
           onUpdated={() => {
             setEditingResident(null);
@@ -309,13 +518,15 @@ function ResidentModal({
   const { submitting, error, run } = useSubmit();
   const [batimentId, setBatimentId] = useState(batiments[0]?.id ?? "");
   const [etage, setEtage] = useState(0);
-  const batiment = batiments.find((b) => b.id === batimentId);
+  const [password, setPassword] = useState("City@2026");
+  const activeBatId = batimentId || batiments[0]?.id || "";
+  const batiment = batiments.find((b) => b.id === activeBatId);
   const freeFlats = batiment?.appartements.filter((a) => !a.proprietaire) ?? [];
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
-    const password = formText(form, "password");
+    const fallbackNin = `${Date.now()}${Math.floor(10000 + Math.random() * 90000)}`;
     void run(async () =>
       onCreated(
         await createResident({
@@ -323,11 +534,11 @@ function ResidentModal({
           nom: formText(form, "nom"),
           email: formText(form, "email").toLowerCase(),
           telephone: formText(form, "telephone"),
-          nin: formText(form, "nin"),
-          idBatiment: batimentId,
+          nin: fallbackNin,
+          idBatiment: activeBatId,
           etage,
           appartement: formText(form, "appartement"),
-          ...(password ? { password } : {}),
+          password: password || "City@2026",
         }),
       ),
     );
@@ -400,32 +611,14 @@ function ResidentModal({
             <Field label="Email" name="email" type="email" required maxLength={254} autoComplete="off" />
             <Field label="Téléphone" name="telephone" type="tel" required pattern="\+?[0-9]{8,15}" title="8 à 15 chiffres, + facultatif" placeholder="0555123456" />
           </div>
-          <Field
-            label="NIN (numéro d'identification nationale)"
-            name="nin"
-            required
-            inputMode="numeric"
-            pattern="[0-9]{18}"
-            minLength={18}
-            maxLength={18}
-            title="18 chiffres"
-            placeholder="18 chiffres"
-            autoComplete="off"
-            className="font-mono"
-          />
         </fieldset>
 
         <fieldset className="space-y-4">
           <legend className="mb-3 text-[11px] font-bold uppercase tracking-wide text-stone-500">Accès à l&apos;application mobile</legend>
-          <Field
-            label="Mot de passe initial (facultatif)"
-            name="password"
-            type="text"
-            minLength={6}
-            maxLength={128}
-            placeholder="City@2026 (par défaut)"
-            autoComplete="off"
-            hint="Laissez vide pour utiliser City@2026. Le résident pourra changer ce mot de passe à tout moment."
+          <PasswordGeneratorInput
+            value={password}
+            onChange={setPassword}
+            hint="Ce mot de passe permettra au résident de se connecter sur l'application mobile. Il pourra le changer après sa première connexion."
           />
         </fieldset>
 
@@ -452,13 +645,14 @@ function EditResidentModal({
   const [nom, setNom] = useState(resident.nom);
   const [email, setEmail] = useState(resident.email);
   const [telephone, setTelephone] = useState(resident.telephone);
-  const [nin, setNin] = useState(resident.nin);
+  const [nin, setNin] = useState(resident.nin ?? "");
   const [batimentId, setBatimentId] = useState(resident.batiment?.id ?? batiments[0]?.id ?? "");
   const [etage, setEtage] = useState(resident.appartement?.etage ?? 0);
   const [appartement, setAppartement] = useState(resident.appartement?.nom ?? "");
   const [password, setPassword] = useState("");
 
-  const batiment = batiments.find((b) => b.id === batimentId);
+  const activeBatId = batimentId || batiments[0]?.id || "";
+  const batiment = batiments.find((b) => b.id === activeBatId);
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -489,18 +683,13 @@ function EditResidentModal({
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required maxLength={254} />
-            <Field label="Téléphone" type="tel" value={telephone} onChange={(e) => setTelephone(e.target.value)} required pattern="\\+?[0-9]{8,15}" title="8 à 15 chiffres, + facultatif" />
+            <Field label="Téléphone" type="tel" value={telephone} onChange={(e) => setTelephone(e.target.value)} required pattern="\+?[0-9]{8,15}" title="8 à 15 chiffres, + facultatif" />
           </div>
           <Field
-            label="NIN (numéro d'identification nationale)"
-            value={nin}
+            label="NIN (numéro d'identification nationale) — Optionnel"
+            value={nin ?? ""}
             onChange={(e) => setNin(e.target.value)}
-            required
-            inputMode="numeric"
-            pattern="[0-9]{18}"
-            minLength={18}
-            maxLength={18}
-            title="18 chiffres"
+            placeholder="Optionnel"
             className="font-mono"
           />
         </fieldset>

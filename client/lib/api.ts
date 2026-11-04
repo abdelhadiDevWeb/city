@@ -69,6 +69,9 @@ type RequestOptions = {
 };
 
 async function send(path: string, { method = "GET", body, auth = true }: RequestOptions): Promise<Response> {
+  if (auth && !accessToken) {
+    await refreshSession();
+  }
   const headers: Record<string, string> = { accept: "application/json" };
   if (body !== undefined) headers["content-type"] = "application/json";
   if (method !== "GET") headers["x-csrf-token"] = csrfToken ?? (await fetchCsrfToken());

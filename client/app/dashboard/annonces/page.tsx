@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, BellRing, CalendarDays, Megaphone, Pin, Plus, Send, UsersRound } from "lucide-react";
+import { AlertTriangle, BellRing, CalendarDays, Megaphone, Pin, Plus, Search, Send, UsersRound } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 import {
   createAlerte,
@@ -21,6 +21,9 @@ import {
   ALERT_STYLES,
   ActionGroup,
   ConfirmModal,
+  DataTable,
+  ExportPeriodToolbar,
+  FacetFilter,
   Field,
   FormError,
   Modal,
@@ -30,7 +33,9 @@ import {
   button,
   card,
   describeError,
+  downloadCsv,
   useToast,
+  type Column,
   type TabItem,
 } from "../ui";
 
@@ -52,6 +57,15 @@ export default function AnnoncesPage() {
   const [addingAlerte, setAddingAlerte] = useState(false);
   const [editingAlerte, setEditingAlerte] = useState<Alerte | null>(null);
   const [deletingAlerte, setDeletingAlerte] = useState<Alerte | null>(null);
+
+  const [queryAnnonces, setQueryAnnonces] = useState("");
+  const [queryAlertes, setQueryAlertes] = useState("");
+  const [filterAlertes, setFilterAlertes] = useState<"all" | "critique" | "attention" | "info">("all");
+
+  const now = new Date();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const [startDate, setStartDate] = useState(`${now.getFullYear()}-01-01`);
+  const [endDate, setEndDate] = useState(`${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`);
 
   useEffect(() => {
     let active = true;
@@ -97,6 +111,189 @@ export default function AnnoncesPage() {
     }
   }
 
+  const needleAnn = queryAnnonces.trim().toLowerCase();
+  const filteredAnnonces = annonces.filter((a) => {
+    if (!needleAnn) return true;
+    return [a.titre, a.contenu, a.audience, ...(a.canaux || [])].some((v) => v.toLowerCase().includes(needleAnn));
+  });
+
+  const needleAl = queryAlertes.trim().toLowerCase();
+  const filteredAlertes = alertes.filter((a) => {
+    if (filterAlertes !== "all" && a.niveau !== filterAlertes) return false;
+    if (!needleAl) return true;
+    return [a.titre, a.detail, a.audience || ""].some((v) => v.toLowerCase().includes(needleAl));
+  });
+
+  function handleExportCsv() {
+    if (tab === "annonces") {
+      const rows = filteredAnnonces.map((a) => ({
+        Titre: a.titre,
+        Contenu: a.contenu,
+        Audience: a.audience,
+        "Canaux de diffusion": (a.canaux || []).join(", "),
+        Date: a.date,
+        Épinglée: a.epinglee ? "Oui" : "Non",
+      }));
+      downloadCsv(rows, `annonces-${startDate}_${endDate}.csv`);
+      notify("Export CSV des annonces généré.");
+    } else {
+      const rows = filteredAlertes.map((a) => ({
+        Titre: a.titre,
+        Niveau: a.niveau,
+        Détail: a.detail,
+        Audience: a.audience || "Tous les résidents",
+        Date: a.date,
+      }));
+      downloadCsv(rows, `alertes-urgence-${startDate}_${endDate}.csv`);
+      notify("Export CSV des alertes d'urgence généré.");
+    }
+  }
+
+  const annonceColumns: Column<Annonce>[] = [
+    {
+      header: "Titre & Contenu",
+      cell: (a) => (
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-ink">{a.titre}</span>
+            {a.epinglee && (
+              <Pill tone="brand">
+                <Pin className="h-3 w-3" aria-hidden />
+                Épinglée
+              </Pill>
+            )}
+          </div>
+          <p className="line-clamp-2 text-xs text-stone-500 max-w-xl">{a.contenu}</p>
+        </div>
+      ),
+    },
+    {
+      header: "Date",
+      cell: (a) => (
+        <span className="flex items-center gap-1.5 text-xs text-stone-500">
+          <CalendarDays className="h-3.5 w-3.5 text-stone-400" aria-hidden />
+          {a.date}
+        </span>
+      ),
+    },
+    {
+      header: "Audience",
+      cell: (a) => (
+        <span className="flex items-center gap-1.5 text-xs font-medium text-stone-700">
+          <UsersRound className="h-3.5 w-3.5 text-stone-400" aria-hidden />
+          {a.audience}
+        </span>
+      ),
+    },
+    {
+      header: "Canaux",
+      cell: (a) => (
+        <span className="flex flex-wrap gap-1">
+          {a.canaux.map((c) => (
+            <Pill key={c}>{c}</Pill>
+          ))}
+        </span>
+      ),
+    },
+    {
+      header: "Actions",
+      align: "right",
+      cell: (a) => (
+        <div className="flex items-center justify-end gap-2">
+          <button
+            type="button"
+            onClick={() => void handleRenvoyer(a)}
+            className={button("secondary", "sm")}
+            title="Renvoyer une notification aux résidents"
+          >
+            <Send className="h-3.5 w-3.5" aria-hidden />
+            Renvoyer
+          </button>
+          <ActionGroup
+            editLabel="Modifier l'annonce"
+            deleteLabel="Supprimer l'annonce"
+            onEdit={() => setEditingAnnonce(a)}
+            onDelete={() => setDeletingAnnonce(a)}
+          />
+        </div>
+      ),
+    },
+  ];
+
+  const alerteColumns: Column<Alerte>[] = [
+    {
+      header: "Alerte & Description",
+      cell: (a) => {
+        const { icon: Icon, className, label } = ALERT_STYLES[a.niveau] ?? ALERT_STYLES.info;
+        return (
+          <div className="flex items-start gap-3">
+            <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${className}`}>
+              <Icon className="h-4 w-4" aria-hidden />
+            </span>
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-ink">{a.titre}</span>
+                <Pill tone={a.niveau === "critique" ? "danger" : a.niveau === "attention" ? "warning" : "neutral"}>
+                  {label}
+                </Pill>
+              </div>
+              <p className="line-clamp-2 text-xs text-stone-600 max-w-xl">{a.detail}</p>
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      header: "Date",
+      cell: (a) => (
+        <span className="flex items-center gap-1.5 text-xs text-stone-500">
+          <CalendarDays className="h-3.5 w-3.5 text-stone-400" aria-hidden />
+          {a.date}
+        </span>
+      ),
+    },
+    {
+      header: "Audience visée",
+      cell: (a) => (
+        <span className="flex items-center gap-1.5 text-xs font-medium text-stone-700">
+          <UsersRound className="h-3.5 w-3.5 text-stone-400" aria-hidden />
+          {a.audience || "Tous les résidents"}
+        </span>
+      ),
+    },
+    {
+      header: "Gravité",
+      cell: (a) => (
+        <Pill tone={a.niveau === "critique" ? "danger" : a.niveau === "attention" ? "warning" : "neutral"}>
+          {a.niveau === "critique" ? "Haute priorité" : a.niveau === "attention" ? "Attention" : "Information"}
+        </Pill>
+      ),
+    },
+    {
+      header: "Actions",
+      align: "right",
+      cell: (a) => (
+        <div className="flex items-center justify-end gap-2">
+          <button
+            type="button"
+            onClick={() => void handleRenvoyerAlerte(a)}
+            className={button("secondary", "sm")}
+            title="Diffuser à nouveau l'alerte urgente"
+          >
+            <Send className="h-3.5 w-3.5" aria-hidden />
+            Renvoyer
+          </button>
+          <ActionGroup
+            editLabel="Modifier l'alerte"
+            deleteLabel="Supprimer l'alerte"
+            onEdit={() => setEditingAlerte(a)}
+            onDelete={() => setDeletingAlerte(a)}
+          />
+        </div>
+      ),
+    },
+  ];
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -133,81 +330,45 @@ export default function AnnoncesPage() {
         </div>
       ) : (
         <>
+          <ExportPeriodToolbar
+            startDate={startDate}
+            endDate={endDate}
+            onPeriodChange={(s, e) => {
+              setStartDate(s);
+              setEndDate(e);
+            }}
+            onExportCsv={handleExportCsv}
+            onPrint={() => window.print()}
+            title="Période de communication"
+          />
+
           <Tabs tabs={tabs} active={tab} onChange={setTab} />
 
           {tab === "annonces" && (
             <div className="space-y-4">
-              {annonces.length === 0 ? (
-                <div className={`${card} flex flex-col items-center justify-center p-12 text-center`}>
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-stone-100 text-stone-400">
-                    <Megaphone className="h-6 w-6" aria-hidden />
+              <DataTable
+                columns={annonceColumns}
+                rows={filteredAnnonces}
+                rowKey={(a) => a.id}
+                toolbar={
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="relative min-w-[280px]">
+                      <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-stone-400" />
+                      <input
+                        type="text"
+                        value={queryAnnonces}
+                        onChange={(e) => setQueryAnnonces(e.target.value)}
+                        placeholder="Rechercher une annonce par titre, contenu..."
+                        className="w-full rounded-xl border border-stone-200 bg-white py-1.5 pl-9 pr-3 text-xs text-ink placeholder:text-stone-400 focus:outline-none focus:ring-1 focus:ring-brand"
+                      />
+                    </div>
+                    <span className="text-xs font-semibold text-stone-500">
+                      {filteredAnnonces.length} annonce{filteredAnnonces.length > 1 ? "s" : ""} publiée{filteredAnnonces.length > 1 ? "s" : ""}
+                    </span>
                   </div>
-                  <h4 className="mt-3 font-semibold text-ink">Aucune annonce publiée</h4>
-                  <p className="mt-1 max-w-sm text-sm text-stone-500">
-                    Partagez des informations générales, dates d&apos;AG ou avis avec les résidents.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => setAddingAnnonce(true)}
-                    className={`${button("primary", "sm")} mt-4`}
-                  >
-                    <Plus className="h-4 w-4" aria-hidden />
-                    Publier la première annonce
-                  </button>
-                </div>
-              ) : (
-                <div className="grid gap-4 lg:grid-cols-3">
-                  {annonces.map((a) => (
-                    <article key={a.id} className={`${card} flex flex-col p-5 ${a.epinglee ? "ring-1 ring-orange-200" : ""}`}>
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <h3 className="font-bold text-ink">{a.titre}</h3>
-                          {a.epinglee && (
-                            <div className="mt-1">
-                              <Pill tone="brand">
-                                <Pin className="h-3 w-3" aria-hidden />
-                                Épinglée
-                              </Pill>
-                            </div>
-                          )}
-                        </div>
-                        <ActionGroup
-                          editLabel="Modifier l'annonce"
-                          deleteLabel="Supprimer l'annonce"
-                          onEdit={() => setEditingAnnonce(a)}
-                          onDelete={() => setDeletingAnnonce(a)}
-                        />
-                      </div>
-                      <p className="mt-2 flex-1 text-sm leading-relaxed text-stone-600">{a.contenu}</p>
-                      <div className="mt-4 space-y-2 border-t border-stone-100 pt-4 text-xs text-stone-500">
-                        <p className="flex items-center gap-2">
-                          <UsersRound className="h-3.5 w-3.5" aria-hidden />
-                          {a.audience}
-                        </p>
-                        <p className="flex items-center gap-2">
-                          <CalendarDays className="h-3.5 w-3.5" aria-hidden />
-                          {a.date}
-                        </p>
-                        <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
-                          <span className="flex flex-wrap gap-1.5">
-                            {a.canaux.map((c) => (
-                              <Pill key={c}>{c}</Pill>
-                            ))}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => void handleRenvoyer(a)}
-                            className={button("secondary", "sm")}
-                          >
-                            <Send className="h-3.5 w-3.5" aria-hidden />
-                            Renvoyer
-                          </button>
-                        </div>
-                      </div>
-                    </article>
-                  ))}
-                </div>
-              )}
+                }
+                empty="Aucune annonce publiée pour le moment."
+              />
             </div>
           )}
 
@@ -235,75 +396,36 @@ export default function AnnoncesPage() {
                 </button>
               </div>
 
-              {alertes.length === 0 ? (
-                <div className={`${card} flex flex-col items-center justify-center p-12 text-center`}>
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-stone-100 text-stone-400">
-                    <BellRing className="h-6 w-6" aria-hidden />
+              <DataTable
+                columns={alerteColumns}
+                rows={filteredAlertes}
+                rowKey={(a) => a.id}
+                toolbar={
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <FacetFilter
+                      value={filterAlertes}
+                      onChange={setFilterAlertes}
+                      options={[
+                        { id: "all", label: "Toutes les alertes", count: alertes.length },
+                        { id: "critique", label: "Critique", count: alertes.filter((a) => a.niveau === "critique").length },
+                        { id: "attention", label: "Attention", count: alertes.filter((a) => a.niveau === "attention").length },
+                        { id: "info", label: "Info", count: alertes.filter((a) => a.niveau === "info").length },
+                      ]}
+                    />
+                    <div className="relative min-w-[260px]">
+                      <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-stone-400" />
+                      <input
+                        type="text"
+                        value={queryAlertes}
+                        onChange={(e) => setQueryAlertes(e.target.value)}
+                        placeholder="Rechercher une alerte..."
+                        className="w-full rounded-xl border border-stone-200 bg-white py-1.5 pl-9 pr-3 text-xs text-ink placeholder:text-stone-400 focus:outline-none focus:ring-1 focus:ring-brand"
+                      />
+                    </div>
                   </div>
-                  <h4 className="mt-3 font-semibold text-ink">Aucune alerte enregistrée</h4>
-                  <p className="mt-1 max-w-sm text-sm text-stone-500">
-                    Diffusez une consigne immédiate ou signalez une urgence (coupure d&apos;eau, panne, sécurité) à toute la copropriété.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => setAddingAlerte(true)}
-                    className={`${button("primary", "sm")} mt-4`}
-                  >
-                    <Plus className="h-4 w-4" aria-hidden />
-                    Créer la première alerte
-                  </button>
-                </div>
-              ) : (
-                <ul className="space-y-3">
-                  {alertes.map((a) => {
-                    const { icon: Icon, className, label } = ALERT_STYLES[a.niveau] ?? ALERT_STYLES.info;
-                    return (
-                      <li key={a.id} className={`${card} flex items-start gap-4 p-5`}>
-                        <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${className}`}>
-                          <Icon className="h-5 w-5" aria-hidden />
-                        </span>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex flex-wrap items-center justify-between gap-2">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <p className="font-bold text-ink">{a.titre}</p>
-                              <Pill tone={a.niveau === "critique" ? "danger" : a.niveau === "attention" ? "warning" : "neutral"}>
-                                {label}
-                              </Pill>
-                            </div>
-                            <ActionGroup
-                              editLabel="Modifier l'alerte"
-                              deleteLabel="Supprimer l'alerte"
-                              onEdit={() => setEditingAlerte(a)}
-                              onDelete={() => setDeletingAlerte(a)}
-                            />
-                          </div>
-                          <p className="mt-1.5 text-sm leading-relaxed text-stone-600">{a.detail}</p>
-                          <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-stone-100 pt-3 text-xs text-stone-500">
-                            <div className="flex flex-wrap items-center gap-4">
-                              <span className="flex items-center gap-1.5">
-                                <UsersRound className="h-3.5 w-3.5 text-stone-400" aria-hidden />
-                                {a.audience || "Tous les résidents"}
-                              </span>
-                              <span className="flex items-center gap-1.5">
-                                <CalendarDays className="h-3.5 w-3.5 text-stone-400" aria-hidden />
-                                {a.date}
-                              </span>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => void handleRenvoyerAlerte(a)}
-                              className={button("secondary", "sm")}
-                            >
-                              <Send className="h-3.5 w-3.5" aria-hidden />
-                              Renvoyer l&apos;alerte
-                            </button>
-                          </div>
-                        </div>
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
+                }
+                empty="Aucune alerte d'urgence enregistrée."
+              />
             </div>
           )}
         </>

@@ -7,6 +7,7 @@ import {
   FolderOpen,
   LayoutDashboard,
   Megaphone,
+  ScrollText,
   SlidersHorizontal,
   UserCog,
   Users,
@@ -19,20 +20,25 @@ export type NavItem = { href: string; label: string; icon: LucideIcon; count?: n
 
 const SUPER_ADMIN_NAV: NavItem[] = [
   { href: "/dashboard", label: "Tableau de bord", icon: LayoutDashboard },
-  { href: "/dashboard/ajouter-residence", label: "Ajouter Résidence", icon: Building2 },
+  { href: "/dashboard/ajouter-residence", label: "Résidences & Bâtiments", icon: Building2 },
+  { href: "/dashboard/residents", label: "Résidents & Propriétaires", icon: Users },
+  { href: "/dashboard/personnel", label: "Personnel & Tâches", icon: UserCog },
+  { href: "/dashboard/assemblees", label: "Assemblées Générales (AG)", icon: ScrollText },
   { href: "/dashboard/statistiques", label: "Statistiques", icon: ChartLine },
   { href: "/dashboard/abonnements", label: "Gestion Abonnements", icon: CreditCard },
+  { href: "/dashboard/rapports", label: "Rapports & Exports", icon: ChartColumn },
   { href: "/dashboard/profil", label: "Mon profil", icon: CircleUser },
 ];
 
 const MANAGER_NAV: NavItem[] = [
   { href: "/dashboard", label: "Tableau de bord", icon: LayoutDashboard },
-  { href: "/dashboard/residences", label: "Résidences & Bâtiments", icon: Building2 },
+  { href: "/dashboard/residences", label: "Bâtiments & Sous-Admins", icon: Building2 },
   { href: "/dashboard/residents", label: "Résidents & Propriétaires", icon: Users },
   { href: "/dashboard/finances", label: "Finances & Charges", icon: Wallet },
   { href: "/dashboard/maintenance", label: "Maintenance & Pannes", icon: Wrench },
   { href: "/dashboard/personnel", label: "Personnel & Tâches", icon: UserCog },
   { href: "/dashboard/annonces", label: "Annonces & Alertes", icon: Megaphone },
+  { href: "/dashboard/assemblees", label: "Assemblées Générales (AG)", icon: ScrollText },
   { href: "/dashboard/documents", label: "Documents & Contrats", icon: FolderOpen },
   { href: "/dashboard/rapports", label: "Rapports & Exports", icon: ChartColumn },
   { href: "/dashboard/configuration", label: "Configuration & Types", icon: SlidersHorizontal },

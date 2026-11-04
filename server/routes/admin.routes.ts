@@ -24,7 +24,7 @@ const createAdminSchema = Joi.object({
     role: Joi.string().valid(...ADMIN_ROLES).required(),
     idResidence: Joi.when("role", { is: "admin", then: objectId.required(), otherwise: Joi.forbidden() }),
     idBatiment: Joi.when("role", { is: "sub_admin", then: objectId.required(), otherwise: Joi.forbidden() }),
-    password: Joi.string().min(12).max(128).required(),
+    password: Joi.string().min(6).max(128).required(),
   }).required(),
 });
 
@@ -32,7 +32,6 @@ export const adminRouter = Router();
 
 adminRouter.use(requireAuth, csrfProtection);
 
-adminRouter.post("/", requireRole("super_admin"), validate(createAdminSchema), admins.create);
+adminRouter.post("/", requireRole("super_admin", "admin"), validate(createAdminSchema), admins.create);
 adminRouter.put("/:id", requireRole("super_admin", "admin"), admins.update);
 adminRouter.delete("/:id", requireRole("super_admin", "admin"), admins.remove);
-
