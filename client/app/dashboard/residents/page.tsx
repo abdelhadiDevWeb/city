@@ -1,6 +1,6 @@
 "use client";
 
-import { Building2, Check, CheckCircle2, Copy, CreditCard, KeyRound, Search, UserPlus, Users } from "lucide-react";
+import { Building2, Check, CheckCircle2, Copy, CreditCard, KeyRound, Mail, Phone, Search, UserPlus, Users } from "lucide-react";
 import { encaisserCharge, getFinances, type Impaye } from "@/lib/finances-api";
 import { formatDZD } from "@/lib/format";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
@@ -21,7 +21,26 @@ import {
 } from "@/lib/residences-api";
 import { ModalActions, SelectField, formText, useSubmit } from "../forms";
 import { useSession } from "../session";
-import { ActionGroup, Avatar, ConfirmModal, DataTable, Field, FormError, Modal, Mono, PageHeader, Pill, button, card, describeError, useToast, type Column } from "../ui";
+import {
+  ActionGroup,
+  Avatar,
+  Breadcrumbs,
+  ConfirmModal,
+  DataTable,
+  FacetFilter,
+  Field,
+  FormError,
+  Modal,
+  Mono,
+  PageHeader,
+  PasswordGeneratorInput,
+  Pill,
+  button,
+  card,
+  describeError,
+  useToast,
+  type Column,
+} from "../ui";
 
 const fullName = (p: { prenom: string; nom: string }) => `${p.prenom} ${p.nom}`;
 
@@ -44,6 +63,7 @@ export default function ResidentsPage() {
   const [deletingResident, setDeletingResident] = useState<Resident | null>(null);
   const [createdCredentials, setCreatedCredentials] = useState<{ resident: Resident; password: string } | null>(null);
   const [query, setQuery] = useState("");
+  const [statutFilter, setStatutFilter] = useState<"all" | "paye" | "impaye">("all");
   const closeModal = useCallback(() => setAdding(false), []);
 
   useEffect(() => {
@@ -107,12 +127,22 @@ export default function ResidentsPage() {
     }
   }
 
+  const totalCount = residents?.length ?? 0;
+  const impayesCount = (residents ?? []).filter(
+    (r) => impayesMap.has(r.telephone) || impayesMap.has(fullName(r).trim().toLowerCase()),
+  ).length;
+  const payesCount = totalCount - impayesCount;
+
   const needle = query.trim().toLowerCase();
-  const rows = (residents ?? []).filter(
-    (r) =>
-      !needle ||
-      [fullName(r), r.email, r.nin, r.telephone, r.batiment?.nom ?? "", r.appartement?.nom ?? ""].some((v) => v.toLowerCase().includes(needle)),
-  );
+  const rows = (residents ?? []).filter((r) => {
+    const isImpaye = impayesMap.has(r.telephone) || impayesMap.has(fullName(r).trim().toLowerCase());
+    if (statutFilter === "paye" && isImpaye) return false;
+    if (statutFilter === "impaye" && !isImpaye) return false;
+    if (!needle) return true;
+    return [fullName(r), r.email, r.nin, r.telephone, r.batiment?.nom ?? "", r.appartement?.nom ?? ""].some((v) =>
+      v.toLowerCase().includes(needle),
+    );
+  });
 
   const columns: Column<Resident>[] = [
     {
@@ -173,12 +203,22 @@ export default function ResidentsPage() {
       header: "Actions",
       align: "right",
       cell: (r) => (
-        <ActionGroup
-          editLabel="Modifier résident"
-          deleteLabel="Supprimer résident"
-          onEdit={() => setEditingResident(r)}
-          onDelete={() => setDeletingResident(r)}
-        />
+        <div className="flex items-center justify-end gap-1.5">
+          <a href={`tel:${r.telephone}`} title={`Appeler ${fullName(r)}`} className={button("secondary", "sm")}>
+            <Phone className="h-3.5 w-3.5" aria-hidden />
+            Appeler
+          </a>
+          <a href={`mailto:${r.email}`} title={`Envoyer un email à ${fullName(r)}`} className={button("secondary", "sm")}>
+            <Mail className="h-3.5 w-3.5" aria-hidden />
+            Email
+          </a>
+          <ActionGroup
+            editLabel="Modifier résident"
+            deleteLabel="Supprimer résident"
+            onEdit={() => setEditingResident(r)}
+            onDelete={() => setDeletingResident(r)}
+          />
+        </div>
       ),
     },
   ];
@@ -268,7 +308,27 @@ export default function ResidentsPage() {
             columns={columns}
             rows={rows}
             rowKey={(r) => r.id}
-            empty={residents.length === 0 ? "Aucun résident pour le moment. Cliquez sur « Ajouter un résident »." : "Aucun résident ne correspond à la recherche."}
+            toolbar={
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <FacetFilter
+                  value={statutFilter}
+                  onChange={setStatutFilter}
+                  options={[
+                    { id: "all", label: "Tous les résidents", count: totalCount },
+                    { id: "paye", label: "À jour (Cotisations payées)", count: payesCount },
+                    { id: "impaye", label: "Cotisations impayées", count: impayesCount },
+                  ]}
+                />
+                <span className="text-xs font-semibold text-stone-500">
+                  {rows.length} résident{rows.length > 1 ? "s" : ""} affiché{rows.length > 1 ? "s" : ""}
+                </span>
+              </div>
+            }
+            empty={
+              residents.length === 0
+                ? "Aucun résident pour le moment. Cliquez sur « Ajouter un résident »."
+                : "Aucun résident ne correspond aux critères de recherche ou de filtre."
+            }
           />
         </>
       ) : null}
@@ -422,6 +482,7 @@ function ResidentModal({
   const { submitting, error, run } = useSubmit();
   const [batimentId, setBatimentId] = useState(batiments[0]?.id ?? "");
   const [etage, setEtage] = useState(0);
+  const [password, setPassword] = useState("City@2026");
   const activeBatId = batimentId || batiments[0]?.id || "";
   const batiment = batiments.find((b) => b.id === activeBatId);
   const freeFlats = batiment?.appartements.filter((a) => !a.proprietaire) ?? [];
@@ -429,7 +490,6 @@ function ResidentModal({
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
-    const password = formText(form, "password");
     void run(async () =>
       onCreated(
         await createResident({
@@ -441,7 +501,7 @@ function ResidentModal({
           idBatiment: activeBatId,
           etage,
           appartement: formText(form, "appartement"),
-          ...(password ? { password } : {}),
+          password: password || "City@2026",
         }),
       ),
     );
@@ -531,15 +591,10 @@ function ResidentModal({
 
         <fieldset className="space-y-4">
           <legend className="mb-3 text-[11px] font-bold uppercase tracking-wide text-stone-500">Accès à l&apos;application mobile</legend>
-          <Field
-            label="Mot de passe initial (facultatif)"
-            name="password"
-            type="text"
-            minLength={6}
-            maxLength={128}
-            placeholder="City@2026 (par défaut)"
-            autoComplete="off"
-            hint="Laissez vide pour utiliser City@2026. Le résident pourra changer ce mot de passe à tout moment."
+          <PasswordGeneratorInput
+            value={password}
+            onChange={setPassword}
+            hint="Ce mot de passe permettra au résident de se connecter sur l'application mobile. Il pourra le changer après sa première connexion."
           />
         </fieldset>
 

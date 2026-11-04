@@ -27,6 +27,7 @@ import { ROLE_LABELS } from "@/lib/roles";
 import {
   AccountStatusPill,
   ActionGroup,
+  Breadcrumbs,
   ConfirmModal,
   DataTable,
   Field,
@@ -34,10 +35,13 @@ import {
   Modal,
   Mono,
   PageHeader,
+  PasswordGeneratorInput,
   Pill,
+  QuotaProgress,
   button,
   card,
   describeError,
+  inputClass,
   useToast,
   type Column,
 } from "../ui";
@@ -575,7 +579,13 @@ function ResidenceDetailsView({
       </section>
 
       <section className="space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        <QuotaProgress
+          current={batiments.length}
+          max={residence.maxBatiments || 5}
+          label={`Quota de bâtiments de « ${residence.nom} »`}
+          unit="bâtiments"
+        />
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
           <h3 className="flex items-center gap-2 text-sm font-bold text-ink">
             <Building className="h-4 w-4 text-brand" aria-hidden />
             Bâtiments ({batiments.length})
@@ -729,23 +739,61 @@ function BatimentModal({
   onCreated: (nom: string) => void;
 }) {
   const { submitting, error, run } = useSubmit();
+  const [etages, setEtages] = useState(5);
+  const [appartementsParEtage, setAppartementsParEtage] = useState(4);
+  const totalCalcule = etages * appartementsParEtage;
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     const nom = text(form, "nom");
+    const et = Number(form.get("etages") ?? etages);
+    const maxAppartements = Number(form.get("maxAppartements") || totalCalcule || 50);
     void run(async () => {
-      await createBatiment(residence.id, { nom, etages: Number(form.get("etages")), maxAppartements: Number(form.get("maxAppartements")) || 50 });
+      await createBatiment(residence.id, { nom, etages: et, maxAppartements });
       onCreated(nom);
     });
   }
 
   return (
-    <Modal title="Nouveau bâtiment" description={`Dans la résidence « ${residence.nom} ».`} onClose={onClose}>
+    <Modal title="Nouveau bâtiment (Bloc)" description={`Dans la résidence « ${residence.nom} ».`} onClose={onClose}>
       <form onSubmit={onSubmit} className="space-y-4">
-        <Field label="Nom du bâtiment" name="nom" required maxLength={60} placeholder="A1" autoFocus />
-        <Field label="Nombre d'étages" name="etages" type="number" required min={0} max={200} step={1} placeholder="9" />
-        <Field label="Capacité maximale d'appartements" name="maxAppartements" type="number" defaultValue="50" required min={1} max={2000} step={1} />
+        <Field label="Nom du bâtiment" name="nom" required maxLength={60} placeholder="ex: Bloc B ou Tour 03" autoFocus />
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Field
+            label="Nombre d'étages"
+            name="etages"
+            type="number"
+            required
+            min={0}
+            max={200}
+            step={1}
+            value={etages}
+            onChange={(e) => setEtages(Number(e.target.value))}
+          />
+          <div className="space-y-1.5">
+            <label className="block text-xs font-semibold text-stone-700">Logements par étage (aide)</label>
+            <input
+              type="number"
+              min={1}
+              max={50}
+              value={appartementsParEtage}
+              onChange={(e) => setAppartementsParEtage(Number(e.target.value))}
+              className={inputClass}
+            />
+          </div>
+        </div>
+        <Field
+          label="Capacité maximale d'appartements"
+          name="maxAppartements"
+          type="number"
+          value={totalCalcule}
+          required
+          min={1}
+          max={2000}
+          step={1}
+          hint={`Calcul estimé : ${etages} étages × ${appartementsParEtage} logements = ${totalCalcule} appartements`}
+        />
         <FormError error={error} />
         <ModalActions submitting={submitting} label="Ajouter le bâtiment" onCancel={onClose} />
       </form>
@@ -765,7 +813,7 @@ function AccountModal({
   onCreated: (email: string) => void;
 }) {
   const { submitting, error, run } = useSubmit();
-  const [password, setPassword] = useState("");
+  const [password, setPassword] = useState("City@2026!Sec");
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -778,7 +826,7 @@ function AccountModal({
       wilaya: text(form, "wilaya"),
       daira: text(form, "daira"),
       baladia: text(form, "baladia"),
-      password,
+      password: password || "City@2026!",
     };
     void run(async () => {
       await createAccount(role === "admin" ? { ...profile, role, idResidence: target.id } : { ...profile, role, idBatiment: target.id });
@@ -788,8 +836,8 @@ function AccountModal({
 
   return (
     <Modal
-      title={role === "admin" ? "Nouvel Admin" : "Nouveau Sub Admin"}
-      description={`${role === "admin" ? "Responsable de la résidence" : "Responsable du bâtiment"} « ${target.nom} ». Il pourra se connecter avec cet email et ce mot de passe dès qu'un abonnement payé sera en cours${role === "admin" ? "" : " pour l'Admin de la résidence"}.`}
+      title={role === "admin" ? "Nouvel Admin (Syndic de Résidence)" : "Nouveau Sous-Admin (Gestionnaire de Bloc)"}
+      description={`${role === "admin" ? "Responsable de la résidence" : "Responsable du bâtiment"} « ${target.nom} ». Il pourra se connecter dès qu'un abonnement payé sera en cours.`}
       onClose={onClose}
     >
       <form onSubmit={onSubmit} className="space-y-4">
@@ -807,11 +855,15 @@ function AccountModal({
           <Field label="Téléphone" name="telephone" type="tel" required pattern="\+?[0-9]{8,15}" title="8 à 15 chiffres, + facultatif" placeholder="0555123456" />
         </div>
         <div className="grid gap-4 sm:grid-cols-3">
-          <Field label="Wilaya" name="wilaya" required maxLength={80} />
-          <Field label="Daïra" name="daira" required maxLength={80} />
-          <Field label="Baladia" name="baladia" required maxLength={80} />
+          <Field label="Wilaya" name="wilaya" required maxLength={80} defaultValue="Alger" />
+          <Field label="Daïra" name="daira" required maxLength={80} defaultValue="Sidi M'Hamed" />
+          <Field label="Baladia" name="baladia" required maxLength={80} defaultValue="Alger Centre" />
         </div>
-        <PasswordField value={password} onChange={setPassword} />
+        <PasswordGeneratorInput
+          value={password}
+          onChange={setPassword}
+          hint="Copiez ce mot de passe pour le transmettre directement à l'administrateur avec ses accès."
+        />
         <FormError error={error} />
         <ModalActions submitting={submitting} label="Créer le compte" onCancel={onClose} />
       </form>

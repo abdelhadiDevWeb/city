@@ -34,6 +34,7 @@ import {
   ActionGroup,
   ConfirmModal,
   DataTable,
+  FacetFilter,
   Field,
   FormError,
   Modal,
@@ -94,6 +95,8 @@ export default function AbonnementsPage() {
   const [modal, setModal] = useState<ModalState>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<{ kind: "formule" | "souscription"; id: string; nom: string } | null>(null);
+  const [adminFilter, setAdminFilter] = useState<"all" | "paye" | "impaye">("all");
+  const [sousAdminFilter, setSousAdminFilter] = useState<"all" | "paye" | "impaye">("all");
 
   const refresh = () => setVersion((v) => v + 1);
 
@@ -327,6 +330,36 @@ export default function AbonnementsPage() {
     },
   ];
 
+  const totalAdmins = admins?.length ?? 0;
+  const paidAdmins = (admins ?? []).filter((a) => {
+    const c = current(a.souscriptions);
+    return !!(c && c.statutPaiement);
+  }).length;
+  const unpaidAdmins = totalAdmins - paidAdmins;
+
+  const filteredAdmins = (admins ?? []).filter((a) => {
+    const c = current(a.souscriptions);
+    const isPaid = !!(c && c.statutPaiement);
+    if (adminFilter === "paye") return isPaid;
+    if (adminFilter === "impaye") return !isPaid;
+    return true;
+  });
+
+  const totalSousAdmins = sousAdmins?.length ?? 0;
+  const paidSousAdmins = (sousAdmins ?? []).filter((sa) => {
+    const c = current(sa.souscriptions);
+    return !!(c && c.statutPaiement);
+  }).length;
+  const unpaidSousAdmins = totalSousAdmins - paidSousAdmins;
+
+  const filteredSousAdmins = (sousAdmins ?? []).filter((sa) => {
+    const c = current(sa.souscriptions);
+    const isPaid = !!(c && c.statutPaiement);
+    if (sousAdminFilter === "paye") return isPaid;
+    if (sousAdminFilter === "impaye") return !isPaid;
+    return true;
+  });
+
   const tabs: TabItem<"admins" | "sous_admins" | "formules">[] = [
     { id: "admins", label: "Abonnements Admins", icon: ShieldCheck, count: admins?.length },
     { id: "sous_admins", label: "Abonnements Sous-Admins", icon: UsersRound, count: sousAdmins?.length },
@@ -360,18 +393,50 @@ export default function AbonnementsPage() {
           {tab === "admins" && (
             <DataTable
               columns={adminColumns}
-              rows={admins ?? []}
+              rows={filteredAdmins}
               rowKey={(a) => a.id}
-              empty="Aucun compte admin. Créez-en un dans « Ajouter Résidence »."
+              toolbar={
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <FacetFilter
+                    value={adminFilter}
+                    onChange={setAdminFilter}
+                    options={[
+                      { id: "all", label: "Tous les admins", count: totalAdmins },
+                      { id: "paye", label: "Accès Actif (Payé)", count: paidAdmins },
+                      { id: "impaye", label: "Accès Bloqué (Impayé)", count: unpaidAdmins },
+                    ]}
+                  />
+                  <span className="text-xs font-semibold text-stone-500">
+                    {filteredAdmins.length} administrateur{filteredAdmins.length > 1 ? "s" : ""}
+                  </span>
+                </div>
+              }
+              empty="Aucun administrateur ne correspond aux critères sélectionnés."
             />
           )}
 
           {tab === "sous_admins" && (
             <DataTable
               columns={sousAdminColumns}
-              rows={sousAdmins ?? []}
+              rows={filteredSousAdmins}
               rowKey={(sa) => sa.id}
-              empty="Aucun compte sous-admin enregistré."
+              toolbar={
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <FacetFilter
+                    value={sousAdminFilter}
+                    onChange={setSousAdminFilter}
+                    options={[
+                      { id: "all", label: "Tous les sous-admins", count: totalSousAdmins },
+                      { id: "paye", label: "Accès Actif (Payé)", count: paidSousAdmins },
+                      { id: "impaye", label: "Accès Bloqué (Impayé)", count: unpaidSousAdmins },
+                    ]}
+                  />
+                  <span className="text-xs font-semibold text-stone-500">
+                    {filteredSousAdmins.length} sous-administrateur{filteredSousAdmins.length > 1 ? "s" : ""}
+                  </span>
+                </div>
+              }
+              empty="Aucun sous-administrateur ne correspond aux critères sélectionnés."
             />
           )}
 

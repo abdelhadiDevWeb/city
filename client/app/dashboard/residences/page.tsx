@@ -47,20 +47,26 @@ import { useSession } from "../session";
 import {
   ActionGroup,
   Avatar,
+  Breadcrumbs,
   ConfirmModal,
   DataTable,
+  EmptyState,
+  FacetFilter,
   Field,
   FormError,
   Modal,
   Mono,
   PageHeader,
+  PasswordGeneratorInput,
   Pill,
   ProgressBar,
+  QuotaProgress,
   StatLine,
   Tabs,
   button,
   card,
   describeError,
+  inputClass,
   useToast,
   type Column,
   type TabItem,
@@ -105,6 +111,7 @@ export default function ResidencesPage() {
   const [formules, setFormules] = useState<Formule[] | null>(null);
   const [assigningPlanTarget, setAssigningPlanTarget] = useState<SousAdminAbonne | null>(null);
   const [busySubId, setBusySubId] = useState<string | null>(null);
+  const [subAdminFilter, setSubAdminFilter] = useState<"all" | "paye" | "impaye">("all");
 
   useEffect(() => {
     let active = true;
@@ -331,6 +338,11 @@ export default function ResidencesPage() {
   const totalSubAdmins = sousAdminsAbonnes?.length ?? 0;
   const subAdminsPayes = sousAdminsAbonnes?.filter((s) => s.aJour).length ?? 0;
   const subAdminsImpayes = totalSubAdmins - subAdminsPayes;
+  const filteredSousAdmins = (sousAdminsAbonnes ?? []).filter((s) => {
+    if (subAdminFilter === "paye") return s.aJour;
+    if (subAdminFilter === "impaye") return !s.aJour;
+    return true;
+  });
 
   return (
     <div className="space-y-6">
@@ -558,9 +570,25 @@ export default function ResidencesPage() {
               {/* Table */}
               <DataTable
                 columns={sousAdminAbonneColumns}
-                rows={sousAdminsAbonnes ?? []}
+                rows={filteredSousAdmins}
                 rowKey={(s) => s.id}
-                empty="Aucun sous-admin assigné dans cette résidence."
+                toolbar={
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <FacetFilter
+                      value={subAdminFilter}
+                      onChange={setSubAdminFilter}
+                      options={[
+                        { id: "all", label: "Tous les sous-admins", count: totalSubAdmins },
+                        { id: "paye", label: "À jour (Payés)", count: subAdminsPayes },
+                        { id: "impaye", label: "Impayés / En attente", count: subAdminsImpayes },
+                      ]}
+                    />
+                    <span className="text-xs font-semibold text-stone-500">
+                      {filteredSousAdmins.length} {filteredSousAdmins.length > 1 ? "gestionnaires affichés" : "gestionnaire affiché"}
+                    </span>
+                  </div>
+                }
+                empty="Aucun sous-admin ne correspond aux critères sélectionnés."
               />
             </div>
           )}
@@ -669,6 +697,8 @@ export default function ResidencesPage() {
         <BatimentModal
           residenceId={residence.id}
           residenceNom={residence.nom}
+          currentBatiments={batiments.length}
+          maxBatiments={maxBatiments}
           onClose={() => setAddingBatiment(false)}
           onCreated={(nom) => {
             setAddingBatiment(false);
@@ -766,35 +796,77 @@ export default function ResidencesPage() {
 function BatimentModal({
   residenceId,
   residenceNom,
+  currentBatiments,
+  maxBatiments,
   onClose,
   onCreated,
 }: {
   residenceId: string;
   residenceNom: string;
+  currentBatiments?: number;
+  maxBatiments?: number;
   onClose: () => void;
   onCreated: (nom: string) => void;
 }) {
   const { submitting, error, run } = useSubmit();
+  const [etages, setEtages] = useState(5);
+  const [appartementsParEtage, setAppartementsParEtage] = useState(4);
+  const totalCalcule = etages * appartementsParEtage;
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     const nom = formText(form, "nom");
-    const etages = Number(form.get("etages") ?? 0);
-    const maxAppartements = Number(form.get("maxAppartements") || 50);
+    const et = Number(form.get("etages") ?? etages);
+    const maxAppartements = Number(form.get("maxAppartements") || totalCalcule || 50);
 
     void run(async () => {
-      await createBatiment(residenceId, { nom, etages, maxAppartements });
+      await createBatiment(residenceId, { nom, etages: et, maxAppartements });
       onCreated(nom);
     });
   }
 
   return (
     <Modal title="Nouveau Bâtiment (Bloc)" description={`Ajout d'un bloc dans « ${residenceNom} ».`} onClose={onClose}>
+      {maxBatiments !== undefined && currentBatiments !== undefined && (
+        <div className="mb-4">
+          <QuotaProgress current={currentBatiments} max={maxBatiments} label="Quota de la résidence" unit="bâtiments" />
+        </div>
+      )}
       <form onSubmit={onSubmit} className="space-y-4">
         <Field label="Nom ou lettre du bâtiment" name="nom" required placeholder="ex: Bloc B ou Tour 03" autoFocus />
-        <Field label="Nombre d'étages" name="etages" type="number" required min={0} max={200} placeholder="ex: 9" />
-        <Field label="Capacité max d'appartements" name="maxAppartements" type="number" defaultValue="50" min={1} max={2000} />
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Field
+            label="Nombre d'étages"
+            name="etages"
+            type="number"
+            required
+            min={0}
+            max={200}
+            value={etages}
+            onChange={(e) => setEtages(Number(e.target.value))}
+          />
+          <div className="space-y-1.5">
+            <label className="block text-xs font-semibold text-stone-700">Logements par étage (aide)</label>
+            <input
+              type="number"
+              min={1}
+              max={50}
+              value={appartementsParEtage}
+              onChange={(e) => setAppartementsParEtage(Number(e.target.value))}
+              className={inputClass}
+            />
+          </div>
+        </div>
+        <Field
+          label="Capacité max d'appartements"
+          name="maxAppartements"
+          type="number"
+          value={totalCalcule}
+          min={1}
+          max={2000}
+          hint={`Calcul automatique : ${etages} étages × ${appartementsParEtage} logements = ${totalCalcule} appartements`}
+        />
         <FormError error={error} />
         <ModalActions submitting={submitting} label="Créer le bâtiment" onCancel={onClose} />
       </form>
@@ -855,7 +927,7 @@ function SubAdminModal({
   const { submitting, error, run } = useSubmit();
   const defaultBatimentId = preselectedBatiment?.id || batiments.find((b) => !b.sousAdmin)?.id || batiments[0]?.id || "";
   const [selectedBatimentId, setSelectedBatimentId] = useState(defaultBatimentId);
-  const [password, setPassword] = useState("");
+  const [password, setPassword] = useState("City@2026!Sec");
 
   const selectedBuilding = batiments.find((b) => b.id === selectedBatimentId);
 
@@ -886,44 +958,72 @@ function SubAdminModal({
 
   return (
     <Modal
-      title="Nouveau Sous-Admin"
-      description={selectedBuilding ? `Assigné au bâtiment « ${selectedBuilding.nom} »` : "Nommez un gestionnaire de bâtiment."}
+      title="Nouveau Sous-Admin (Gestionnaire de Bloc)"
+      description="Créez le compte d'accès pour le responsable de bâtiment."
       onClose={onClose}
     >
       <form onSubmit={onSubmit} className="space-y-4">
         {batiments.length === 0 ? (
           <p className="text-sm text-stone-500">Aucun bâtiment disponible. Créez d&apos;abord un bâtiment dans la résidence.</p>
         ) : (
-          <SelectField
-            label="Bâtiment assigné"
-            value={selectedBatimentId}
-            onChange={(e) => setSelectedBatimentId(e.target.value)}
-            required
-          >
-            {batiments.map((b) => (
-              <option key={b.id} value={b.id}>
-                Bâtiment {b.nom} {b.sousAdmin ? `(Sous-admin actuel : ${fullName(b.sousAdmin)})` : "(Disponible)"}
-              </option>
-            ))}
-          </SelectField>
+          <div className="space-y-2">
+            <SelectField
+              label="Bâtiment assigné"
+              value={selectedBatimentId}
+              onChange={(e) => setSelectedBatimentId(e.target.value)}
+              required
+            >
+              {batiments.map((b) => (
+                <option key={b.id} value={b.id}>
+                  Bâtiment {b.nom} {b.sousAdmin ? `(Gestionnaire actuel : ${fullName(b.sousAdmin)})` : "— [DISPONIBLE]"}
+                </option>
+              ))}
+            </SelectField>
+
+            {selectedBuilding && (
+              <div className="flex items-center justify-between rounded-xl border border-stone-200 bg-stone-50/70 p-3 text-xs">
+                <div>
+                  <span className="font-bold text-ink">Bâtiment {selectedBuilding.nom}</span>
+                  <span className="ml-2 text-stone-500">
+                    {selectedBuilding.appartements.length} / {selectedBuilding.maxAppartements ?? 50} logements
+                  </span>
+                </div>
+                {selectedBuilding.sousAdmin ? (
+                  <span className="rounded-md border border-amber-200 bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-700">
+                    Remplacera {fullName(selectedBuilding.sousAdmin)}
+                  </span>
+                ) : (
+                  <span className="rounded-md border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
+                    Disponible
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
         )}
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Prénom" name="prenom" required maxLength={60} autoFocus />
-          <Field label="Nom" name="nom" required maxLength={60} />
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Field label="Prénom" name="prenom" required maxLength={60} placeholder="ex: Karim" autoFocus />
+          <Field label="Nom" name="nom" required maxLength={60} placeholder="ex: Benali" />
         </div>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Email" name="email" type="email" required maxLength={254} />
-          <Field label="Téléphone" name="telephone" type="tel" required pattern="\+?[0-9]{8,15}" placeholder="0555123456" />
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Field label="Email professionnel" name="email" type="email" required maxLength={254} placeholder="karim.benali@gmail.com" />
+          <Field label="Téléphone mobile" name="telephone" type="tel" required pattern="\+?[0-9]{8,15}" placeholder="0555123456" />
         </div>
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Field label="Wilaya" name="wilaya" required maxLength={80} />
-          <Field label="Daïra" name="daira" required maxLength={80} />
-          <Field label="Baladia" name="baladia" required maxLength={80} />
+        <div className="grid gap-3 sm:grid-cols-3">
+          <Field label="Wilaya" name="wilaya" required maxLength={80} defaultValue="Alger" />
+          <Field label="Daïra" name="daira" required maxLength={80} defaultValue="Sidi M'Hamed" />
+          <Field label="Baladia" name="baladia" required maxLength={80} defaultValue="Alger Centre" />
         </div>
-        <PasswordField value={password} onChange={setPassword} />
+        
+        <PasswordGeneratorInput
+          value={password}
+          onChange={setPassword}
+          hint="Copiez ce mot de passe pour le transmettre directement au gestionnaire avec son identifiant."
+        />
+
         <FormError error={error} />
-        <ModalActions submitting={submitting} label="Créer le sous-admin" onCancel={onClose} />
+        <ModalActions submitting={submitting} label="Créer et affecter le sous-admin" onCancel={onClose} />
       </form>
     </Modal>
   );

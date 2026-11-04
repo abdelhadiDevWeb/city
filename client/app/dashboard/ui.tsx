@@ -1,6 +1,6 @@
 "use client";
 
-import { CircleAlert, Info, Pencil, Trash2, TriangleAlert, X, type LucideIcon } from "lucide-react";
+import { Check, ChevronRight, CircleAlert, Copy, Info, KeyRound, Pencil, RefreshCw, Trash2, TriangleAlert, X, type LucideIcon } from "lucide-react";
 import {
   createContext,
   useCallback,
@@ -168,17 +168,20 @@ export function DataTable<T>({
   rows,
   rowKey,
   empty = "Aucun élément à afficher.",
+  toolbar,
 }: {
   columns: Column<T>[];
   rows: T[];
   rowKey: (row: T) => string;
   empty?: ReactNode;
+  toolbar?: ReactNode;
 }) {
   return (
     <div className={`${card} overflow-hidden`}>
+      {toolbar && <div className="border-b border-stone-200 bg-stone-50/50 p-3.5">{toolbar}</div>}
       <div className="overflow-x-auto">
         <table className="w-full min-w-[760px] text-left text-sm">
-          <thead className="border-b border-stone-200">
+          <thead className="border-b border-stone-200 bg-stone-50/80">
             <tr>
               {columns.map((col) => (
                 <th
@@ -215,6 +218,215 @@ export function DataTable<T>({
           </tbody>
         </table>
       </div>
+    </div>
+  );
+}
+
+export function FacetFilter<T extends string>({
+  options,
+  value,
+  onChange,
+}: {
+  options: { id: T; label: string; count?: number }[];
+  value: T;
+  onChange: (id: T) => void;
+}) {
+  return (
+    <div className="inline-flex flex-wrap items-center gap-1 rounded-xl border border-stone-200 bg-stone-100/70 p-1">
+      {options.map((opt) => {
+        const active = opt.id === value;
+        return (
+          <button
+            key={opt.id}
+            type="button"
+            onClick={() => onChange(opt.id)}
+            className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+              active
+                ? "border border-stone-200 bg-white text-ink shadow-xs"
+                : "text-stone-600 hover:bg-white/60 hover:text-ink"
+            }`}
+          >
+            <span>{opt.label}</span>
+            {opt.count !== undefined && (
+              <span
+                className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
+                  active ? "bg-stone-100 text-ink" : "bg-stone-200/80 text-stone-600"
+                }`}
+              >
+                {opt.count}
+              </span>
+            )}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+export function QuotaProgress({
+  current,
+  max,
+  label = "Quota",
+  unit = "",
+}: {
+  current: number;
+  max: number;
+  label?: string;
+  unit?: string;
+}) {
+  const ratio = max > 0 ? current / max : 0;
+  const pct = Math.min(100, Math.round(ratio * 100));
+  const isFull = current >= max;
+  const isWarning = ratio >= 0.8 && !isFull;
+
+  return (
+    <div className="space-y-1.5 rounded-xl border border-stone-200/80 bg-stone-50/70 p-3">
+      <div className="flex items-center justify-between text-xs">
+        <span className="font-semibold text-stone-700">{label}</span>
+        <span className="font-mono font-bold text-ink">
+          {current} / {max} {unit}
+          {isFull ? (
+            <span className="ml-2 rounded-md bg-red-100 px-1.5 py-0.5 text-[10px] font-bold text-red-700">Complet</span>
+          ) : isWarning ? (
+            <span className="ml-2 rounded-md bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-700">Proche limite</span>
+          ) : null}
+        </span>
+      </div>
+      <div className="h-2 w-full overflow-hidden rounded-full bg-stone-200/70">
+        <div
+          className={`h-full rounded-full transition-all duration-300 ${
+            isFull ? "bg-red-500" : isWarning ? "bg-amber-500" : "bg-brand"
+          }`}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
+export function PasswordGeneratorInput({
+  label = "Mot de passe initial",
+  value,
+  onChange,
+  hint = "Vous pouvez générer un mot de passe et le copier pour l'envoyer au gestionnaire.",
+}: {
+  label?: string;
+  value: string;
+  onChange: (val: string) => void;
+  hint?: string;
+}) {
+  const [copied, setCopied] = useState(false);
+
+  const generatePassword = () => {
+    const chars = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789!@#$%";
+    let pwd = "";
+    for (let i = 0; i < 10; i++) {
+      pwd += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    pwd += "@2026";
+    onChange(pwd);
+  };
+
+  const copyPassword = () => {
+    if (!value) return;
+    navigator.clipboard.writeText(value);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between">
+        <label className="block text-xs font-semibold text-stone-700">{label}</label>
+        <button
+          type="button"
+          onClick={generatePassword}
+          className="inline-flex items-center gap-1 text-[11px] font-semibold text-brand hover:underline"
+        >
+          <RefreshCw className="h-3 w-3" /> Générer automatiquement
+        </button>
+      </div>
+      <div className="relative">
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="Entrez ou générez un mot de passe"
+          className={`${inputClass} pr-24 font-mono text-xs`}
+        />
+        <button
+          type="button"
+          onClick={copyPassword}
+          disabled={!value}
+          className="absolute right-1.5 top-1.5 inline-flex items-center gap-1 rounded-lg border border-stone-200 bg-stone-50 px-2 py-1 text-[11px] font-semibold text-stone-700 transition hover:bg-stone-100 disabled:opacity-40"
+        >
+          {copied ? (
+            <>
+              <Check className="h-3 w-3 text-emerald-600" /> <span className="text-emerald-700">Copié !</span>
+            </>
+          ) : (
+            <>
+              <Copy className="h-3 w-3" /> <span>Copier</span>
+            </>
+          )}
+        </button>
+      </div>
+      {hint && <p className="text-[11px] text-stone-500">{hint}</p>}
+    </div>
+  );
+}
+
+export function Breadcrumbs({
+  items,
+}: {
+  items: { label: string; onClick?: () => void }[];
+}) {
+  return (
+    <nav aria-label="Fil d'Ariane" className="mb-2 flex items-center gap-1.5 text-xs text-stone-500">
+      {items.map((item, idx) => {
+        const isLast = idx === items.length - 1;
+        return (
+          <div key={item.label} className="flex items-center gap-1.5">
+            {idx > 0 && <ChevronRight className="h-3.5 w-3.5 text-stone-400" />}
+            {item.onClick ? (
+              <button
+                type="button"
+                onClick={item.onClick}
+                className="font-medium text-stone-600 hover:text-ink hover:underline"
+              >
+                {item.label}
+              </button>
+            ) : isLast ? (
+              <span className="font-bold text-ink">{item.label}</span>
+            ) : (
+              <span className="font-medium text-stone-600">{item.label}</span>
+            )}
+          </div>
+        );
+      })}
+    </nav>
+  );
+}
+
+export function EmptyState({
+  icon: Icon,
+  title,
+  description,
+  action,
+}: {
+  icon: LucideIcon;
+  title: string;
+  description: string;
+  action?: ReactNode;
+}) {
+  return (
+    <div className="flex flex-col items-center justify-center p-8 text-center sm:p-12">
+      <div className="mb-3.5 flex h-14 w-14 items-center justify-center rounded-2xl bg-stone-100 text-stone-500 shadow-inner">
+        <Icon className="h-7 w-7 text-stone-600" />
+      </div>
+      <h3 className="text-base font-bold text-ink">{title}</h3>
+      <p className="mt-1 max-w-sm text-xs text-stone-500">{description}</p>
+      {action && <div className="mt-4">{action}</div>}
     </div>
   );
 }
