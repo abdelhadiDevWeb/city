@@ -1,6 +1,23 @@
 "use client";
 
-import { Building, Building2, CheckCircle2, ChevronRight, KeyRound, Layers, MapPin, Plus, ShieldCheck, UserPlus, UserRound, Users, X } from "lucide-react";
+import {
+  Building,
+  Building2,
+  CheckCircle2,
+  ChevronRight,
+  KeyRound,
+  Layers,
+  Mail,
+  MapPin,
+  Phone,
+  Plus,
+  Search,
+  ShieldCheck,
+  UserPlus,
+  UserRound,
+  Users,
+  X,
+} from "lucide-react";
 import Link from "next/link";
 import { formatDZD } from "@/lib/format";
 import { useSearchParams } from "next/navigation";
@@ -30,6 +47,7 @@ import {
   Breadcrumbs,
   ConfirmModal,
   DataTable,
+  FacetFilter,
   Field,
   FormError,
   Modal,
@@ -308,11 +326,31 @@ function ResidenceList({
   activeId: string | null;
   onSelect: (id: string) => void;
 }) {
+  const [search, setSearch] = useState("");
+  const needle = search.trim().toLowerCase();
+  const filtered = residences.filter(
+    (r) => !needle || r.nom.toLowerCase().includes(needle) || r.localisation.toLowerCase().includes(needle),
+  );
+
   return (
     <nav aria-label="Résidences" className="space-y-3">
-      <p className="text-[11px] font-bold uppercase tracking-wider text-stone-500">Résidences ({residences.length})</p>
+      <div className="flex items-center justify-between">
+        <p className="text-[11px] font-bold uppercase tracking-wider text-stone-500">Résidences ({residences.length})</p>
+      </div>
+
+      <div className="relative">
+        <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-stone-400" />
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Filtrer résidences..."
+          className="w-full rounded-xl border border-stone-200 bg-white py-1.5 pl-9 pr-3 text-xs text-ink placeholder:text-stone-400 focus:outline-none focus:ring-1 focus:ring-brand"
+        />
+      </div>
+
       <ul className="space-y-2">
-        {residences.map((r) => {
+        {filtered.map((r) => {
           const selected = r.id === activeId;
           return (
             <li key={r.id}>
@@ -320,25 +358,37 @@ function ResidenceList({
                 type="button"
                 onClick={() => onSelect(r.id)}
                 aria-current={selected ? "true" : undefined}
-                className={`w-full rounded-2xl border bg-white p-4 text-left transition ${
-                  selected ? "border-ink shadow-md ring-1 ring-ink" : "border-stone-200 hover:border-stone-300 hover:shadow-sm"
+                className={`w-full rounded-2xl border p-4 text-left transition ${
+                  selected
+                    ? "border-brand bg-orange-50/20 shadow-md ring-2 ring-brand/30"
+                    : "border-stone-200 bg-white hover:border-stone-300 hover:shadow-sm"
                 }`}
               >
-                <p className="truncate font-semibold text-ink">{r.nom}</p>
+                <div className="flex items-start justify-between gap-2">
+                  <p className="truncate font-bold text-ink">{r.nom}</p>
+                  {selected && <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-brand" />}
+                </div>
                 <p className="mt-0.5 flex items-center gap-1 truncate text-xs text-stone-500">
                   <MapPin className="h-3 w-3 shrink-0" aria-hidden />
                   {r.localisation}
                 </p>
                 <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs">
-                  <span className="text-stone-600">
+                  <span className="font-semibold text-stone-600">
                     {r.batiments} bâtiment{r.batiments > 1 ? "s" : ""}
                   </span>
-                  {r.admin ? <Pill tone="dark">{fullName(r.admin)}</Pill> : <Pill tone="warning">Sans admin</Pill>}
+                  {r.admin ? (
+                    <Pill tone="success">Admin: {fullName(r.admin)}</Pill>
+                  ) : (
+                    <Pill tone="warning">Sans admin</Pill>
+                  )}
                 </div>
               </button>
             </li>
           );
         })}
+        {filtered.length === 0 && (
+          <li className="py-6 text-center text-xs text-stone-400">Aucune résidence trouvée.</li>
+        )}
       </ul>
     </nav>
   );
@@ -425,7 +475,16 @@ function ResidenceDetailsView({
   const sousAdmins = batiments.filter((b) => b.sousAdmin).length;
 
   const [selectedBatimentId, setSelectedBatimentId] = useState<string | null>(null);
+  const [drilldownFilter, setDrilldownFilter] = useState<"all" | "occupes" | "impayes">("all");
   const selectedBatiment = batiments.find((b) => b.id === selectedBatimentId);
+
+  const drilldownApts = (selectedBatiment?.appartements ?? []).filter((apt) => {
+    if (drilldownFilter === "occupes") return !!apt.proprietaire;
+    if (drilldownFilter === "impayes") return apt.paiement?.statut === "impaye";
+    return true;
+  });
+  const drilldownOccupesCount = (selectedBatiment?.appartements ?? []).filter((a) => a.proprietaire).length;
+  const drilldownImpayesCount = (selectedBatiment?.appartements ?? []).filter((a) => a.paiement?.statut === "impaye").length;
 
   const columns: Column<BatimentDetail>[] = [
     {
@@ -644,60 +703,90 @@ function ResidenceDetailsView({
                 Aucun appartement n&apos;a encore été créé dans ce bâtiment.
               </p>
             ) : (
-              <div className="overflow-x-auto rounded-xl border border-stone-200 bg-white">
-                <table className="w-full text-left text-sm">
-                  <thead className="border-b border-stone-200 bg-stone-50/70 text-[11px] font-bold uppercase tracking-wider text-stone-500">
-                    <tr>
-                      <th className="px-4 py-3">Logement</th>
-                      <th className="px-4 py-3">Étage</th>
-                      <th className="px-4 py-3">Résident / Propriétaire</th>
-                      <th className="px-4 py-3">Contact</th>
-                      <th className="px-4 py-3">Statut Cotisation</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-stone-100">
-                    {selectedBatiment.appartements.map((apt) => {
-                      const prop = apt.proprietaire;
-                      const p = apt.paiement;
-                      const isImpaye = p?.statut === "impaye";
-                      return (
-                        <tr key={apt.id} className="hover:bg-stone-50/60">
-                          <td className="px-4 py-3 font-bold text-ink">{apt.nom}</td>
-                          <td className="px-4 py-3 text-stone-600">{etageLabel(apt.etage)}</td>
-                          <td className="px-4 py-3">
-                            {prop ? (
-                              <span className="font-semibold text-ink">{fullName(prop)}</span>
-                            ) : (
-                              <span className="text-xs text-stone-400 italic">Logement vacant</span>
-                            )}
-                          </td>
-                          <td className="px-4 py-3 text-xs">
-                            {prop ? (
-                              <div className="flex items-center gap-2">
-                                <Mono>{prop.telephone}</Mono>
-                                <span className="text-stone-400">·</span>
-                                <span className="text-stone-500">{prop.email}</span>
-                              </div>
-                            ) : (
-                              "—"
-                            )}
-                          </td>
-                          <td className="px-4 py-3">
-                            {!prop ? (
-                              <Pill tone="neutral">Vacant</Pill>
-                            ) : isImpaye ? (
-                              <Pill tone="danger">
-                                Impayé {p.totalDu > 0 ? `(${formatDZD(p.totalDu)})` : ""}
-                              </Pill>
-                            ) : (
-                              <Pill tone="success">À jour (Payé)</Pill>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+              <div className="space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <FacetFilter
+                    value={drilldownFilter}
+                    onChange={setDrilldownFilter}
+                    options={[
+                      { id: "all", label: "Tous les logements", count: selectedBatiment.appartements.length },
+                      { id: "occupes", label: "Occupés", count: drilldownOccupesCount },
+                      { id: "impayes", label: "Cotisations impayées", count: drilldownImpayesCount },
+                    ]}
+                  />
+                  <span className="text-xs font-semibold text-stone-500">
+                    {drilldownApts.length} appartement{drilldownApts.length > 1 ? "s" : ""}
+                  </span>
+                </div>
+
+                <div className="overflow-x-auto rounded-xl border border-stone-200 bg-white">
+                  <table className="w-full text-left text-sm">
+                    <thead className="border-b border-stone-200 bg-stone-50/70 text-[11px] font-bold uppercase tracking-wider text-stone-500">
+                      <tr>
+                        <th className="px-4 py-3">Logement</th>
+                        <th className="px-4 py-3">Étage</th>
+                        <th className="px-4 py-3">Résident / Propriétaire</th>
+                        <th className="px-4 py-3">Contact</th>
+                        <th className="px-4 py-3">Statut Cotisation</th>
+                        <th className="px-4 py-3 text-right">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-stone-100">
+                      {drilldownApts.map((apt) => {
+                        const prop = apt.proprietaire;
+                        const p = apt.paiement;
+                        const isImpaye = p?.statut === "impaye";
+                        return (
+                          <tr key={apt.id} className="hover:bg-stone-50/60 transition">
+                            <td className="px-4 py-3 font-bold text-ink">{apt.nom}</td>
+                            <td className="px-4 py-3 text-stone-600">{etageLabel(apt.etage)}</td>
+                            <td className="px-4 py-3">
+                              {prop ? (
+                                <span className="font-semibold text-ink">{fullName(prop)}</span>
+                              ) : (
+                                <span className="text-xs text-stone-400 italic">Logement vacant</span>
+                              )}
+                            </td>
+                            <td className="px-4 py-3 text-xs">
+                              {prop ? (
+                                <div className="flex items-center gap-2">
+                                  <Mono>{prop.telephone}</Mono>
+                                  <span className="text-stone-400">·</span>
+                                  <span className="text-stone-500">{prop.email}</span>
+                                </div>
+                              ) : (
+                                "—"
+                              )}
+                            </td>
+                            <td className="px-4 py-3">
+                              {!prop ? (
+                                <Pill tone="neutral">Vacant</Pill>
+                              ) : isImpaye ? (
+                                <Pill tone="danger">
+                                  Impayé {p.totalDu > 0 ? `(${formatDZD(p.totalDu)})` : ""}
+                                </Pill>
+                              ) : (
+                                <Pill tone="success">À jour (Payé)</Pill>
+                              )}
+                            </td>
+                            <td className="px-4 py-3 text-right">
+                              {prop && (
+                                <a
+                                  href={`tel:${prop.telephone}`}
+                                  className={button("secondary", "sm")}
+                                  title={`Appeler ${fullName(prop)}`}
+                                >
+                                  <Phone className="h-3.5 w-3.5" />
+                                  Appeler
+                                </a>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
           </div>

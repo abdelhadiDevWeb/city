@@ -9,6 +9,7 @@ import {
   Mail,
   Phone,
   Plus,
+  Search,
   ShieldCheck,
   UserCheck,
   UserPlus,
@@ -112,6 +113,8 @@ export default function ResidencesPage() {
   const [assigningPlanTarget, setAssigningPlanTarget] = useState<SousAdminAbonne | null>(null);
   const [busySubId, setBusySubId] = useState<string | null>(null);
   const [subAdminFilter, setSubAdminFilter] = useState<"all" | "paye" | "impaye">("all");
+  const [queryGestionnaires, setQueryGestionnaires] = useState("");
+  const [occupancyFilter, setOccupancyFilter] = useState<"all" | "occupes" | "vacants">("all");
 
   useEffect(() => {
     let active = true;
@@ -344,6 +347,18 @@ export default function ResidencesPage() {
     return true;
   });
 
+  const needleGest = queryGestionnaires.trim().toLowerCase();
+  const filteredGestionnaires = allGestionnaires.filter((g) => {
+    if (!needleGest) return true;
+    return [fullName(g), g.email, g.telephone, g.batimentNom].some((v) => v.toLowerCase().includes(needleGest));
+  });
+
+  const finalAppartements = filteredAppartements.filter((a) => {
+    if (occupancyFilter === "occupes") return !!a.proprietaire;
+    if (occupancyFilter === "vacants") return !a.proprietaire;
+    return true;
+  });
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -408,72 +423,114 @@ export default function ResidencesPage() {
                 )}
               </section>
             ) : (
-              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                {batiments.map((b) => {
-                  const nbAppart = b.appartements.length;
-                  const nbOccupes = b.appartements.filter((a) => a.proprietaire).length;
-                  const taux = nbAppart > 0 ? Math.round((nbOccupes / nbAppart) * 100) : 0;
-                  return (
-                    <article key={b.id} className={`${card} flex flex-col p-5`}>
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <h3 className="text-sm font-extrabold uppercase tracking-wide text-ink">Bâtiment {b.nom}</h3>
-                          <p className="text-xs text-stone-500">
-                            {b.etages} Étages ({etageLabel(b.etages)})
-                          </p>
+              <div className="space-y-5">
+                <div className="grid gap-4 sm:grid-cols-3">
+                  <div className="sm:col-span-2">
+                    <QuotaProgress
+                      current={batiments.length}
+                      max={maxBatiments}
+                      label={`Capacité des blocs dans « ${residence.nom} »`}
+                      unit="bâtiments"
+                    />
+                  </div>
+                  <div className={`${card} flex items-center justify-between p-4`}>
+                    <div>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-stone-500">Taux d&apos;occupation</span>
+                      <p className="mt-0.5 text-2xl font-bold text-ink">{tauxOccupation}%</p>
+                    </div>
+                    <span className="text-xs text-stone-500 font-medium">
+                      {totalOccupes} / {totalAppartements} logements
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                  {batiments.map((b) => {
+                    const nbAppart = b.appartements.length;
+                    const nbOccupes = b.appartements.filter((a) => a.proprietaire).length;
+                    const taux = nbAppart > 0 ? Math.round((nbOccupes / nbAppart) * 100) : 0;
+                    return (
+                      <article key={b.id} className={`${card} flex flex-col p-5 hover:shadow-md transition`}>
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <h3 className="text-base font-bold text-ink">Bâtiment {b.nom}</h3>
+                            <p className="text-xs text-stone-500">
+                              {b.etages} Étages ({etageLabel(b.etages)}) · {b.maxAppartements ?? 50} logements max
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <Pill tone={taux > 50 ? "success" : "neutral"}>{taux}% occupé</Pill>
+                            {isAdmin && (
+                              <ActionGroup
+                                onEdit={() => setEditingBatiment({ id: b.id, nom: b.nom, etages: b.etages, maxAppartements: b.maxAppartements })}
+                                onDelete={() => setDeletingItem({ type: "batiment", id: b.id, name: `le bâtiment « ${b.nom} »` })}
+                              />
+                            )}
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1.5">
-                          <Pill tone={taux > 50 ? "success" : "neutral"}>{taux}% occupé</Pill>
-                          {isAdmin && (
-                            <ActionGroup
-                              onEdit={() => setEditingBatiment({ id: b.id, nom: b.nom, etages: b.etages, maxAppartements: b.maxAppartements })}
-                              onDelete={() => setDeletingItem({ type: "batiment", id: b.id, name: `le bâtiment « ${b.nom} »` })}
-                            />
+
+                        <div className="mt-3">
+                          <ProgressBar value={taux} label={`Occupation Bâtiment ${b.nom}`} />
+                          <div className="mt-1.5 flex justify-between text-xs text-stone-500">
+                            <span>{nbOccupes} occupés</span>
+                            <span>{nbAppart - nbOccupes} vacants</span>
+                          </div>
+                        </div>
+
+                        <div className="mt-4 rounded-xl border border-stone-200 bg-stone-50/70 p-3.5">
+                          <div className="flex items-center justify-between">
+                            <p className="text-[10px] font-bold uppercase tracking-wide text-stone-500">Gestionnaire du bloc</p>
+                            {b.sousAdmin && <Pill tone="success">Affecté</Pill>}
+                          </div>
+                          {b.sousAdmin ? (
+                            <div className="mt-2 flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-2 min-w-0">
+                                <Avatar name={fullName(b.sousAdmin)} size="md" />
+                                <div className="min-w-0">
+                                  <p className="truncate text-sm font-semibold text-ink">{fullName(b.sousAdmin)}</p>
+                                  <p className="truncate text-xs text-stone-500">{b.sousAdmin.email}</p>
+                                </div>
+                              </div>
+                              <a
+                                href={`tel:${b.sousAdmin.telephone}`}
+                                className={button("secondary", "sm")}
+                                title={`Appeler ${fullName(b.sousAdmin)}`}
+                              >
+                                <Phone className="h-3.5 w-3.5" />
+                              </a>
+                            </div>
+                          ) : (
+                            <div className="mt-2 text-center py-1">
+                              <p className="text-xs text-stone-400 mb-2">Aucun sous-admin assigné à ce bâtiment</p>
+                              {isAdmin && (
+                                <button
+                                  type="button"
+                                  onClick={() => setCreatingSubAdminBatiment({ id: b.id, nom: b.nom })}
+                                  className={`${button("primary", "sm")} w-full`}
+                                >
+                                  <UserPlus className="h-3.5 w-3.5" aria-hidden />
+                                  Nommer le gestionnaire
+                                </button>
+                              )}
+                            </div>
                           )}
                         </div>
-                      </div>
-                      <p className="mt-3 text-2xl font-bold tracking-tight text-ink">
-                        {nbAppart} / {b.maxAppartements ?? 50} Appartements
-                      </p>
 
-                      <div className="mt-4 rounded-xl border border-stone-200 bg-stone-50/70 p-3">
-                        <p className="text-[10px] font-bold uppercase tracking-wide text-stone-500">Gestionnaire du bâtiment</p>
-                        <div className="mt-1 flex items-center justify-between gap-2">
-                          <span className={`truncate text-sm font-semibold ${b.sousAdmin ? "text-ink" : "text-stone-400"}`}>
-                            {b.sousAdmin ? fullName(b.sousAdmin) : "Non affecté"}
-                          </span>
-                          {b.sousAdmin && <Mono>{b.sousAdmin.telephone}</Mono>}
-                        </div>
-                        {isAdmin && !b.sousAdmin && (
+                        <div className="mt-4 flex items-center justify-between border-t border-stone-100 pt-3 text-xs">
+                          <span className="text-stone-500">{nbAppart} logements créés</span>
                           <button
                             type="button"
-                            onClick={() => setCreatingSubAdminBatiment({ id: b.id, nom: b.nom })}
-                            className={`${button("secondary", "sm")} mt-2.5 w-full`}
+                            onClick={() => showApartments(b.nom)}
+                            className="inline-flex items-center gap-1 font-semibold text-brand hover:underline"
                           >
-                            <UserPlus className="h-3.5 w-3.5" aria-hidden />
-                            Attribuer un sous-admin
+                            Voir les appartements
+                            <ChevronRight className="h-3.5 w-3.5" aria-hidden />
                           </button>
-                        )}
-                      </div>
-
-                      <div className="mt-3">
-                        <StatLine label="Occupés / Total :" value={`${nbOccupes} / ${nbAppart}`} />
-                        <StatLine label="Logements vacants :" value={`${nbAppart - nbOccupes}`} />
-                      </div>
-
-                      <div className="mt-4 flex items-center justify-end border-t border-stone-100 pt-4 text-xs">
-                        <button
-                          type="button"
-                          onClick={() => showApartments(b.nom)}
-                          className="inline-flex items-center gap-1 font-semibold text-ink hover:text-brand"
-                        >
-                          Voir Logements
-                          <ChevronRight className="h-3.5 w-3.5" aria-hidden />
-                        </button>
-                      </div>
-                    </article>
-                  );
-                })}
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
               </div>
             ))}
 
@@ -499,19 +556,36 @@ export default function ResidencesPage() {
               )}
               <DataTable
                 columns={gestionnaireColumns}
-                rows={allGestionnaires}
+                rows={filteredGestionnaires}
                 rowKey={(g) => `${g.batimentId}-${g.id}`}
+                toolbar={
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <span className="text-xs font-semibold text-stone-600">
+                      {filteredGestionnaires.length} gestionnaire{filteredGestionnaires.length > 1 ? "s" : ""} enregistré{filteredGestionnaires.length > 1 ? "s" : ""}
+                    </span>
+                    <div className="relative min-w-[240px]">
+                      <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-stone-400" />
+                      <input
+                        type="text"
+                        value={queryGestionnaires}
+                        onChange={(e) => setQueryGestionnaires(e.target.value)}
+                        placeholder="Rechercher nom, bloc..."
+                        className="w-full rounded-xl border border-stone-200 bg-white py-1.5 pl-9 pr-3 text-xs text-ink placeholder:text-stone-400 focus:outline-none focus:ring-1 focus:ring-brand"
+                      />
+                    </div>
+                  </div>
+                }
                 empty={
                   isAdmin ? (
                     <div className="py-8 text-center">
-                      <p className="text-sm text-stone-500">Aucun gestionnaire de bâtiment affecté pour le moment.</p>
+                      <p className="text-sm text-stone-500">Aucun gestionnaire ne correspond aux critères.</p>
                       <button
                         type="button"
                         onClick={() => setCreatingSubAdminBatiment({ id: "", nom: "" })}
                         className={`${button("primary", "sm")} mt-4`}
                       >
                         <UserPlus className="h-3.5 w-3.5" aria-hidden />
-                        Créer le premier Sous-Admin
+                        Créer un Sous-Admin
                       </button>
                     </div>
                   ) : (
@@ -595,25 +669,40 @@ export default function ResidencesPage() {
 
           {tab === "appartements" && (
             <div className="space-y-4">
-              <div className="flex flex-wrap gap-2" role="group" aria-label="Filtrer par bâtiment">
-                {["all", ...batiments.map((b) => b.nom)].map((value) => {
-                  const selected = buildingFilter === value;
-                  return (
-                    <button
-                      key={value}
-                      type="button"
-                      aria-pressed={selected}
-                      onClick={() => setBuildingFilter(value)}
-                      className={`rounded-full px-3 py-1 text-xs font-semibold transition ${
-                        selected ? "bg-brand text-white" : "border border-stone-200 bg-white text-stone-600 hover:border-stone-300"
-                      }`}
-                    >
-                      {value === "all" ? "Tous les bâtiments" : `Bâtiment ${value}`}
-                    </button>
-                  );
-                })}
-              </div>
-              <DataTable columns={appartementColumns} rows={filteredAppartements} rowKey={(a) => a.id} empty="Aucun appartement trouvé." />
+              <DataTable
+                columns={appartementColumns}
+                rows={finalAppartements}
+                rowKey={(a) => a.id}
+                toolbar={
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <FacetFilter
+                      value={occupancyFilter}
+                      onChange={setOccupancyFilter}
+                      options={[
+                        { id: "all", label: "Tous", count: filteredAppartements.length },
+                        { id: "occupes", label: "Occupés", count: filteredAppartements.filter((a) => a.proprietaire).length },
+                        { id: "vacants", label: "Vacants", count: filteredAppartements.filter((a) => !a.proprietaire).length },
+                      ]}
+                    />
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-medium text-stone-500">Bâtiment :</span>
+                      <select
+                        value={buildingFilter}
+                        onChange={(e) => setBuildingFilter(e.target.value)}
+                        className="rounded-xl border border-stone-200 bg-white px-3 py-1.5 text-xs font-semibold text-ink"
+                      >
+                        <option value="all">Tous les bâtiments ({allAppartements.length})</option>
+                        {batiments.map((b) => (
+                          <option key={b.id} value={b.nom}>
+                            Bâtiment {b.nom} ({b.appartements.length})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                }
+                empty="Aucun appartement ne correspond aux critères sélectionnés."
+              />
             </div>
           )}
 

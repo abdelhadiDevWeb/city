@@ -1,6 +1,20 @@
 "use client";
 
-import { ArrowDownRight, CalendarDays, FileText, NotebookText, Phone, Plus, TriangleAlert, Wallet } from "lucide-react";
+import {
+  ArrowDownRight,
+  ArrowUpRight,
+  CalendarDays,
+  CheckCircle2,
+  CreditCard,
+  FileText,
+  NotebookText,
+  Phone,
+  Plus,
+  Receipt,
+  Search,
+  TriangleAlert,
+  Wallet,
+} from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 import {
   createDepense,
@@ -21,7 +35,27 @@ import {
 } from "@/lib/finances-api";
 import { formatDZD } from "@/lib/format";
 import { ModalActions, SelectField, formText, useSubmit } from "../forms";
-import { ActionGroup, ConfirmModal, DataTable, Field, FormError, Modal, Mono, PageHeader, Pill, Tabs, button, card, describeError, useToast, type Column, type TabItem, type Tone } from "../ui";
+import {
+  ActionGroup,
+  Avatar,
+  ConfirmModal,
+  DataTable,
+  FacetFilter,
+  Field,
+  FormError,
+  Modal,
+  Mono,
+  PageHeader,
+  Pill,
+  Tabs,
+  button,
+  card,
+  describeError,
+  useToast,
+  type Column,
+  type TabItem,
+  type Tone,
+} from "../ui";
 
 type TabId = "impayes" | "journal" | "depenses" | "factures";
 
@@ -52,6 +86,14 @@ export default function FinancesPage() {
   const [editingFacture, setEditingFacture] = useState<Facture | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<{ kind: "charge" | "depense" | "facture"; id: string; nom: string } | null>(null);
 
+  const [queryImpayes, setQueryImpayes] = useState("");
+  const [filterImpayes, setFilterImpayes] = useState<"all" | "critique" | "recent">("all");
+
+  const [queryPaiements, setQueryPaiements] = useState("");
+  const [filterPaiements, setFilterPaiements] = useState<"all" | "edahabia" | "especes">("all");
+
+  const [filterFactures, setFilterFactures] = useState<"all" | "attente" | "payee">("all");
+
   useEffect(() => {
     let active = true;
     getFinances()
@@ -72,6 +114,42 @@ export default function FinancesPage() {
   const paiements = data?.paiements ?? [];
   const depenses = data?.depenses ?? [];
   const factures = data?.factures ?? [];
+
+  const totalEncaisse = sum(paiements.map((p) => p.montant));
+  const totalImpayes = sum(impayes.map((r) => r.totalDu));
+  const totalDepenses = sum(depenses.map((d) => d.montant));
+  const totalFacturesReste = sum(factures.filter((f) => f.statut !== "Payée").map((f) => f.montant));
+  const soldeTresorerie = totalEncaisse - totalDepenses;
+  const totalChargesAppelees = totalEncaisse + totalImpayes;
+  const tauxRecouvrement = totalChargesAppelees > 0 ? Math.round((totalEncaisse / totalChargesAppelees) * 100) : 100;
+
+  const impayesCritiquesCount = impayes.filter((r) => r.moisImpayes >= 3).length;
+  const impayesRecentsCount = impayes.filter((r) => r.moisImpayes < 3).length;
+  const needleImpayes = queryImpayes.trim().toLowerCase();
+  const filteredImpayes = impayes.filter((r) => {
+    if (filterImpayes === "critique" && r.moisImpayes < 3) return false;
+    if (filterImpayes === "recent" && r.moisImpayes >= 3) return false;
+    if (!needleImpayes) return true;
+    return [r.logement, r.resident, r.telephone].some((v) => v.toLowerCase().includes(needleImpayes));
+  });
+
+  const edahabiaCount = paiements.filter((p) => p.mode === "Edahabia").length;
+  const especesCount = paiements.filter((p) => p.mode !== "Edahabia").length;
+  const needlePaiements = queryPaiements.trim().toLowerCase();
+  const filteredPaiements = paiements.filter((p) => {
+    if (filterPaiements === "edahabia" && p.mode !== "Edahabia") return false;
+    if (filterPaiements === "especes" && p.mode === "Edahabia") return false;
+    if (!needlePaiements) return true;
+    return [p.logement, p.resident, p.reference, p.mode].some((v) => v.toLowerCase().includes(needlePaiements));
+  });
+
+  const facturesAttenteCount = factures.filter((f) => f.statut !== "Payée").length;
+  const facturesPayeesCount = factures.filter((f) => f.statut === "Payée").length;
+  const filteredFactures = factures.filter((f) => {
+    if (filterFactures === "attente" && f.statut === "Payée") return false;
+    if (filterFactures === "payee" && f.statut !== "Payée") return false;
+    return true;
+  });
 
   const tabs: TabItem<TabId>[] = [
     { id: "impayes", label: "Impayés & Recouvrement", icon: TriangleAlert, count: impayes.length },
@@ -118,17 +196,27 @@ export default function FinancesPage() {
     {
       header: "Logement & Bâtiment",
       cell: (r) => (
-        <span className="flex items-center gap-2 font-semibold text-ink">
-          <span className="h-1.5 w-1.5 rounded-full bg-brand" aria-hidden />
+        <span className="flex items-center gap-2 font-bold text-ink">
+          <span className="h-2 w-2 rounded-full bg-brand" aria-hidden />
           {r.logement}
         </span>
       ),
     },
-    { header: "Résident", cell: (r) => <span className="font-semibold text-ink">{r.resident}</span> },
-    { header: "Contact", cell: (r) => <Mono>{r.telephone}</Mono> },
+    {
+      header: "Résident",
+      cell: (r) => (
+        <div className="flex items-center gap-2.5">
+          <Avatar name={r.resident} size="md" />
+          <div>
+            <span className="block font-semibold text-ink">{r.resident}</span>
+            <span className="block text-xs text-stone-500">{r.telephone}</span>
+          </div>
+        </div>
+      ),
+    },
     { header: "Mois impayés", cell: (r) => <Pill tone={monthsTone(r.moisImpayes)}>{r.moisImpayes} Mois de retard</Pill> },
     { header: "Dernier règlement", cell: (r) => <span className="text-stone-500">{r.dernierReglement}</span> },
-    { header: "Total dû", cell: (r) => <Mono strong>{formatDZD(r.totalDu)}</Mono> },
+    { header: "Total dû", cell: (r) => <Mono strong className="font-bold text-red-600">{formatDZD(r.totalDu)}</Mono> },
     {
       header: "Action rapide",
       align: "right",
@@ -139,7 +227,7 @@ export default function FinancesPage() {
           </button>
           <a href={`tel:${r.telephone}`} className={button("secondary", "sm")} title={`Appeler ${r.resident}`}>
             <Phone className="h-3.5 w-3.5" aria-hidden />
-            Rappeler
+            Appeler
           </a>
           <ActionGroup
             editLabel="Modifier créance"
@@ -154,11 +242,19 @@ export default function FinancesPage() {
 
   const paiementColumns: Column<Paiement>[] = [
     { header: "Date", cell: (p) => <span className="text-stone-500">{p.date}</span> },
-    { header: "Logement", cell: (p) => <span className="font-semibold text-ink">{p.logement}</span> },
-    { header: "Résident", cell: (p) => p.resident },
+    { header: "Logement", cell: (p) => <span className="font-bold text-ink">{p.logement}</span> },
+    {
+      header: "Résident",
+      cell: (p) => (
+        <div className="flex items-center gap-2">
+          <Avatar name={p.resident} size="md" />
+          <span className="font-medium text-ink">{p.resident}</span>
+        </div>
+      ),
+    },
     { header: "Mode", cell: (p) => <Pill tone={p.mode === "Edahabia" ? "brand" : "neutral"}>{p.mode}</Pill> },
     { header: "Référence", cell: (p) => <Mono>{p.reference}</Mono> },
-    { header: "Montant", align: "right", cell: (p) => <Mono strong>+{formatDZD(p.montant)}</Mono> },
+    { header: "Montant", align: "right", cell: (p) => <Mono strong className="text-emerald-700 font-bold">+{formatDZD(p.montant)}</Mono> },
     {
       header: "Actions",
       align: "right",
@@ -276,51 +372,168 @@ export default function FinancesPage() {
         </div>
       ) : (
         <>
+          {/* Executive Financial Health Strip */}
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <div className={`${card} p-5`}>
+              <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wide text-stone-500">
+                <span>Trésorerie Disponible</span>
+                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
+                  <Wallet className="h-3.5 w-3.5" />
+                </span>
+              </div>
+              <p className="mt-2 font-mono text-2xl font-bold tracking-tight text-ink">{formatDZD(soldeTresorerie)}</p>
+              <div className="mt-2 flex items-center justify-between text-xs text-stone-500 border-t border-stone-100 pt-2">
+                <span>Encaissé : {formatDZD(totalEncaisse)}</span>
+                <span className="font-semibold text-emerald-600">Solde actif</span>
+              </div>
+            </div>
+
+            <div className={`${card} p-5`}>
+              <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wide text-stone-500">
+                <span>Taux de Recouvrement</span>
+                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-orange-50 text-brand">
+                  <Receipt className="h-3.5 w-3.5" />
+                </span>
+              </div>
+              <p className="mt-2 font-mono text-2xl font-bold tracking-tight text-ink">{tauxRecouvrement}%</p>
+              <div className="mt-2 flex items-center justify-between text-xs text-stone-500 border-t border-stone-100 pt-2">
+                <span>Appels : {formatDZD(totalChargesAppelees)}</span>
+                <span className={tauxRecouvrement >= 80 ? "text-emerald-600 font-semibold" : "text-amber-600 font-semibold"}>
+                  {tauxRecouvrement >= 80 ? "Bon niveau" : "À surveiller"}
+                </span>
+              </div>
+            </div>
+
+            <div className={`${card} p-5`}>
+              <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wide text-stone-500">
+                <span>Total Créances & Impayés</span>
+                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-red-50 text-red-600">
+                  <TriangleAlert className="h-3.5 w-3.5" />
+                </span>
+              </div>
+              <p className="mt-2 font-mono text-2xl font-bold tracking-tight text-red-700">{formatDZD(totalImpayes)}</p>
+              <div className="mt-2 flex items-center justify-between text-xs text-stone-500 border-t border-stone-100 pt-2">
+                <span>{impayes.length} retards constatés</span>
+                <span className="font-semibold text-red-600">{impayesCritiquesCount} critiques</span>
+              </div>
+            </div>
+
+            <div className={`${card} p-5`}>
+              <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wide text-stone-500">
+                <span>Dépenses Résidence</span>
+                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-stone-100 text-stone-700">
+                  <FileText className="h-3.5 w-3.5" />
+                </span>
+              </div>
+              <p className="mt-2 font-mono text-2xl font-bold tracking-tight text-ink">{formatDZD(totalDepenses)}</p>
+              <div className="mt-2 flex items-center justify-between text-xs text-stone-500 border-t border-stone-100 pt-2">
+                <span>{facturesAttenteCount} factures à payer</span>
+                <span className="font-mono text-stone-700">{formatDZD(totalFacturesReste)}</span>
+              </div>
+            </div>
+          </div>
+
           <Tabs tabs={tabs} active={tab} onChange={setTab} />
 
           {tab === "impayes" && (
             <div className="space-y-4">
-              <div className={`${card} flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between`}>
-                <div className="flex items-start gap-4">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-orange-200 bg-orange-50 text-brand">
-                    <TriangleAlert className="h-5 w-5" aria-hidden />
-                  </span>
-                  <div>
-                    <p className="text-sm font-bold text-ink">{impayes.length} Logements présentent des retards de paiement</p>
-                    <p className="mt-0.5 text-xs text-stone-500">Les impayés sont calculés automatiquement en fonction des charges non acquittées.</p>
+              <DataTable
+                columns={impayeColumns}
+                rows={filteredImpayes}
+                rowKey={(r) => r.id}
+                toolbar={
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <FacetFilter
+                      value={filterImpayes}
+                      onChange={setFilterImpayes}
+                      options={[
+                        { id: "all", label: "Tous les impayés", count: impayes.length },
+                        { id: "critique", label: "Critique (3+ mois)", count: impayesCritiquesCount },
+                        { id: "recent", label: "Récent (1-2 mois)", count: impayesRecentsCount },
+                      ]}
+                    />
+                    <div className="relative min-w-[240px]">
+                      <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-stone-400" />
+                      <input
+                        type="text"
+                        value={queryImpayes}
+                        onChange={(e) => setQueryImpayes(e.target.value)}
+                        placeholder="Rechercher résident, logement..."
+                        className="w-full rounded-xl border border-stone-200 bg-white py-1.5 pl-9 pr-3 text-xs text-ink placeholder:text-stone-400 focus:outline-none focus:ring-1 focus:ring-brand"
+                      />
+                    </div>
                   </div>
-                </div>
-                <div className="sm:text-right">
-                  <p className="text-[10px] font-bold uppercase tracking-wide text-stone-500">Total créances</p>
-                  <p className="font-mono text-xl font-bold text-ink">{formatDZD(sum(impayes.map((r) => r.totalDu)))}</p>
-                </div>
-              </div>
-              <DataTable columns={impayeColumns} rows={impayes} rowKey={(r) => r.id} empty="Aucun impayé : tous les logements sont à jour." />
+                }
+                empty="Aucun impayé : tous les logements sont à jour de leurs cotisations."
+              />
             </div>
           )}
 
           {tab === "journal" && (
             <div className="space-y-4">
-              <SummaryStrip label="Total encaissé" value={formatDZD(sum(paiements.map((p) => p.montant)))} hint={`${paiements.length} paiements enregistrés`} />
-              <DataTable columns={paiementColumns} rows={paiements} rowKey={(p) => p.id} empty="Aucun paiement enregistré pour le moment." />
+              <DataTable
+                columns={paiementColumns}
+                rows={filteredPaiements}
+                rowKey={(p) => p.id}
+                toolbar={
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <FacetFilter
+                      value={filterPaiements}
+                      onChange={setFilterPaiements}
+                      options={[
+                        { id: "all", label: "Tous les paiements", count: paiements.length },
+                        { id: "edahabia", label: "Edahabia / CIB", count: edahabiaCount },
+                        { id: "especes", label: "Espèces / CCP / Chèque", count: especesCount },
+                      ]}
+                    />
+                    <div className="relative min-w-[240px]">
+                      <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-stone-400" />
+                      <input
+                        type="text"
+                        value={queryPaiements}
+                        onChange={(e) => setQueryPaiements(e.target.value)}
+                        placeholder="Rechercher paiement, référence..."
+                        className="w-full rounded-xl border border-stone-200 bg-white py-1.5 pl-9 pr-3 text-xs text-ink placeholder:text-stone-400 focus:outline-none focus:ring-1 focus:ring-brand"
+                      />
+                    </div>
+                  </div>
+                }
+                empty="Aucun paiement ne correspond aux critères de recherche."
+              />
             </div>
           )}
 
           {tab === "depenses" && (
             <div className="space-y-4">
-              <SummaryStrip label="Total dépenses" value={formatDZD(sum(depenses.map((d) => d.montant)))} hint={`${depenses.filter((d) => d.statut === "En attente").length} dépense en attente de règlement`} />
+              <SummaryStrip label="Total dépenses" value={formatDZD(sum(depenses.map((d) => d.montant)))} hint={`${depenses.filter((d) => d.statut === "En attente").length} dépense(s) en attente de règlement`} />
               <DataTable columns={depenseColumns} rows={depenses} rowKey={(d) => d.id} empty="Aucune dépense enregistrée." />
             </div>
           )}
 
           {tab === "factures" && (
             <div className="space-y-4">
-              <SummaryStrip
-                label="Reste à payer"
-                value={formatDZD(sum(factures.filter((f) => f.statut !== "Payée").map((f) => f.montant)))}
-                hint={`${factures.filter((f) => f.statut === "En retard").length} facture en retard`}
+              <DataTable
+                columns={factureColumns}
+                rows={filteredFactures}
+                rowKey={(f) => f.id}
+                toolbar={
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <FacetFilter
+                      value={filterFactures}
+                      onChange={setFilterFactures}
+                      options={[
+                        { id: "all", label: "Toutes les factures", count: factures.length },
+                        { id: "attente", label: "À payer / En retard", count: facturesAttenteCount },
+                        { id: "payee", label: "Acquittées", count: facturesPayeesCount },
+                      ]}
+                    />
+                    <span className="text-xs font-semibold text-stone-500">
+                      Reste à régler : <span className="font-mono font-bold text-ink">{formatDZD(totalFacturesReste)}</span>
+                    </span>
+                  </div>
+                }
+                empty="Aucune facture ne correspond aux critères sélectionnés."
               />
-              <DataTable columns={factureColumns} rows={factures} rowKey={(f) => f.id} empty="Aucune facture enregistrée." />
             </div>
           )}
         </>
