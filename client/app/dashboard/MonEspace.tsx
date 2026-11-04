@@ -228,6 +228,12 @@ export function MonEspace() {
             <Wallet className="h-3.5 w-3.5" aria-hidden />
             Encaisser Paiement
           </Link>
+          {role === "admin" && (
+            <Link href="/dashboard/residences" className={button("secondary", "sm")}>
+              <UserCheck className="h-3.5 w-3.5" aria-hidden />
+              Gérer Sous-Admins
+            </Link>
+          )}
           <Link href="/dashboard/maintenance" className={button("secondary", "sm")}>
             <Wrench className="h-3.5 w-3.5" aria-hidden />
             Signaler Incident

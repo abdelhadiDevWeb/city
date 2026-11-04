@@ -27,7 +27,7 @@ const SUPER_ADMIN_NAV: NavItem[] = [
 
 const MANAGER_NAV: NavItem[] = [
   { href: "/dashboard", label: "Tableau de bord", icon: LayoutDashboard },
-  { href: "/dashboard/residences", label: "Résidences & Bâtiments", icon: Building2 },
+  { href: "/dashboard/residences", label: "Bâtiments & Sous-Admins", icon: Building2 },
   { href: "/dashboard/residents", label: "Résidents & Propriétaires", icon: Users },
   { href: "/dashboard/finances", label: "Finances & Charges", icon: Wallet },
   { href: "/dashboard/maintenance", label: "Maintenance & Pannes", icon: Wrench },

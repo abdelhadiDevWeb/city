@@ -85,7 +85,7 @@ const formatDate = (iso: string) => new Date(iso).toLocaleDateString("fr-FR", { 
 export default function ResidencesPage() {
   const notify = useToast();
   const { account } = useSession();
-  const isAdmin = account.type === "Admin" && account.role === "admin";
+  const isAdmin = (account.type === "Admin" && account.role === "admin") || account.roles?.includes("admin");
   const [espace, setEspace] = useState<MonEspace | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [version, setVersion] = useState(0);
@@ -159,7 +159,7 @@ export default function ResidencesPage() {
 
   const tabs: TabItem<TabId>[] = [
     { id: "batiments", label: "Bâtiments & Blocs", icon: Building2, count: batiments.length },
-    { id: "gestionnaires", label: "Gestionnaires de Bâtiment", icon: UsersRound, count: allGestionnaires.length },
+    { id: "gestionnaires", label: "Sous-Admins (Gestionnaires)", icon: UsersRound, count: allGestionnaires.length },
     ...(isAdmin
       ? [
           {
@@ -348,7 +348,7 @@ export default function ResidencesPage() {
               <button
                 type="button"
                 onClick={() => setCreatingSubAdminBatiment({ id: "", nom: "" })}
-                className={button("secondary")}
+                className={button("primary")}
               >
                 <UserPlus className="h-4 w-4" aria-hidden />
                 Nouveau Sous-Admin
@@ -358,7 +358,7 @@ export default function ResidencesPage() {
                   Quota atteint ({maxBatiments} max)
                 </span>
               ) : (
-                <button type="button" onClick={() => setAddingBatiment(true)} className={button("primary")}>
+                <button type="button" onClick={() => setAddingBatiment(true)} className={button("secondary")}>
                   <Plus className="h-4 w-4" aria-hidden />
                   Nouveau Bâtiment (Bloc)
                 </button>
