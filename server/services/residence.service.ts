@@ -71,10 +71,11 @@ export async function getResidenceDetails(id: string) {
   const batiments = await Batiment.find({ idResidence: residence._id }).sort({ nom: 1 }).collation({ locale: "fr", numericOrdering: true });
   const batimentIds = batiments.map((b) => b._id);
 
-  const [admin, sousAdmins, appartements] = await Promise.all([
+  const [admin, sousAdmins, appartements, charges] = await Promise.all([
     Admin.findOne({ role: "admin", idResidence: residence._id }),
     Admin.find({ role: "sub_admin", idBatiment: inIds(batimentIds) }),
     Appartement.find({ idBatiment: inIds(batimentIds) }).sort({ etage: 1, nom: 1 }).collation({ locale: "fr", numericOrdering: true }),
+    Charge.find({ idResidence: residence._id }),
   ]);
 
   const ownerIds = appartements.flatMap((a) => (a.idProprietaire ? [a.idProprietaire] : []));
@@ -82,6 +83,17 @@ export async function getResidenceDetails(id: string) {
   const ownerById = new Map(owners.map((u) => [u.id as string, u]));
   const sousAdminByBatiment = new Map(sousAdmins.map((a) => [String(a.idBatiment), a]));
   const activeIds = await activeAccountIds(admin ? [admin, ...sousAdmins] : sousAdmins);
+
+  // Index charges by apartment ID
+  const chargesByAppartement = new Map<string, typeof charges>();
+  for (const c of charges) {
+    if (c.idAppartement) {
+      const aptKey = String(c.idAppartement);
+      const list = chargesByAppartement.get(aptKey) ?? [];
+      list.push(c);
+      chargesByAppartement.set(aptKey, list);
+    }
+  }
 
   return {
     residence: {
@@ -96,7 +108,24 @@ export async function getResidenceDetails(id: string) {
       sousAdmin: responsable(sousAdminByBatiment.get(b.id), activeIds),
       appartements: appartements
         .filter((a) => a.idBatiment.equals(b._id))
-        .map((a) => ({ id: a.id as string, nom: a.nom, etage: a.etage, proprietaire: proprietaire(a.idProprietaire ? ownerById.get(String(a.idProprietaire)) : undefined) })),
+        .map((a) => {
+          const aptCharges = chargesByAppartement.get(String(a._id)) ?? [];
+          const unpaid = aptCharges.filter((c) => c.statut === "impaye");
+          const totalDu = unpaid.reduce((sum, c) => sum + (c.totalDu || 0), 0);
+          const moisImpayes = unpaid.reduce((sum, c) => sum + (c.moisImpayes || 0), 0);
+          const hasOwner = Boolean(a.idProprietaire);
+          return {
+            id: a.id as string,
+            nom: a.nom,
+            etage: a.etage,
+            proprietaire: proprietaire(a.idProprietaire ? ownerById.get(String(a.idProprietaire)) : undefined),
+            paiement: {
+              statut: hasOwner ? (unpaid.length > 0 ? "impaye" : "paye") : "aucun",
+              moisImpayes,
+              totalDu,
+            },
+          };
+        }),
     })),
   };
 }

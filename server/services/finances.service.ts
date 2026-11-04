@@ -103,7 +103,7 @@ export async function createPaiement(
 ) {
   const charge = await Charge.create({
     idResidence,
-    idBatiment: input.idBatiment || null,
+    idBatiment: input.idBatiment ? new mongoose.Types.ObjectId(input.idBatiment) : undefined,
     logement: input.logement,
     resident: input.resident,
     telephone: input.telephone,

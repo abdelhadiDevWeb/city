@@ -31,7 +31,17 @@ export type BatimentDetail = {
   idResidence: string;
   createdAt: string;
   sousAdmin: Responsable | null;
-  appartements: { id: string; nom: string; etage: number; proprietaire: Proprietaire | null }[];
+  appartements: {
+    id: string;
+    nom: string;
+    etage: number;
+    proprietaire: Proprietaire | null;
+    paiement?: {
+      statut: "paye" | "impaye" | "aucun";
+      moisImpayes: number;
+      totalDu: number;
+    };
+  }[];
 };
 
 export type ResidenceDetails = { residence: ResidenceBase; admin: Responsable | null; batiments: BatimentDetail[] };

@@ -1,12 +1,18 @@
 "use client";
 
-import { Building2, Check, Copy, KeyRound, Search, UserPlus, Users } from "lucide-react";
+import { Building2, Check, CheckCircle2, Copy, CreditCard, KeyRound, Search, UserPlus, Users } from "lucide-react";
+import { encaisserCharge, getFinances, type Impaye } from "@/lib/finances-api";
+import { formatDZD } from "@/lib/format";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import {
   createResident,
   deleteResident,
   etageLabel,
   getMonEspace,
+  getResidence,
+  listResidences,
+  type ResidenceDetails,
+  type ResidenceSummary,
   listResidents,
   updateResident,
   type BatimentDetail,
@@ -22,7 +28,13 @@ const fullName = (p: { prenom: string; nom: string }) => `${p.prenom} ${p.nom}`;
 export default function ResidentsPage() {
   const notify = useToast();
   const { account } = useSession();
+  const isSuperAdmin = account.type === "SuperAdmin";
   const isSubAdmin = account.type === "Admin" && account.role === "sub_admin";
+  const [residencesList, setResidencesList] = useState<ResidenceSummary[]>([]);
+  const [selectedResidenceId, setSelectedResidenceId] = useState<string>("all");
+  const [superAdminBatiments, setSuperAdminBatiments] = useState<BatimentDetail[]>([]);
+  const [impayesMap, setImpayesMap] = useState<Map<string, Impaye>>(new Map());
+  const [busyId, setBusyId] = useState<string | null>(null);
   const [espace, setEspace] = useState<MonEspace | null>(null);
   const [residents, setResidents] = useState<Resident[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -36,11 +48,30 @@ export default function ResidentsPage() {
 
   useEffect(() => {
     let active = true;
-    Promise.all([getMonEspace(), listResidents()])
-      .then(([e, r]) => {
+    const reqs: Promise<unknown>[] = [
+      isSuperAdmin ? Promise.resolve(null) : getMonEspace(),
+      listResidents(isSuperAdmin && selectedResidenceId !== "all" ? selectedResidenceId : undefined),
+      getFinances().catch(() => null),
+    ];
+    if (isSuperAdmin) {
+      reqs.push(listResidences());
+    }
+    Promise.all(reqs)
+      .then(([e, r, fin, resList]) => {
         if (!active) return;
-        setEspace(e);
-        setResidents(r);
+        if (e) setEspace(e as MonEspace);
+        if (fin) {
+          const map = new Map<string, Impaye>();
+          for (const imp of (fin as { impayes: Impaye[] }).impayes ?? []) {
+            if (imp.telephone) map.set(imp.telephone, imp);
+            if (imp.resident) map.set(imp.resident.trim().toLowerCase(), imp);
+          }
+          setImpayesMap(map);
+        }
+        if (resList) {
+          setResidencesList(resList as ResidenceSummary[]);
+        }
+        setResidents(r as Resident[]);
         setError(null);
       })
       .catch((err) => {
@@ -49,7 +80,32 @@ export default function ResidentsPage() {
     return () => {
       active = false;
     };
-  }, [version]);
+  }, [version, isSuperAdmin, selectedResidenceId]);
+
+  useEffect(() => {
+    if (!isSuperAdmin) return;
+    const targetId = selectedResidenceId !== "all" ? selectedResidenceId : residencesList[0]?.id;
+    if (targetId) {
+      getResidence(targetId)
+        .then((res) => {
+          setSuperAdminBatiments(res.batiments);
+        })
+        .catch(() => {});
+    }
+  }, [isSuperAdmin, selectedResidenceId, residencesList]);
+
+  async function handleValiderPaiement(r: Resident, impaye: Impaye) {
+    try {
+      setBusyId(r.id);
+      await encaisserCharge(impaye.id);
+      notify(`Paiement de ${formatDZD(impaye.totalDu)} validé pour ${fullName(r)} — accès débloqué.`);
+      setVersion((v) => v + 1);
+    } catch (err) {
+      notify(describeError(err).message);
+    } finally {
+      setBusyId(null);
+    }
+  }
 
   const needle = query.trim().toLowerCase();
   const rows = (residents ?? []).filter(
@@ -86,6 +142,31 @@ export default function ResidentsPage() {
           "—"
         ),
     },
+    {
+      header: "Cotisations & Charges",
+      cell: (r) => {
+        const impaye = impayesMap.get(r.telephone) ?? impayesMap.get(fullName(r).trim().toLowerCase());
+        const isBusy = busyId === r.id;
+        if (!impaye) {
+          return <Pill tone="success">À jour (Payé)</Pill>;
+        }
+        return (
+          <div className="flex flex-wrap items-center gap-1.5">
+            <Pill tone="danger">Impayé ({formatDZD(impaye.totalDu)})</Pill>
+            <button
+              type="button"
+              disabled={isBusy}
+              onClick={() => handleValiderPaiement(r, impaye)}
+              className={button("primary", "sm")}
+              title="Valider la réception de la cotisation et débloquer l'accès"
+            >
+              <CheckCircle2 className="h-3.5 w-3.5" aria-hidden />
+              {isBusy ? "..." : "Valider"}
+            </button>
+          </div>
+        );
+      },
+    },
     { header: "Statut", cell: () => <Pill tone="dark">Propriétaire</Pill> },
     { header: "Ajouté le", cell: (r) => <span className="text-stone-500">{new Date(r.createdAt).toLocaleDateString("fr-FR")}</span> },
     {
@@ -102,7 +183,15 @@ export default function ResidentsPage() {
     },
   ];
 
-  const canAdd = !!espace?.residence && espace.batiments.length > 0;
+  const canAdd = isSuperAdmin
+    ? residencesList.length > 0 && superAdminBatiments.length > 0
+    : !!espace?.residence && espace.batiments.length > 0;
+
+  const currentResidenceNom = isSuperAdmin
+    ? residencesList.find((r) => r.id === selectedResidenceId)?.nom ?? residencesList[0]?.nom ?? "Plateforme"
+    : espace?.residence?.nom ?? "";
+
+  const availableBatiments = isSuperAdmin ? superAdminBatiments : espace?.batiments ?? [];
 
   return (
     <div className="space-y-6">
@@ -110,9 +199,11 @@ export default function ResidentsPage() {
         icon={Users}
         title="Résidents & Propriétaires"
         subtitle={
-          espace?.residence
-            ? `${isSubAdmin ? `Bâtiment ${espace.batiments[0]?.nom ?? ""} · ` : ""}${espace.residence.nom} — ajoutez les propriétaires et leur appartement.`
-            : "Ajoutez les propriétaires et leur appartement."
+          isSuperAdmin
+            ? "Gestion globale des résidents et propriétaires de toutes les résidences."
+            : espace?.residence
+            ? `${isSubAdmin ? `Bâtiment ${espace.batiments[0]?.nom ?? ""} · ` : ""}${espace.residence.nom} — gestion des propriétaires et logements.`
+            : "Gestion des propriétaires et de leurs appartements."
         }
         actions={
           <button type="button" disabled={!canAdd} onClick={() => setAdding(true)} className={button("primary")}>
@@ -141,6 +232,28 @@ export default function ResidentsPage() {
         </section>
       ) : residents ? (
         <>
+          {isSuperAdmin && (
+            <div className={`${card} flex flex-wrap items-center justify-between gap-3 p-4`}>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold uppercase tracking-wide text-stone-500">Filtrer par résidence :</span>
+                <select
+                  value={selectedResidenceId}
+                  onChange={(e) => setSelectedResidenceId(e.target.value)}
+                  className="rounded-xl border border-stone-200 bg-white px-3 py-1.5 text-sm font-semibold text-ink shadow-xs"
+                >
+                  <option value="all">Toutes les résidences ({residents.length} résidents)</option>
+                  {residencesList.map((r) => (
+                    <option key={r.id} value={r.id}>
+                      {r.nom} ({r.localisation})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <span className="text-xs text-stone-500">
+                {rows.length} résident{rows.length > 1 ? "s" : ""} affiché{rows.length > 1 ? "s" : ""}
+              </span>
+            </div>
+          )}
           <label className={`${card} flex items-center gap-3 px-4 py-3`}>
             <Search className="h-4 w-4 text-stone-400" aria-hidden />
             <span className="sr-only">Rechercher</span>
@@ -160,10 +273,10 @@ export default function ResidentsPage() {
         </>
       ) : null}
 
-      {adding && espace?.residence && (
+      {adding && (espace?.residence || (isSuperAdmin && availableBatiments.length > 0)) && (
         <ResidentModal
-          residenceNom={espace.residence.nom}
-          batiments={espace.batiments}
+          residenceNom={currentResidenceNom}
+          batiments={availableBatiments}
           onClose={closeModal}
           onCreated={(r) => {
             setAdding(false);
@@ -174,10 +287,10 @@ export default function ResidentsPage() {
         />
       )}
 
-      {editingResident && espace?.residence && (
+      {editingResident && (espace?.residence || isSuperAdmin) && (
         <EditResidentModal
           resident={editingResident}
-          batiments={espace.batiments}
+          batiments={availableBatiments}
           onClose={() => setEditingResident(null)}
           onUpdated={() => {
             setEditingResident(null);
@@ -309,7 +422,8 @@ function ResidentModal({
   const { submitting, error, run } = useSubmit();
   const [batimentId, setBatimentId] = useState(batiments[0]?.id ?? "");
   const [etage, setEtage] = useState(0);
-  const batiment = batiments.find((b) => b.id === batimentId);
+  const activeBatId = batimentId || batiments[0]?.id || "";
+  const batiment = batiments.find((b) => b.id === activeBatId);
   const freeFlats = batiment?.appartements.filter((a) => !a.proprietaire) ?? [];
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
@@ -324,7 +438,7 @@ function ResidentModal({
           email: formText(form, "email").toLowerCase(),
           telephone: formText(form, "telephone"),
           nin: formText(form, "nin"),
-          idBatiment: batimentId,
+          idBatiment: activeBatId,
           etage,
           appartement: formText(form, "appartement"),
           ...(password ? { password } : {}),
@@ -458,7 +572,8 @@ function EditResidentModal({
   const [appartement, setAppartement] = useState(resident.appartement?.nom ?? "");
   const [password, setPassword] = useState("");
 
-  const batiment = batiments.find((b) => b.id === batimentId);
+  const activeBatId = batimentId || batiments[0]?.id || "";
+  const batiment = batiments.find((b) => b.id === activeBatId);
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

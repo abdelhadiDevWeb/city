@@ -1,6 +1,8 @@
 "use client";
 
-import { Building, Building2, KeyRound, Layers, MapPin, Plus, ShieldCheck, UserPlus, UserRound } from "lucide-react";
+import { Building, Building2, CheckCircle2, ChevronRight, KeyRound, Layers, MapPin, Plus, ShieldCheck, UserPlus, UserRound, Users, X } from "lucide-react";
+import Link from "next/link";
+import { formatDZD } from "@/lib/format";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useState, type FormEvent } from "react";
 import {
@@ -10,6 +12,7 @@ import {
   deleteAccount,
   deleteBatiment,
   deleteResidence,
+  etageLabel,
   getResidence,
   listResidences,
   updateAccount,
@@ -29,6 +32,7 @@ import {
   Field,
   FormError,
   Modal,
+  Mono,
   PageHeader,
   Pill,
   button,
@@ -416,6 +420,9 @@ function ResidenceDetailsView({
   const appartements = batiments.reduce((sum, b) => sum + b.appartements.length, 0);
   const sousAdmins = batiments.filter((b) => b.sousAdmin).length;
 
+  const [selectedBatimentId, setSelectedBatimentId] = useState<string | null>(null);
+  const selectedBatiment = batiments.find((b) => b.id === selectedBatimentId);
+
   const columns: Column<BatimentDetail>[] = [
     {
       header: "Bâtiment",
@@ -453,6 +460,30 @@ function ResidenceDetailsView({
             Créer le sub admin
           </button>
         ),
+    },
+    {
+      header: "Résidents & Cotisations",
+      cell: (b) => {
+        const isSelected = selectedBatimentId === b.id;
+        const total = b.appartements.length;
+        const occupes = b.appartements.filter((a) => a.proprietaire).length;
+        const impayes = b.appartements.filter((a) => a.paiement?.statut === "impaye").length;
+        return (
+          <button
+            type="button"
+            onClick={() => setSelectedBatimentId(isSelected ? null : b.id)}
+            className={`${button(isSelected ? "primary" : "secondary", "sm")} flex items-center gap-1.5`}
+          >
+            <Users className="h-3.5 w-3.5" aria-hidden />
+            <span>{isSelected ? "Fermer Détails" : `Voir Résidents (${occupes}/${total})`}</span>
+            {impayes > 0 && (
+              <span className="rounded-full bg-red-100 px-1.5 py-0.5 text-[10px] font-bold text-red-700">
+                {impayes} impayé{impayes > 1 ? "s" : ""}
+              </span>
+            )}
+          </button>
+        );
+      },
     },
     { header: "Ajouté le", cell: (b) => <span className="text-stone-500">{formatDate(b.createdAt)}</span> },
     {
@@ -561,6 +592,106 @@ function ResidenceDetailsView({
           )}
         </div>
         <DataTable columns={columns} rows={batiments} rowKey={(b) => b.id} empty="Aucun bâtiment. Ajoutez le premier bâtiment de cette résidence." />
+
+        {selectedBatiment && (
+          <div className="rounded-2xl border-2 border-brand/30 bg-orange-50/20 p-5 space-y-4 animate-in fade-in duration-200">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-stone-200 pb-3">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="rounded-lg bg-brand p-1.5 text-white">
+                    <Building className="h-4 w-4" />
+                  </span>
+                  <h4 className="text-base font-bold text-ink">
+                    Bâtiment {selectedBatiment.nom} — Détail des Logements & Résidents
+                  </h4>
+                </div>
+                <p className="mt-0.5 text-xs text-stone-500">
+                  {selectedBatiment.etages} étages · {selectedBatiment.appartements.length} / {selectedBatiment.maxAppartements ?? 50} logements autorisés
+                  {selectedBatiment.sousAdmin ? ` · Sous-Admin : ${fullName(selectedBatiment.sousAdmin)} (${selectedBatiment.sousAdmin.telephone})` : " · Aucun Sous-Admin assigné"}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/dashboard/residents"
+                  className={button("secondary", "sm")}
+                >
+                  <Users className="h-3.5 w-3.5" aria-hidden />
+                  Gérer sur la page Résidents
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setSelectedBatimentId(null)}
+                  className="rounded-lg p-1.5 text-stone-400 hover:bg-stone-200 hover:text-ink"
+                  title="Fermer"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+
+            {selectedBatiment.appartements.length === 0 ? (
+              <p className="py-6 text-center text-sm text-stone-500">
+                Aucun appartement n&apos;a encore été créé dans ce bâtiment.
+              </p>
+            ) : (
+              <div className="overflow-x-auto rounded-xl border border-stone-200 bg-white">
+                <table className="w-full text-left text-sm">
+                  <thead className="border-b border-stone-200 bg-stone-50/70 text-[11px] font-bold uppercase tracking-wider text-stone-500">
+                    <tr>
+                      <th className="px-4 py-3">Logement</th>
+                      <th className="px-4 py-3">Étage</th>
+                      <th className="px-4 py-3">Résident / Propriétaire</th>
+                      <th className="px-4 py-3">Contact</th>
+                      <th className="px-4 py-3">Statut Cotisation</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-stone-100">
+                    {selectedBatiment.appartements.map((apt) => {
+                      const prop = apt.proprietaire;
+                      const p = apt.paiement;
+                      const isImpaye = p?.statut === "impaye";
+                      return (
+                        <tr key={apt.id} className="hover:bg-stone-50/60">
+                          <td className="px-4 py-3 font-bold text-ink">{apt.nom}</td>
+                          <td className="px-4 py-3 text-stone-600">{etageLabel(apt.etage)}</td>
+                          <td className="px-4 py-3">
+                            {prop ? (
+                              <span className="font-semibold text-ink">{fullName(prop)}</span>
+                            ) : (
+                              <span className="text-xs text-stone-400 italic">Logement vacant</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-xs">
+                            {prop ? (
+                              <div className="flex items-center gap-2">
+                                <Mono>{prop.telephone}</Mono>
+                                <span className="text-stone-400">·</span>
+                                <span className="text-stone-500">{prop.email}</span>
+                              </div>
+                            ) : (
+                              "—"
+                            )}
+                          </td>
+                          <td className="px-4 py-3">
+                            {!prop ? (
+                              <Pill tone="neutral">Vacant</Pill>
+                            ) : isImpaye ? (
+                              <Pill tone="danger">
+                                Impayé {p.totalDu > 0 ? `(${formatDZD(p.totalDu)})` : ""}
+                              </Pill>
+                            ) : (
+                              <Pill tone="success">À jour (Payé)</Pill>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
       </section>
     </div>
   );

@@ -19,9 +19,11 @@ export type NavItem = { href: string; label: string; icon: LucideIcon; count?: n
 
 const SUPER_ADMIN_NAV: NavItem[] = [
   { href: "/dashboard", label: "Tableau de bord", icon: LayoutDashboard },
-  { href: "/dashboard/ajouter-residence", label: "Ajouter Résidence", icon: Building2 },
+  { href: "/dashboard/ajouter-residence", label: "Résidences & Bâtiments", icon: Building2 },
+  { href: "/dashboard/residents", label: "Résidents & Propriétaires", icon: Users },
   { href: "/dashboard/statistiques", label: "Statistiques", icon: ChartLine },
   { href: "/dashboard/abonnements", label: "Gestion Abonnements", icon: CreditCard },
+  { href: "/dashboard/rapports", label: "Rapports & Exports", icon: ChartColumn },
   { href: "/dashboard/profil", label: "Mon profil", icon: CircleUser },
 ];
 
