@@ -54,6 +54,7 @@ import {
   type Responsable,
 } from "@/lib/residences-api";
 import { ROLE_BADGE, ROLE_LABELS, displayName, primaryRole } from "@/lib/roles";
+import { SmartActionCenter } from "./SmartActionCenter";
 import { useSession } from "./session";
 import { FormError, Mono, Pill, button, card, describeError, type Tone } from "./ui";
 
@@ -272,6 +273,17 @@ export function MonEspace() {
       </section>
 
       {error && <FormError error={{ message: error, details: [] }} />}
+
+      {/* Ruban d'Alertes Intelligentes du Syndic */}
+      <SmartActionCenter
+        impayesCount={impayes.length}
+        totalImpayes={totalImpayes}
+        pannesCount={pannes.length}
+        pannesSummary={pannes.map((p) => p.equipement).slice(0, 2).join(", ")}
+        contratsExpirantCount={contrats.filter((c) => c.statut === "Expire bientôt" || c.statut === "Expiré").length}
+        agDate="20 Novembre 2026"
+        agQuorumPct={74.5}
+      />
 
       {/* 2. Top 4 Executive KPI Hero Cards */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

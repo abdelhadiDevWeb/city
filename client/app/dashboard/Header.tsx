@@ -9,6 +9,7 @@ import {
   Megaphone,
   Menu as MenuIcon,
   Plus,
+  Search,
   ShieldPlus,
   User,
   UserPlus,
@@ -40,7 +41,7 @@ const MANAGER_ACTIONS: QuickAction[] = [
   { href: "/dashboard/annonces", label: "Publier une annonce", icon: Megaphone },
 ];
 
-export function Header({ onOpenMenu }: { onOpenMenu: () => void }) {
+export function Header({ onOpenMenu, onOpenCommand }: { onOpenMenu: () => void; onOpenCommand?: () => void }) {
   const { account, logout } = useSession();
   const notify = useToast();
   const [signingOut, setSigningOut] = useState(false);
@@ -116,6 +117,19 @@ export function Header({ onOpenMenu }: { onOpenMenu: () => void }) {
           className="-ml-1 rounded-lg p-2 text-stone-600 hover:bg-stone-100 hover:text-ink lg:hidden"
         >
           <MenuIcon className="h-5 w-5" />
+        </button>
+
+        <button
+          type="button"
+          onClick={onOpenCommand}
+          className="flex items-center gap-2 rounded-xl border border-stone-200 bg-stone-50/80 px-3 py-1.5 text-xs text-stone-500 hover:border-stone-300 hover:bg-stone-100 transition sm:w-60 focus:outline-none focus:ring-1 focus:ring-brand"
+          title="Recherche universelle (Ctrl + K)"
+        >
+          <Search className="h-3.5 w-3.5 text-stone-400" />
+          <span className="truncate">Recherche rapide...</span>
+          <kbd className="ml-auto hidden rounded bg-stone-200/70 px-1.5 py-0.5 text-[10px] font-semibold text-stone-600 sm:inline-block border border-stone-300/50">
+            Ctrl K
+          </kbd>
         </button>
 
         <div className="ml-auto flex items-center gap-2 sm:gap-3">

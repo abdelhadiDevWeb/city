@@ -5,6 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import { ROLE_LABELS, primaryRole } from "@/lib/roles";
+import { CommandPalette } from "./CommandPalette";
+import { EmergencyWidget } from "./EmergencyWidget";
 import { Header } from "./Header";
 import { canAccess } from "./nav";
 import { useSession } from "./session";
@@ -13,9 +15,22 @@ import { button, card } from "./ui";
 
 export function Shell({ children }: { children: ReactNode }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [commandOpen, setCommandOpen] = useState(false);
+  const [emergencyOpen, setEmergencyOpen] = useState(false);
   const pathname = usePathname();
   const { account } = useSession();
   const role = primaryRole(account);
+
+  useEffect(() => {
+    function onGlobalKeyDown(event: KeyboardEvent) {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        setCommandOpen((prev) => !prev);
+      }
+    }
+    window.addEventListener("keydown", onGlobalKeyDown);
+    return () => window.removeEventListener("keydown", onGlobalKeyDown);
+  }, []);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -42,7 +57,7 @@ export function Shell({ children }: { children: ReactNode }) {
       )}
 
       <div className="flex min-h-screen flex-col lg:pl-64">
-        <Header onOpenMenu={() => setMenuOpen(true)} />
+        <Header onOpenMenu={() => setMenuOpen(true)} onOpenCommand={() => setCommandOpen(true)} />
         <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
           <div className="mx-auto w-full max-w-7xl">
             {canAccess(pathname, role) ? (
@@ -61,6 +76,17 @@ export function Shell({ children }: { children: ReactNode }) {
             )}
           </div>
         </main>
+
+      <CommandPalette
+        isOpen={commandOpen}
+        onClose={() => setCommandOpen(false)}
+        onOpenEmergency={() => setEmergencyOpen(true)}
+      />
+
+      <EmergencyWidget
+        isOpenExternal={emergencyOpen}
+        onCloseExternal={() => setEmergencyOpen(false)}
+      />
       </div>
     </div>
   );

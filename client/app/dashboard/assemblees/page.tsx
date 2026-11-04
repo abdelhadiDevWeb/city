@@ -4,11 +4,15 @@ import {
   Calendar,
   CalendarDays,
   CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
   FileCheck2,
   Gavel,
   History,
   Hourglass,
   Layers,
+  Maximize2,
+  Minimize2,
   Percent,
   Plus,
   Printer,
@@ -17,11 +21,13 @@ import {
   ThumbsDown,
   ThumbsUp,
   TriangleAlert,
+  Tv,
   Users2,
   Vote,
+  X,
   XCircle,
 } from "lucide-react";
-import { useId, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { formatDZD } from "@/lib/format";
 import { ModalActions, SelectField, formText, useSubmit } from "../forms";
 import {
@@ -239,6 +245,8 @@ export default function AssembleesPage() {
 
   const [addingSession, setAddingSession] = useState(false);
   const [addingResolution, setAddingResolution] = useState(false);
+  const [projectionMode, setProjectionMode] = useState(false);
+  const [currentResIndex, setCurrentResIndex] = useState(0);
 
   const [query, setQuery] = useState("");
   const [filterStatut, setFilterStatut] = useState<"all" | "en_cours" | "cloturee" | "convoquee">("all");
@@ -247,6 +255,21 @@ export default function AssembleesPage() {
   const pad = (n: number) => String(n).padStart(2, "0");
   const [startDate, setStartDate] = useState(`${now.getFullYear()}-01-01`);
   const [endDate, setEndDate] = useState(`${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`);
+
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (!projectionMode) return;
+      if (e.key === "Escape") {
+        setProjectionMode(false);
+      } else if (e.key === "ArrowRight") {
+        setCurrentResIndex((prev) => (prev < resolutions.length - 1 ? prev + 1 : prev));
+      } else if (e.key === "ArrowLeft") {
+        setCurrentResIndex((prev) => (prev > 0 ? prev - 1 : prev));
+      }
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [projectionMode, resolutions.length]);
 
   const tabs: TabItem<TabId>[] = [
     { id: "sessions", label: "Sessions d'AG & Convocations", icon: ScrollText, count: sessions.length },
@@ -462,6 +485,15 @@ export default function AssembleesPage() {
         subtitle="Convocations des copropriétaires, calcul du quorum en tantièmes, vote des résolutions et PV certifié"
         actions={
           <>
+            <button
+              type="button"
+              onClick={() => setProjectionMode(true)}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2.5 text-sm font-semibold text-indigo-900 hover:bg-indigo-100 transition shadow-xs"
+              title="Lancer le mode projection plein écran pour grand écran ou vidéo-projecteur"
+            >
+              <Tv className="h-4 w-4 text-indigo-600" aria-hidden />
+              Mode Projection AG
+            </button>
             <button type="button" onClick={() => setAddingSession(true)} className={button("secondary")}>
               <Plus className="h-4 w-4" aria-hidden />
               Convoquer une AG
@@ -822,6 +854,208 @@ export default function AssembleesPage() {
           </form>
         </Modal>
       )}
+      {/* MODE PROJECTION PLEIN ÉCRAN / VIDÉOPROJECTEUR */}
+      {projectionMode && (
+        <div className="fixed inset-0 z-50 flex flex-col justify-between bg-stone-950 p-6 sm:p-10 text-white overflow-y-auto animate-in fade-in duration-200">
+          {/* Top Bar */}
+          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-stone-800 pb-5">
+            <div className="flex items-center gap-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand text-white font-black text-base shadow-lg">
+                C
+              </span>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-xs uppercase tracking-widest text-brand font-black">
+                    CITY SYNDIC PROJECTION
+                  </span>
+                  <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-400">
+                    SÉANCE EN DIRECT
+                  </span>
+                </div>
+                <h1 className="text-xl sm:text-2xl font-black text-white">{activeSession?.titre}</h1>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="rounded-xl border border-stone-800 bg-stone-900/90 px-4 py-2 text-right">
+                <span className="block text-[10px] font-mono uppercase tracking-wider text-stone-400">
+                  Quorum Constaté
+                </span>
+                <span className="font-mono text-lg font-black text-emerald-400">
+                  {activeSession?.quorumTantiemes} / {activeSession?.quorumTotal} Tantièmes ({quorumPct}%)
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setProjectionMode(false)}
+                className="flex items-center gap-2 rounded-xl border border-stone-800 bg-stone-900 px-4 py-2.5 text-xs font-bold text-stone-300 hover:bg-stone-800 hover:text-white transition"
+              >
+                <Minimize2 className="h-4 w-4" />
+                <span>Quitter (Échap)</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Current Resolution Center Stage */}
+          {resolutions[currentResIndex] && (() => {
+            const currentRes = resolutions[currentResIndex];
+            const totalTantiemes = currentRes.pourTantiemes + currentRes.contreTantiemes + currentRes.abstentionTantiemes;
+            const pctPour = totalTantiemes > 0 ? Math.round((currentRes.pourTantiemes / totalTantiemes) * 100) : 0;
+            const pctContre = totalTantiemes > 0 ? Math.round((currentRes.contreTantiemes / totalTantiemes) * 100) : 0;
+
+            return (
+              <div className="my-8 max-w-5xl mx-auto w-full space-y-8">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand text-white font-black text-sm">
+                      {currentRes.numero}
+                    </span>
+                    <span className="text-sm font-mono text-stone-400 uppercase tracking-widest">
+                      Résolution {currentResIndex + 1} sur {resolutions.length}
+                    </span>
+                  </div>
+                  <span className="rounded-lg border border-stone-700 bg-stone-900 px-3 py-1 text-xs font-mono font-bold text-brand">
+                    {currentRes.majoriteRequise}
+                  </span>
+                </div>
+
+                <div className="space-y-3">
+                  <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-snug">
+                    {currentRes.titre}
+                  </h2>
+                  <p className="text-sm sm:text-base text-stone-300 leading-relaxed max-w-4xl">
+                    {currentRes.description}
+                  </p>
+                </div>
+
+                {/* Big Visual Voting Gauge */}
+                <div className="rounded-2xl border border-stone-800 bg-stone-900/80 p-6 space-y-5 shadow-2xl">
+                  <div className="grid gap-4 sm:grid-cols-3 text-center">
+                    <div className="rounded-xl border border-emerald-500/30 bg-emerald-950/40 p-4">
+                      <span className="block text-xs font-bold uppercase tracking-wider text-emerald-400">
+                        VOTES POUR
+                      </span>
+                      <span className="mt-1 block font-mono text-3xl sm:text-4xl font-black text-emerald-400">
+                        {currentRes.pourTantiemes} <span className="text-lg">({pctPour}%)</span>
+                      </span>
+                      <span className="text-xs text-stone-400">{currentRes.pourVotes} copropriétaire(s)</span>
+                    </div>
+
+                    <div className="rounded-xl border border-red-500/30 bg-red-950/40 p-4">
+                      <span className="block text-xs font-bold uppercase tracking-wider text-red-400">
+                        VOTES CONTRE
+                      </span>
+                      <span className="mt-1 block font-mono text-3xl sm:text-4xl font-black text-red-400">
+                        {currentRes.contreTantiemes} <span className="text-lg">({pctContre}%)</span>
+                      </span>
+                      <span className="text-xs text-stone-400">{currentRes.contreVotes} copropriétaire(s)</span>
+                    </div>
+
+                    <div className="rounded-xl border border-stone-700 bg-stone-900 p-4">
+                      <span className="block text-xs font-bold uppercase tracking-wider text-stone-400">
+                        ABSTENTION
+                      </span>
+                      <span className="mt-1 block font-mono text-3xl sm:text-4xl font-black text-stone-300">
+                        {currentRes.abstentionTantiemes}
+                      </span>
+                      <span className="text-xs text-stone-400">{currentRes.abstentionVotes} copropriétaire(s)</span>
+                    </div>
+                  </div>
+
+                  {/* Progress Bar */}
+                  <div className="h-5 w-full overflow-hidden rounded-full bg-stone-800 flex shadow-inner">
+                    <div style={{ width: `${pctPour}%` }} className="bg-emerald-500 transition-all duration-300" />
+                    <div style={{ width: `${pctContre}%` }} className="bg-red-500 transition-all duration-300" />
+                  </div>
+
+                  {/* Direct Voting Buttons for the Presiding Bureau */}
+                  <div className="flex flex-wrap items-center justify-between gap-3 border-t border-stone-800 pt-4">
+                    <span className="text-xs text-stone-400 font-mono">
+                      Comptabiliser un vote en direct (+25 tantièmes) :
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleVote(currentRes.id, "pour", 25)}
+                        className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-700 transition"
+                      >
+                        <ThumbsUp className="h-4 w-4" />
+                        + POUR
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleVote(currentRes.id, "contre", 25)}
+                        className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2 text-xs font-bold text-white hover:bg-red-700 transition"
+                      >
+                        <ThumbsDown className="h-4 w-4" />
+                        + CONTRE
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleVote(currentRes.id, "abstention", 25)}
+                        className="inline-flex items-center gap-2 rounded-xl bg-stone-700 px-4 py-2 text-xs font-bold text-white hover:bg-stone-600 transition"
+                      >
+                        <Hourglass className="h-4 w-4" />
+                        + ABSTENTION
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Resolution Carousel Controls */}
+                <div className="flex items-center justify-between pt-2">
+                  <button
+                    type="button"
+                    disabled={currentResIndex === 0}
+                    onClick={() => setCurrentResIndex((prev) => Math.max(0, prev - 1))}
+                    className="inline-flex items-center gap-2 rounded-xl border border-stone-800 bg-stone-900 px-4 py-2.5 text-xs font-bold text-stone-300 hover:bg-stone-800 disabled:opacity-40 transition"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    <span>Résolution Précédente</span>
+                  </button>
+
+                  <div className="flex items-center gap-1.5">
+                    {resolutions.map((r, i) => (
+                      <button
+                        key={r.id}
+                        type="button"
+                        onClick={() => setCurrentResIndex(i)}
+                        className={`h-2.5 rounded-full transition-all ${
+                          i === currentResIndex ? "w-8 bg-brand" : "w-2.5 bg-stone-700 hover:bg-stone-500"
+                        }`}
+                        title={`Résolution ${i + 1}`}
+                      />
+                    ))}
+                  </div>
+
+                  <button
+                    type="button"
+                    disabled={currentResIndex === resolutions.length - 1}
+                    onClick={() => setCurrentResIndex((prev) => Math.min(resolutions.length - 1, prev + 1))}
+                    className="inline-flex items-center gap-2 rounded-xl border border-stone-800 bg-stone-900 px-4 py-2.5 text-xs font-bold text-stone-300 hover:bg-stone-800 disabled:opacity-40 transition"
+                  >
+                    <span>Résolution Suivante</span>
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Bottom Bar Info */}
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-stone-800 pt-4 text-xs text-stone-400 font-mono">
+            <div>
+              <span>Séance présidée par : </span>
+              <strong className="text-white">{activeSession?.presidentsSeance}</strong>
+            </div>
+            <div>
+              <span>Secrétariat : </span>
+              <strong className="text-white">{activeSession?.secretaire}</strong>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
