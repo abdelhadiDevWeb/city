@@ -490,6 +490,7 @@ function ResidentModal({
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
+    const fallbackNin = `${Date.now()}${Math.floor(10000 + Math.random() * 90000)}`;
     void run(async () =>
       onCreated(
         await createResident({
@@ -497,6 +498,7 @@ function ResidentModal({
           nom: formText(form, "nom"),
           email: formText(form, "email").toLowerCase(),
           telephone: formText(form, "telephone"),
+          nin: fallbackNin,
           idBatiment: activeBatId,
           etage,
           appartement: formText(form, "appartement"),
