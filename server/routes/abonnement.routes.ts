@@ -13,6 +13,7 @@ const createPlanSchema = Joi.object({
     nom: Joi.string().trim().min(2).max(60).required(),
     prix: Joi.number().min(0).max(100_000_000).precision(2).required(),
     duree: Joi.number().integer().min(1).max(120).required(),
+    cible: Joi.string().valid("admin", "sub_admin").default("admin"),
   }).required(),
 });
 
@@ -32,14 +33,22 @@ const paymentStatusSchema = Joi.object({
 
 export const abonnementRouter = Router();
 
-abonnementRouter.use(requireAuth, requireRole("super_admin"), csrfProtection);
+abonnementRouter.use(requireAuth, csrfProtection);
 
-abonnementRouter.get("/", abonnements.listPlans);
-abonnementRouter.post("/", validate(createPlanSchema), abonnements.createPlan);
-abonnementRouter.put("/:id", abonnements.updatePlan);
-abonnementRouter.delete("/:id", abonnements.deletePlan);
+// Plans management
+abonnementRouter.get("/", requireRole("super_admin", "admin"), abonnements.listPlans);
+abonnementRouter.post("/", requireRole("super_admin"), validate(createPlanSchema), abonnements.createPlan);
+abonnementRouter.put("/:id", requireRole("super_admin"), abonnements.updatePlan);
+abonnementRouter.delete("/:id", requireRole("super_admin"), abonnements.deletePlan);
 
-abonnementRouter.get("/admins", abonnements.listAdmins);
-abonnementRouter.post("/souscriptions", validate(createSouscriptionSchema), abonnements.createSouscription);
-abonnementRouter.patch("/souscriptions/:id", validate(paymentStatusSchema), abonnements.setPaymentStatus);
-abonnementRouter.delete("/souscriptions/:id", abonnements.deleteSouscription);
+// Admin subscriptions (Super Admin only)
+abonnementRouter.get("/admins", requireRole("super_admin"), abonnements.listAdmins);
+
+// Sous-Admin subscriptions & KPIs (Super Admin & Admin)
+abonnementRouter.get("/sous-admins", requireRole("super_admin", "admin"), abonnements.listSousAdmins);
+abonnementRouter.get("/sous-admins/kpis", requireRole("super_admin", "admin"), abonnements.getSousAdminKPIs);
+
+// Subscriptions assignments and payments
+abonnementRouter.post("/souscriptions", requireRole("super_admin", "admin"), validate(createSouscriptionSchema), abonnements.createSouscription);
+abonnementRouter.patch("/souscriptions/:id", requireRole("super_admin", "admin"), validate(paymentStatusSchema), abonnements.setPaymentStatus);
+abonnementRouter.delete("/souscriptions/:id", requireRole("super_admin", "admin"), abonnements.deleteSouscription);

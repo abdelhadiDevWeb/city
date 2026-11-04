@@ -1,4 +1,5 @@
 import type { Types } from "mongoose";
+import { AbonnementUser } from "../models/AbonnementUser";
 import { Admin, type AdminRole } from "../models/Admin";
 import { Batiment } from "../models/Batiment";
 import { Residence } from "../models/Residence";
@@ -37,7 +38,21 @@ async function resolveAssignment(input: CreateAdminInput): Promise<{ idResidence
   return { idResidence: batiment.idResidence, idBatiment: batiment._id };
 }
 
-export async function createAdminAccount(input: CreateAdminInput) {
+export async function createAdminAccount(input: CreateAdminInput, actor?: { sub: string; roles: string[] }) {
+  if (actor && !actor.roles.includes("super_admin")) {
+    if (input.role !== "sub_admin") {
+      throw new AppError(403, "Un admin ne peut créer que des sous-admins.");
+    }
+    const creator = await Admin.findById(actor.sub);
+    if (!creator || !creator.idResidence) {
+      throw new AppError(403, "Votre compte n'est associé à aucune résidence.");
+    }
+    const batiment = await Batiment.findById(input.idBatiment);
+    if (!batiment || !batiment.idResidence.equals(creator.idResidence)) {
+      throw new AppError(403, "Vous ne pouvez assigner un sous-admin qu'à un bâtiment de votre résidence.");
+    }
+  }
+
   const assignment = await resolveAssignment(input);
   if (await isLoginEmailTaken(input.email)) throw new AppError(409, "Cet email est déjà utilisé");
 
@@ -74,9 +89,20 @@ export async function updateAdminAccount(
     baladia: string;
     password?: string;
   }>,
+  actor?: { sub: string; roles: string[] },
 ) {
   const admin = await Admin.findById(id);
   if (!admin) throw new AppError(404, "Compte admin introuvable");
+
+  if (actor && !actor.roles.includes("super_admin")) {
+    const creator = await Admin.findById(actor.sub);
+    if (!creator || !creator.idResidence || !admin.idResidence || !admin.idResidence.equals(creator.idResidence)) {
+      throw new AppError(403, "Vous ne pouvez modifier que les sous-admins de votre résidence.");
+    }
+    if (admin.role !== "sub_admin") {
+      throw new AppError(403, "Vous ne pouvez modifier que des sous-admins.");
+    }
+  }
 
   if (input.email && input.email !== admin.email) {
     if (await isLoginEmailTaken(input.email)) throw new AppError(409, "Cet email est déjà utilisé");
@@ -94,9 +120,23 @@ export async function updateAdminAccount(
   return admin.toJSON();
 }
 
-export async function deleteAdminAccount(id: string) {
+export async function deleteAdminAccount(id: string, actor?: { sub: string; roles: string[] }) {
   const admin = await Admin.findById(id);
   if (!admin) throw new AppError(404, "Compte admin introuvable");
-  await Admin.findByIdAndDelete(id);
+
+  if (actor && !actor.roles.includes("super_admin")) {
+    const creator = await Admin.findById(actor.sub);
+    if (!creator || !creator.idResidence || !admin.idResidence || !admin.idResidence.equals(creator.idResidence)) {
+      throw new AppError(403, "Vous ne pouvez supprimer que les sous-admins de votre résidence.");
+    }
+    if (admin.role !== "sub_admin") {
+      throw new AppError(403, "Vous ne pouvez supprimer que des sous-admins.");
+    }
+  }
+
+  await Promise.all([
+    Admin.findByIdAndDelete(id),
+    AbonnementUser.deleteMany({ idAdmin: admin._id }),
+  ]);
   return { ok: true };
 }

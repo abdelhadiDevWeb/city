@@ -508,7 +508,7 @@ function ResidenceDetailsView({
 
         <dl className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
           {[
-            { label: "Bâtiments", value: batiments.length, icon: Building },
+            { label: "Bâtiments", value: `${batiments.length} / ${residence.maxBatiments || 5}`, icon: Building },
             { label: "Étages", value: etages, icon: Layers },
             { label: "Appartements", value: appartements, icon: KeyRound },
             { label: "Sub Admins", value: `${sousAdmins} / ${batiments.length}`, icon: UserRound },
@@ -549,10 +549,16 @@ function ResidenceDetailsView({
             <Building className="h-4 w-4 text-brand" aria-hidden />
             Bâtiments ({batiments.length})
           </h3>
-          <button type="button" onClick={onAddBatiment} className={button("primary", "sm")}>
-            <Plus className="h-3.5 w-3.5" aria-hidden />
-            Ajouter un bâtiment
-          </button>
+          {batiments.length >= (residence.maxBatiments || 5) ? (
+            <span className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700">
+              Quota atteint ({residence.maxBatiments || 5} max)
+            </span>
+          ) : (
+            <button type="button" onClick={onAddBatiment} className={button("primary", "sm")}>
+              <Plus className="h-3.5 w-3.5" aria-hidden />
+              Ajouter un bâtiment
+            </button>
+          )}
         </div>
         <DataTable columns={columns} rows={batiments} rowKey={(b) => b.id} empty="Aucun bâtiment. Ajoutez le premier bâtiment de cette résidence." />
       </section>
@@ -566,7 +572,7 @@ function ResidenceModal({ onClose, onCreated }: { onClose: () => void; onCreated
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
-    void run(async () => onCreated(await createResidence({ nom: text(form, "nom"), localisation: text(form, "localisation") })));
+    void run(async () => onCreated(await createResidence({ nom: text(form, "nom"), localisation: text(form, "localisation"), maxBatiments: Number(form.get("maxBatiments")) || 5 })));
   }
 
   return (
@@ -574,6 +580,7 @@ function ResidenceModal({ onClose, onCreated }: { onClose: () => void; onCreated
       <form onSubmit={onSubmit} className="space-y-4">
         <Field label="Nom de la résidence" name="nom" required minLength={2} maxLength={120} placeholder="Cité 1500 Logements AADL" autoFocus />
         <Field label="Localisation" name="localisation" required minLength={2} maxLength={200} placeholder="Bab Ezzouar, Alger" />
+        <Field label="Nombre maximal de bâtiments autorisés" name="maxBatiments" type="number" defaultValue="5" required min={1} max={500} step={1} />
         <FormError error={error} />
         <ModalActions submitting={submitting} label="Créer la résidence" onCancel={onClose} />
       </form>
@@ -597,7 +604,7 @@ function BatimentModal({
     const form = new FormData(event.currentTarget);
     const nom = text(form, "nom");
     void run(async () => {
-      await createBatiment(residence.id, { nom, etages: Number(form.get("etages")) });
+      await createBatiment(residence.id, { nom, etages: Number(form.get("etages")), maxAppartements: Number(form.get("maxAppartements")) || 50 });
       onCreated(nom);
     });
   }
@@ -607,6 +614,7 @@ function BatimentModal({
       <form onSubmit={onSubmit} className="space-y-4">
         <Field label="Nom du bâtiment" name="nom" required maxLength={60} placeholder="A1" autoFocus />
         <Field label="Nombre d'étages" name="etages" type="number" required min={0} max={200} step={1} placeholder="9" />
+        <Field label="Capacité maximale d'appartements" name="maxAppartements" type="number" defaultValue="50" required min={1} max={2000} step={1} />
         <FormError error={error} />
         <ModalActions submitting={submitting} label="Ajouter le bâtiment" onCancel={onClose} />
       </form>
@@ -692,11 +700,12 @@ function EditResidenceModal({
   const { submitting, error, run } = useSubmit();
   const [nom, setNom] = useState(residence.nom);
   const [localisation, setLocalisation] = useState(residence.localisation);
+  const [maxBatiments, setMaxBatiments] = useState(residence.maxBatiments || 5);
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     void run(async () => {
-      await updateResidence(residence.id, { nom, localisation });
+      await updateResidence(residence.id, { nom, localisation, maxBatiments: Number(maxBatiments) });
       onUpdated(nom);
     });
   }
@@ -706,6 +715,7 @@ function EditResidenceModal({
       <form onSubmit={onSubmit} className="space-y-4">
         <Field label="Nom de la résidence" value={nom} onChange={(e) => setNom(e.target.value)} required minLength={2} maxLength={120} autoFocus />
         <Field label="Localisation" value={localisation} onChange={(e) => setLocalisation(e.target.value)} required minLength={2} maxLength={200} />
+        <Field label="Nombre maximal de bâtiments autorisés" value={maxBatiments} onChange={(e) => setMaxBatiments(Number(e.target.value))} type="number" required min={1} max={500} />
         <FormError error={error} />
         <ModalActions submitting={submitting} label="Enregistrer les modifications" onCancel={onClose} />
       </form>

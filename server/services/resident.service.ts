@@ -27,16 +27,29 @@ export type NewResident = {
   password?: string;
 };
 
+export type ActorInfo = { sub: string; roles: string[] } | AdminDocument;
+
 const etageLabel = (etage: number) => (etage === 0 ? "rez-de-chaussée" : etage === 1 ? "1er étage" : `${etage}e étage`);
 
-// An admin manages the users of his residence; a sub_admin only those of his building.
-function scopeOf(actor: AdminDocument) {
-  if (actor.role === "admin") {
-    if (!actor.idResidence) throw new AppError(403, "Aucune résidence ne vous est attribuée");
-    return { idResidence: actor.idResidence };
+function isSuperAdminActor(actor: ActorInfo): boolean {
+  if ("roles" in actor && Array.isArray(actor.roles)) {
+    return actor.roles.includes("super_admin");
   }
-  if (!actor.idBatiment) throw new AppError(403, "Aucun bâtiment ne vous est attribué");
-  return { idBatiment: actor.idBatiment };
+  return false;
+}
+
+// An admin manages the users of his residence; a sub_admin only those of his building; super_admin can see all.
+function scopeOf(actor: ActorInfo, residenceIdFilter?: string) {
+  if (isSuperAdminActor(actor)) {
+    return residenceIdFilter ? { idResidence: new mongoose.Types.ObjectId(residenceIdFilter) } : {};
+  }
+  const admin = actor as AdminDocument;
+  if (admin.role === "admin") {
+    if (!admin.idResidence) throw new AppError(403, "Aucune résidence ne vous est attribuée");
+    return { idResidence: admin.idResidence };
+  }
+  if (!admin.idBatiment) throw new AppError(403, "Aucun bâtiment ne vous est attribué");
+  return { idBatiment: admin.idBatiment };
 }
 
 function residentJson(user: UserDocument, batiment: BatimentDocument | undefined, appartement: AppartementDocument | undefined) {
@@ -48,8 +61,8 @@ function residentJson(user: UserDocument, batiment: BatimentDocument | undefined
   };
 }
 
-export async function listResidents(actor: AdminDocument) {
-  const users = await User.find(scopeOf(actor)).sort({ createdAt: -1 });
+export async function listResidents(actor: ActorInfo, residenceIdFilter?: string) {
+  const users = await User.find(scopeOf(actor, residenceIdFilter)).sort({ createdAt: -1 });
   const batimentIds = users.flatMap((u) => (u.idBatiment ? [u.idBatiment] : []));
   const appartementIds = users.flatMap((u) => (u.idAppartement ? [u.idAppartement] : []));
 
@@ -67,7 +80,7 @@ export async function listResidents(actor: AdminDocument) {
   );
 }
 
-// Reuses the flat if it already exists in the building and is free; creates it otherwise.
+// Reuses the flat if it already exists in the building and is free; creates it otherwise (enforcing maxAppartements).
 async function findOrCreateFlat(batiment: BatimentDocument, nom: string, etage: number): Promise<AppartementDocument> {
   const existing = await Appartement.findOne({ idBatiment: batiment._id, nom }).collation(FLAT_COLLATION);
   if (existing) {
@@ -78,6 +91,12 @@ async function findOrCreateFlat(batiment: BatimentDocument, nom: string, etage: 
     return existing;
   }
 
+  const maxAllowed = batiment.maxAppartements ?? 50;
+  const currentCount = await Appartement.countDocuments({ idBatiment: batiment._id });
+  if (currentCount >= maxAllowed) {
+    throw new AppError(403, `Quota d'appartements atteint (${maxAllowed} max) pour le bâtiment ${batiment.nom}`);
+  }
+
   try {
     return await Appartement.create({ idBatiment: batiment._id, nom, etage });
   } catch (err) {
@@ -86,17 +105,20 @@ async function findOrCreateFlat(batiment: BatimentDocument, nom: string, etage: 
   }
 }
 
-export async function createResident(actor: AdminDocument, input: NewResident) {
+export async function createResident(actor: ActorInfo, input: NewResident) {
   const batiment = await Batiment.findById(input.idBatiment);
   if (!batiment) throw new AppError(404, "Bâtiment introuvable");
 
-  const scope = scopeOf(actor);
-  const allowed = "idResidence" in scope ? batiment.idResidence.equals(scope.idResidence) : batiment._id.equals(scope.idBatiment);
-  if (!allowed) {
-    throw new AppError(
-      403,
-      actor.role === "admin" ? "Ce bâtiment n'appartient pas à votre résidence" : "Vous ne pouvez ajouter des résidents que dans votre bâtiment",
-    );
+  if (!isSuperAdminActor(actor)) {
+    const scope = scopeOf(actor);
+    const allowed = "idResidence" in scope ? batiment.idResidence.equals(scope.idResidence) : batiment._id.equals(scope.idBatiment);
+    if (!allowed) {
+      const admin = actor as AdminDocument;
+      throw new AppError(
+        403,
+        admin.role === "admin" ? "Ce bâtiment n'appartient pas à votre résidence" : "Vous ne pouvez ajouter des résidents que dans votre bâtiment",
+      );
+    }
   }
 
   if (input.etage > batiment.etages) {
@@ -149,7 +171,7 @@ export async function createResident(actor: AdminDocument, input: NewResident) {
 
 export async function updateResident(
   id: string,
-  actor: AdminDocument,
+  actor: ActorInfo,
   input: Partial<{
     prenom: string;
     nom: string;
@@ -160,9 +182,11 @@ export async function updateResident(
   const user = await User.findById(id);
   if (!user) throw new AppError(404, "Résident introuvable");
 
-  const scope = scopeOf(actor);
-  const allowed = "idResidence" in scope ? user.idResidence?.equals(scope.idResidence) : user.idBatiment?.equals(scope.idBatiment);
-  if (!allowed) throw new AppError(403, "Action interdite sur ce résident");
+  if (!isSuperAdminActor(actor)) {
+    const scope = scopeOf(actor);
+    const allowed = "idResidence" in scope ? user.idResidence?.equals(scope.idResidence) : user.idBatiment?.equals(scope.idBatiment);
+    if (!allowed) throw new AppError(403, "Action interdite sur ce résident");
+  }
 
   if (input.email && input.email !== user.email) {
     if (await isLoginEmailTaken(input.email)) throw new AppError(409, "Cet email est déjà utilisé");
@@ -176,13 +200,15 @@ export async function updateResident(
   return user.toJSON();
 }
 
-export async function deleteResident(id: string, actor: AdminDocument) {
+export async function deleteResident(id: string, actor: ActorInfo) {
   const user = await User.findById(id);
   if (!user) throw new AppError(404, "Résident introuvable");
 
-  const scope = scopeOf(actor);
-  const allowed = "idResidence" in scope ? user.idResidence?.equals(scope.idResidence) : user.idBatiment?.equals(scope.idBatiment);
-  if (!allowed) throw new AppError(403, "Action interdite sur ce résident");
+  if (!isSuperAdminActor(actor)) {
+    const scope = scopeOf(actor);
+    const allowed = "idResidence" in scope ? user.idResidence?.equals(scope.idResidence) : user.idBatiment?.equals(scope.idBatiment);
+    if (!allowed) throw new AppError(403, "Action interdite sur ce résident");
+  }
 
   const nameQueries = [
     `${user.prenom} ${user.nom}`,

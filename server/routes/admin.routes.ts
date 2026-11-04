@@ -32,7 +32,6 @@ export const adminRouter = Router();
 
 adminRouter.use(requireAuth, csrfProtection);
 
-adminRouter.post("/", requireRole("super_admin"), validate(createAdminSchema), admins.create);
+adminRouter.post("/", requireRole("super_admin", "admin"), validate(createAdminSchema), admins.create);
 adminRouter.put("/:id", requireRole("super_admin", "admin"), admins.update);
 adminRouter.delete("/:id", requireRole("super_admin", "admin"), admins.remove);
-

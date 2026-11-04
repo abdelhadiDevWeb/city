@@ -30,7 +30,7 @@ const createResidentSchema = Joi.object({
 
 export const residentRouter = Router();
 
-residentRouter.use(requireAuth, requireRole("admin", "sub_admin"), csrfProtection);
+residentRouter.use(requireAuth, requireRole("super_admin", "admin", "sub_admin"), csrfProtection);
 
 residentRouter.get("/", residents.list);
 residentRouter.post("/", validate(createResidentSchema), residents.create);

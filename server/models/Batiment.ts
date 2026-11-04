@@ -5,6 +5,7 @@ export interface IBatiment {
   nom: string;
   idResidence: Types.ObjectId;
   etages: number;
+  maxAppartements: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -16,6 +17,7 @@ const batimentSchema = new Schema<IBatiment>(
     nom: nameField,
     idResidence: { type: Schema.Types.ObjectId, ref: "Residence", required: true, index: true },
     etages: { type: Number, required: true, min: 0, max: 200, validate: Number.isInteger },
+    maxAppartements: { type: Number, required: true, min: 1, max: 2000, default: 50, validate: Number.isInteger },
   },
   { timestamps: true, toJSON: publicJson },
 );

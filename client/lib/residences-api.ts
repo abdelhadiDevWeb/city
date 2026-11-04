@@ -12,7 +12,14 @@ export type Responsable = {
 
 export type Proprietaire = { id: string; prenom: string; nom: string; email: string; telephone: string };
 
-type ResidenceBase = { id: string; nom: string; localisation: string; createdAt: string; updatedAt: string };
+type ResidenceBase = {
+  id: string;
+  nom: string;
+  localisation: string;
+  maxBatiments: number;
+  createdAt: string;
+  updatedAt: string;
+};
 
 export type ResidenceSummary = ResidenceBase & { batiments: number; admin: Responsable | null };
 
@@ -20,6 +27,7 @@ export type BatimentDetail = {
   id: string;
   nom: string;
   etages: number;
+  maxAppartements: number;
   idResidence: string;
   createdAt: string;
   sousAdmin: Responsable | null;
@@ -49,12 +57,12 @@ export async function getResidence(id: string): Promise<ResidenceDetails> {
   return { residence, admin, batiments };
 }
 
-export async function createResidence(input: { nom: string; localisation: string }): Promise<ResidenceSummary> {
+export async function createResidence(input: { nom: string; localisation: string; maxBatiments?: number }): Promise<ResidenceSummary> {
   const res = await apiRequest<{ residence: ResidenceSummary }>("/residences", { method: "POST", body: input });
   return res.residence;
 }
 
-export async function createBatiment(residenceId: string, input: { nom: string; etages: number }): Promise<void> {
+export async function createBatiment(residenceId: string, input: { nom: string; etages: number; maxAppartements?: number }): Promise<void> {
   await apiRequest(`/residences/${encodeURIComponent(residenceId)}/batiments`, { method: "POST", body: input });
 }
 
@@ -104,8 +112,9 @@ export function etageLabel(etage: number): string {
   return etage === 0 ? "rez-de-chaussée" : etage === 1 ? "1er étage" : `${etage}e étage`;
 }
 
-export async function listResidents(): Promise<Resident[]> {
-  const res = await apiRequest<{ residents: Resident[] }>("/residents");
+export async function listResidents(idResidence?: string): Promise<Resident[]> {
+  const query = idResidence ? `?idResidence=${encodeURIComponent(idResidence)}` : "";
+  const res = await apiRequest<{ residents: Resident[] }>(`/residents${query}`);
   return res.residents;
 }
 
@@ -114,8 +123,7 @@ export async function createResident(input: NewResidentInput): Promise<Resident>
   return res.resident;
 }
 
-
-export async function updateResidence(id: string, input: { nom?: string; localisation?: string }): Promise<void> {
+export async function updateResidence(id: string, input: { nom?: string; localisation?: string; maxBatiments?: number }): Promise<void> {
   await apiRequest(`/residences/${encodeURIComponent(id)}`, { method: "PUT", body: input });
 }
 
@@ -123,7 +131,7 @@ export async function deleteResidence(id: string): Promise<void> {
   await apiRequest(`/residences/${encodeURIComponent(id)}`, { method: "DELETE" });
 }
 
-export async function updateBatiment(residenceId: string, batimentId: string, input: { nom?: string; etages?: number }): Promise<void> {
+export async function updateBatiment(residenceId: string, batimentId: string, input: { nom?: string; etages?: number; maxAppartements?: number }): Promise<void> {
   await apiRequest(`/residences/${encodeURIComponent(residenceId)}/batiments/${encodeURIComponent(batimentId)}`, { method: "PUT", body: input });
 }
 
@@ -146,4 +154,3 @@ export async function updateResident(id: string, input: Partial<NewResidentInput
 export async function deleteResident(id: string): Promise<void> {
   await apiRequest(`/residents/${encodeURIComponent(id)}`, { method: "DELETE" });
 }
-

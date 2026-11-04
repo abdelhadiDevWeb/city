@@ -58,6 +58,7 @@ export async function listResidences() {
 
   return residences.map((r) => ({
     ...r.toJSON(),
+    maxBatiments: r.maxBatiments ?? 5,
     batiments: countByResidence.get(r.id) ?? 0,
     admin: responsable(adminByResidence.get(r.id), activeIds),
   }));
@@ -83,11 +84,15 @@ export async function getResidenceDetails(id: string) {
   const activeIds = await activeAccountIds(admin ? [admin, ...sousAdmins] : sousAdmins);
 
   return {
-    residence: residence.toJSON(),
+    residence: {
+      ...residence.toJSON(),
+      maxBatiments: residence.maxBatiments ?? 5,
+    },
     admin: responsable(admin, activeIds),
     batiments: batiments.map((b) => ({
       ...b.toJSON(),
       id: b.id as string,
+      maxAppartements: b.maxAppartements ?? 50,
       sousAdmin: responsable(sousAdminByBatiment.get(b.id), activeIds),
       appartements: appartements
         .filter((a) => a.idBatiment.equals(b._id))
@@ -96,16 +101,36 @@ export async function getResidenceDetails(id: string) {
   };
 }
 
-export async function createResidence(input: { nom: string; localisation: string }) {
-  const residence = await Residence.create({ nom: input.nom, localisation: input.localisation });
+export async function createResidence(input: { nom: string; localisation: string; maxBatiments?: number }) {
+  const residence = await Residence.create({
+    nom: input.nom,
+    localisation: input.localisation,
+    maxBatiments: input.maxBatiments ?? 5,
+  });
   return { ...residence.toJSON(), batiments: 0, admin: null };
 }
 
-export async function createBatiment(residenceId: string, input: { nom: string; etages: number }) {
-  if (!(await Residence.exists({ _id: residenceId }))) throw new AppError(404, "Résidence introuvable");
+export async function createBatiment(
+  residenceId: string,
+  input: { nom: string; etages: number; maxAppartements?: number },
+  isSuperAdmin = false,
+) {
+  const residence = await Residence.findById(residenceId);
+  if (!residence) throw new AppError(404, "Résidence introuvable");
+
+  const currentCount = await Batiment.countDocuments({ idResidence: residence._id });
+  const maxAllowed = residence.maxBatiments ?? 5;
+  if (!isSuperAdmin && currentCount >= maxAllowed) {
+    throw new AppError(403, `Quota atteint : cette résidence est limitée à ${maxAllowed} bâtiment(s). Seul le Super Admin peut modifier cette limite.`);
+  }
 
   try {
-    const batiment = await Batiment.create({ nom: input.nom, etages: input.etages, idResidence: residenceId });
+    const batiment = await Batiment.create({
+      nom: input.nom,
+      etages: input.etages,
+      idResidence: residenceId,
+      maxAppartements: input.maxAppartements ?? 50,
+    });
     return batiment.toJSON();
   } catch (err) {
     if (isDuplicateKeyError(err)) throw new AppError(409, "Un bâtiment porte déjà ce nom dans cette résidence");
@@ -113,11 +138,18 @@ export async function createBatiment(residenceId: string, input: { nom: string; 
   }
 }
 
-export async function updateResidence(id: string, input: { nom?: string; localisation?: string }) {
+export async function updateResidence(
+  id: string,
+  input: { nom?: string; localisation?: string; maxBatiments?: number },
+  isSuperAdmin = false,
+) {
   const residence = await Residence.findById(id);
   if (!residence) throw new AppError(404, "Résidence introuvable");
   if (input.nom !== undefined) residence.nom = input.nom;
   if (input.localisation !== undefined) residence.localisation = input.localisation;
+  if (input.maxBatiments !== undefined && isSuperAdmin) {
+    residence.maxBatiments = input.maxBatiments;
+  }
   await residence.save();
   return residence.toJSON();
 }
@@ -159,11 +191,12 @@ export async function deleteResidence(id: string) {
   return { ok: true };
 }
 
-export async function updateBatiment(batimentId: string, input: { nom?: string; etages?: number }) {
+export async function updateBatiment(batimentId: string, input: { nom?: string; etages?: number; maxAppartements?: number }) {
   const batiment = await Batiment.findById(batimentId);
   if (!batiment) throw new AppError(404, "Bâtiment introuvable");
   if (input.nom !== undefined) batiment.nom = input.nom;
   if (input.etages !== undefined) batiment.etages = input.etages;
+  if (input.maxAppartements !== undefined) batiment.maxAppartements = input.maxAppartements;
   try {
     await batiment.save();
     return batiment.toJSON();
