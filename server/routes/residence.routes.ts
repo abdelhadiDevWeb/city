@@ -15,6 +15,7 @@ const createResidenceSchema = Joi.object({
     nom: Joi.string().trim().min(2).max(120).required(),
     localisation: Joi.string().trim().min(2).max(200).required(),
     maxBatiments: Joi.number().integer().min(1).max(1000).default(5),
+    maxResidents: Joi.number().integer().min(1).max(10000).default(100),
   }).required(),
 });
 
@@ -24,6 +25,7 @@ const updateResidenceSchema = Joi.object({
     nom: Joi.string().trim().min(2).max(120).optional(),
     localisation: Joi.string().trim().min(2).max(200).optional(),
     maxBatiments: Joi.number().integer().min(1).max(1000).optional(),
+    maxResidents: Joi.number().integer().min(1).max(10000).optional(),
   }).required(),
 });
 

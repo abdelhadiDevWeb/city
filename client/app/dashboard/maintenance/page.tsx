@@ -1,6 +1,6 @@
 "use client";
 
-import { Droplets, History, Plus, Siren, TriangleAlert, Wrench } from "lucide-react";
+import { Droplets, History, Plus, Siren, TriangleAlert, UserCheck, Wrench } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 import {
   createIncident,
@@ -14,12 +14,14 @@ import {
   type PanneEquipement,
   type Priorite,
 } from "@/lib/maintenance-api";
+import { createTache, getPersonnel, type Employe } from "@/lib/personnel-api";
 import { formatDZD } from "@/lib/format";
 import { ModalActions, SelectField, formText, useSubmit } from "../forms";
 import {
   ActionGroup,
   ConfirmModal,
   DataTable,
+  ExportPeriodToolbar,
   Field,
   FormError,
   Modal,
@@ -30,6 +32,7 @@ import {
   button,
   card,
   describeError,
+  downloadCsv,
   useToast,
   type Column,
   type TabItem,
@@ -56,6 +59,12 @@ export default function MaintenancePage() {
   const [cloturantIncident, setCloturantIncident] = useState<{ id: string; titre: string; prestataire: string } | null>(null);
   const [editingIncident, setEditingIncident] = useState<Incident | null>(null);
   const [deletingIncident, setDeletingIncident] = useState<{ id: string; titre?: string } | null>(null);
+  const [assigningIncident, setAssigningIncident] = useState<Incident | null>(null);
+
+  const now = new Date();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const [startDate, setStartDate] = useState(`${now.getFullYear()}-${pad(now.getMonth() + 1)}-01`);
+  const [endDate, setEndDate] = useState(`${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`);
 
   useEffect(() => {
     let active = true;
@@ -93,6 +102,42 @@ export default function MaintenancePage() {
     }
   }
 
+  function handleExportCsv() {
+    if (tab === "incidents") {
+      const rows = incidents.map((i) => ({
+        Titre: i.titre,
+        Localisation: i.lieu,
+        "Signalé le": i.signaleLe,
+        Priorité: i.priorite,
+        Prestataire: i.prestataire,
+        Statut: i.statut,
+        "Signalé par": i.signalePar,
+      }));
+      downloadCsv(rows, `incidents-${startDate}_${endDate}.csv`);
+      notify("Export CSV des incidents généré.");
+    } else if (tab === "pannes") {
+      const rows = pannesEquipement.map((p) => ({
+        Équipement: p.equipement,
+        Localisation: p.lieu,
+        "En panne depuis": p.depuis,
+        Prestataire: p.prestataire,
+        Statut: p.statut,
+      }));
+      downloadCsv(rows, `pannes-equipement-${startDate}_${endDate}.csv`);
+      notify("Export CSV des pannes d'équipement généré.");
+    } else {
+      const rows = historiqueInterventions.map((h) => ({
+        Intervention: h.titre,
+        Localisation: h.lieu,
+        Prestataire: h.prestataire,
+        "Clôturé le": h.clotureLe,
+        "Coût (DZD)": h.cout,
+      }));
+      downloadCsv(rows, `historique-interventions-${startDate}_${endDate}.csv`);
+      notify("Export CSV de l'historique des interventions généré.");
+    }
+  }
+
   const incidentColumns: Column<Incident>[] = [
     {
       header: "Incident",
@@ -106,13 +151,22 @@ export default function MaintenancePage() {
     { header: "Localisation", cell: (i) => i.lieu },
     { header: "Signalé le", cell: (i) => <span className="text-stone-500">{i.signaleLe}</span> },
     { header: "Priorité", cell: (i) => <Pill tone={PRIORITE_TONE[i.priorite]}>{i.priorite}</Pill> },
-    { header: "Prestataire", cell: (i) => i.prestataire },
+    { header: "Prestataire / Assigné", cell: (i) => i.prestataire },
     { header: "Statut", cell: (i) => <Pill tone={i.statut === "En cours" ? "warning" : "brand"}>{i.statut}</Pill> },
     {
       header: "Action",
       align: "right",
       cell: (i) => (
         <span className="inline-flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setAssigningIncident(i)}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-brand/30 bg-orange-50 px-2.5 py-1 text-xs font-semibold text-brand hover:bg-orange-100"
+            title="Créer une tâche d'intervention et l'assigner au personnel"
+          >
+            <Wrench className="h-3.5 w-3.5" aria-hidden />
+            Assigner Tâche
+          </button>
           {i.statut === "Nouveau" ? (
             <button
               type="button"
@@ -250,6 +304,18 @@ export default function MaintenancePage() {
         </div>
       ) : (
         <>
+          <ExportPeriodToolbar
+            startDate={startDate}
+            endDate={endDate}
+            onPeriodChange={(s, e) => {
+              setStartDate(s);
+              setEndDate(e);
+            }}
+            onExportCsv={handleExportCsv}
+            onPrint={() => window.print()}
+            title="Période de maintenance"
+          />
+
           <Tabs tabs={tabs} active={tab} onChange={setTab} />
 
           {tab === "incidents" && <DataTable columns={incidentColumns} rows={incidents} rowKey={(i) => i.id} empty="Aucun incident actif." />}
@@ -337,6 +403,19 @@ export default function MaintenancePage() {
             } catch (err) {
               notify(describeError(err).message);
             }
+          }}
+        />
+      )}
+
+      {/* MODALE ASSIGNER TÂCHE DIRECTE */}
+      {assigningIncident && (
+        <AssignerPersonnelModal
+          incident={assigningIncident}
+          onClose={() => setAssigningIncident(null)}
+          onAssigned={() => {
+            setAssigningIncident(null);
+            setVersion((v) => v + 1);
+            notify(`Ordre de mission créé avec succès et incident pris en charge.`);
           }}
         />
       )}
@@ -582,6 +661,121 @@ function EditIncidentModal({
         </div>
         <FormError error={error} />
         <ModalActions submitting={submitting} label="Enregistrer les modifications" onCancel={onClose} />
+      </form>
+    </Modal>
+  );
+}
+
+function AssignerPersonnelModal({
+  incident,
+  onClose,
+  onAssigned,
+}: {
+  incident: Incident;
+  onClose: () => void;
+  onAssigned: () => void;
+}) {
+  const { submitting, error, run } = useSubmit();
+  const [personnelList, setPersonnelList] = useState<Employe[]>([]);
+  const [assigneA, setAssigneA] = useState("");
+  const [titre, setTitre] = useState(`Intervention : ${incident.titre}`);
+  const [lieu, setLieu] = useState(incident.lieu);
+  const [echeance, setEcheance] = useState(() => new Date().toLocaleDateString("en-CA"));
+  const [urgente, setUrgente] = useState(incident.priorite === "Haute");
+
+  useEffect(() => {
+    getPersonnel()
+      .then((res) => {
+        const staff = res.personnel || [];
+        setPersonnelList(staff);
+        if (staff.length > 0) {
+          setAssigneA(staff[0]!.nom);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    void run(async () => {
+      const finalAssigneA = assigneA.trim() || incident.prestataire || "Agent polyvalent";
+      await createTache({
+        titre,
+        assigneA: finalAssigneA,
+        lieu,
+        echeance,
+        urgente,
+      });
+      await updateIncident(incident.id, {
+        statut: "En cours",
+        prestataire: finalAssigneA,
+      });
+      onAssigned();
+    });
+  }
+
+  return (
+    <Modal
+      title="Assigner l'incident au personnel technique"
+      description={`Créer immédiatement un ordre de travail pour « ${incident.titre} ».`}
+      onClose={onClose}
+    >
+      <form onSubmit={onSubmit} className="space-y-4">
+        <div>
+          {personnelList.length > 0 ? (
+            <SelectField label="Personnel / Technicien responsable" value={assigneA} onChange={(e) => setAssigneA(e.target.value)}>
+              {personnelList.map((p) => (
+                <option key={p.id} value={p.nom}>
+                  {p.nom} — {p.poste} ({p.statut})
+                </option>
+              ))}
+            </SelectField>
+          ) : (
+            <Field
+              label="Nom de l'employé ou technicien"
+              value={assigneA}
+              onChange={(e) => setAssigneA(e.target.value)}
+              placeholder="Ex: Mourad Hadj (Plombier / Maintenance)"
+              required
+            />
+          )}
+        </div>
+
+        <Field
+          label="Titre de la tâche d'intervention"
+          value={titre}
+          onChange={(e) => setTitre(e.target.value)}
+          required
+        />
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field
+            label="Localisation précise"
+            value={lieu}
+            onChange={(e) => setLieu(e.target.value)}
+            required
+          />
+          <Field
+            label="Date d'échéance"
+            type="date"
+            value={echeance}
+            onChange={(e) => setEcheance(e.target.value)}
+            required
+          />
+        </div>
+
+        <label className="flex items-center gap-3 rounded-xl border border-stone-200 px-4 py-3 text-sm font-medium text-ink cursor-pointer">
+          <input
+            type="checkbox"
+            checked={urgente}
+            onChange={(e) => setUrgente(e.target.checked)}
+            className="h-4 w-4 accent-red-600"
+          />
+          <span className="font-semibold text-red-700">Intervention urgente / Priorité absolue</span>
+        </label>
+
+        <FormError error={error} />
+        <ModalActions submitting={submitting} label="Assigner la tâche & Démarrer" onCancel={onClose} />
       </form>
     </Modal>
   );

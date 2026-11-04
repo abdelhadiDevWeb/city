@@ -644,6 +644,12 @@ function ResidenceDetailsView({
           label={`Quota de bâtiments de « ${residence.nom} »`}
           unit="bâtiments"
         />
+        <QuotaProgress
+          current={appartements}
+          max={residence.maxResidents || 100}
+          label={`Capacité maximale de résidents (« ${residence.nom} »)`}
+          unit="résidents"
+        />
         <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
           <h3 className="flex items-center gap-2 text-sm font-bold text-ink">
             <Building className="h-4 w-4 text-brand" aria-hidden />
@@ -802,15 +808,27 @@ function ResidenceModal({ onClose, onCreated }: { onClose: () => void; onCreated
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
-    void run(async () => onCreated(await createResidence({ nom: text(form, "nom"), localisation: text(form, "localisation"), maxBatiments: Number(form.get("maxBatiments")) || 5 })));
+    void run(async () =>
+      onCreated(
+        await createResidence({
+          nom: text(form, "nom"),
+          localisation: text(form, "localisation"),
+          maxBatiments: Number(form.get("maxBatiments")) || 5,
+          maxResidents: Number(form.get("maxResidents")) || 100,
+        }),
+      ),
+    );
   }
 
   return (
-    <Modal title="Nouvelle résidence" description="Nom et localisation de la résidence." onClose={onClose}>
+    <Modal title="Nouvelle résidence" description="Nom, localisation et quotas autorisés." onClose={onClose}>
       <form onSubmit={onSubmit} className="space-y-4">
         <Field label="Nom de la résidence" name="nom" required minLength={2} maxLength={120} placeholder="Cité 1500 Logements AADL" autoFocus />
         <Field label="Localisation" name="localisation" required minLength={2} maxLength={200} placeholder="Bab Ezzouar, Alger" />
-        <Field label="Nombre maximal de bâtiments autorisés" name="maxBatiments" type="number" defaultValue="5" required min={1} max={500} step={1} />
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Field label="Max bâtiments autorisés" name="maxBatiments" type="number" defaultValue="5" required min={1} max={500} step={1} />
+          <Field label="Max résidents autorisés" name="maxResidents" type="number" defaultValue="100" required min={1} max={10000} step={1} />
+        </div>
         <FormError error={error} />
         <ModalActions submitting={submitting} label="Créer la résidence" onCancel={onClose} />
       </form>
@@ -973,21 +991,30 @@ function EditResidenceModal({
   const [nom, setNom] = useState(residence.nom);
   const [localisation, setLocalisation] = useState(residence.localisation);
   const [maxBatiments, setMaxBatiments] = useState(residence.maxBatiments || 5);
+  const [maxResidents, setMaxResidents] = useState(residence.maxResidents || 100);
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     void run(async () => {
-      await updateResidence(residence.id, { nom, localisation, maxBatiments: Number(maxBatiments) });
+      await updateResidence(residence.id, {
+        nom,
+        localisation,
+        maxBatiments: Number(maxBatiments),
+        maxResidents: Number(maxResidents),
+      });
       onUpdated(nom);
     });
   }
 
   return (
-    <Modal title="Modifier la résidence" description="Modifiez le nom et l'emplacement." onClose={onClose}>
+    <Modal title="Modifier la résidence" description="Modifiez le nom, l'emplacement et les quotas autorisés." onClose={onClose}>
       <form onSubmit={onSubmit} className="space-y-4">
         <Field label="Nom de la résidence" value={nom} onChange={(e) => setNom(e.target.value)} required minLength={2} maxLength={120} autoFocus />
         <Field label="Localisation" value={localisation} onChange={(e) => setLocalisation(e.target.value)} required minLength={2} maxLength={200} />
-        <Field label="Nombre maximal de bâtiments autorisés" value={maxBatiments} onChange={(e) => setMaxBatiments(Number(e.target.value))} type="number" required min={1} max={500} />
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Field label="Max bâtiments autorisés" value={maxBatiments} onChange={(e) => setMaxBatiments(Number(e.target.value))} type="number" required min={1} max={500} />
+          <Field label="Max résidents autorisés" value={maxResidents} onChange={(e) => setMaxResidents(Number(e.target.value))} type="number" required min={1} max={10000} />
+        </div>
         <FormError error={error} />
         <ModalActions submitting={submitting} label="Enregistrer les modifications" onCancel={onClose} />
       </form>

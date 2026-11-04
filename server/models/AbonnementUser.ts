@@ -10,6 +10,9 @@ export interface IAbonnementUser {
   debut: Date;
   fin: Date;
   statutPaiement: boolean;
+  modePaiement?: string;
+  montantPaye?: number;
+  notesPaiement?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -26,6 +29,9 @@ const abonnementUserSchema = new Schema<IAbonnementUser>(
     debut: { type: Date, required: true },
     fin: { type: Date, required: true },
     statutPaiement: { type: Boolean, default: false, index: true },
+    modePaiement: { type: String, trim: true, default: "Virement bancaire" },
+    montantPaye: { type: Number, min: 0 },
+    notesPaiement: { type: String, trim: true },
   },
   { timestamps: true, toJSON: publicJson },
 );

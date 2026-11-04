@@ -23,6 +23,9 @@ const createSouscriptionSchema = Joi.object({
     idAbonnement: objectId.required(),
     debut: Joi.date().iso().min("2000-01-01").max("2100-01-01").required(),
     statutPaiement: Joi.boolean().strict().required(),
+    modePaiement: Joi.string().trim().allow("", null).optional(),
+    montantPaye: Joi.number().min(0).optional(),
+    notesPaiement: Joi.string().trim().allow("", null).optional(),
   }).required(),
 });
 

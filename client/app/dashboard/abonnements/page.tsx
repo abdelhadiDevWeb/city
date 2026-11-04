@@ -34,6 +34,7 @@ import {
   ActionGroup,
   ConfirmModal,
   DataTable,
+  ExportPeriodToolbar,
   FacetFilter,
   Field,
   FormError,
@@ -44,6 +45,7 @@ import {
   button,
   card,
   describeError,
+  downloadCsv,
   useToast,
   type Column,
   type TabItem,
@@ -97,6 +99,11 @@ export default function AbonnementsPage() {
   const [confirmDelete, setConfirmDelete] = useState<{ kind: "formule" | "souscription"; id: string; nom: string } | null>(null);
   const [adminFilter, setAdminFilter] = useState<"all" | "paye" | "impaye">("all");
   const [sousAdminFilter, setSousAdminFilter] = useState<"all" | "paye" | "impaye">("all");
+
+  const now = new Date();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const [startDate, setStartDate] = useState(`${now.getFullYear()}-01-01`);
+  const [endDate, setEndDate] = useState(`${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`);
 
   const refresh = () => setVersion((v) => v + 1);
 
@@ -306,7 +313,19 @@ export default function AbonnementsPage() {
         </Pill>
       ),
     },
-    { header: "Durée", cell: (f) => dureeLabel(f.duree) },
+    {
+      header: "Durée",
+      cell: (f) => (
+        <span className="inline-flex items-center gap-1.5">
+          <span>{dureeLabel(f.duree)}</span>
+          {f.duree === 12 && (
+            <span className="rounded-md bg-amber-50 px-1.5 py-0.5 text-[10px] font-bold text-amber-700 border border-amber-200">
+              Standard 1 An
+            </span>
+          )}
+        </span>
+      ),
+    },
     { header: "Prix", cell: (f) => <span className="font-semibold text-ink">{formatDZD(f.prix)}</span> },
     {
       header: "Souscriptions",
@@ -366,6 +385,55 @@ export default function AbonnementsPage() {
     { id: "formules", label: "Formules", icon: CircleDollarSign, count: formules?.length },
   ];
 
+  function handleExportCsv() {
+    if (tab === "admins") {
+      const rows = (filteredAdmins ?? []).map((a) => {
+        const c = current(a.souscriptions);
+        return {
+          "Nom & Prénom": fullName(a),
+          Email: a.email,
+          Téléphone: a.telephone,
+          Résidence: a.residence?.nom || "Non assignée",
+          "Formule Active": c?.abonnement?.nom || "Aucune",
+          "Date Début": c?.debut ? formatDate(c.debut) : "-",
+          "Date Fin": c?.fin ? formatDate(c.fin) : "-",
+          "Statut Paiement": c ? (c.statutPaiement ? "Payé (Validé)" : "En attente") : "-",
+          "Mode de Paiement": c?.modePaiement || "Virement",
+        };
+      });
+      downloadCsv(rows, `abonnements-administrateurs-${startDate}_${endDate}.csv`);
+      notify("Export CSV des abonnements administrateurs généré.");
+    } else if (tab === "sous_admins") {
+      const rows = (filteredSousAdmins ?? []).map((sa) => {
+        const c = current(sa.souscriptions);
+        return {
+          "Nom & Prénom": fullName(sa),
+          Email: sa.email,
+          Téléphone: sa.telephone,
+          Résidence: sa.residence?.nom || "-",
+          Bâtiment: sa.batiment?.nom || "-",
+          "Formule Active": c?.abonnement?.nom || "Aucune",
+          "Date Début": c?.debut ? formatDate(c.debut) : "-",
+          "Date Fin": c?.fin ? formatDate(c.fin) : "-",
+          "Statut Paiement": c ? (c.statutPaiement ? "Payé (Validé)" : "En attente") : "-",
+        };
+      });
+      downloadCsv(rows, `abonnements-sous-admins-${startDate}_${endDate}.csv`);
+      notify("Export CSV des abonnements sous-administrateurs généré.");
+    } else {
+      const rows = (formules ?? []).map((f) => ({
+        Formule: f.nom,
+        Cible: f.cible === "sub_admin" ? "Sous-Admin" : "Admin Résidence",
+        "Durée (mois)": f.duree,
+        "Prix (DZD)": f.prix,
+        "Nombre Souscriptions": f.souscriptions,
+        "Date Création": formatDate(f.createdAt),
+      }));
+      downloadCsv(rows, `formules-abonnements.csv`);
+      notify("Export CSV des formules généré.");
+    }
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -388,6 +456,18 @@ export default function AbonnementsPage() {
         </div>
       ) : (
         <>
+          <ExportPeriodToolbar
+            startDate={startDate}
+            endDate={endDate}
+            onPeriodChange={(s, e) => {
+              setStartDate(s);
+              setEndDate(e);
+            }}
+            onExportCsv={handleExportCsv}
+            onPrint={() => window.print()}
+            title="Période souscriptions"
+          />
+
           <Tabs tabs={tabs} active={tab} onChange={setTab} />
 
           {tab === "admins" && (
@@ -559,16 +639,16 @@ function FormuleModal({ onClose, onCreated }: { onClose: () => void; onCreated: 
   }
 
   return (
-    <Modal title="Nouvelle formule d'abonnement" description="Le prix est en dinars algériens et la durée en mois." onClose={onClose}>
+    <Modal title="Nouvelle formule d'abonnement" description="Durée standard : 12 mois (1 an) avec options de paiement flexibles." onClose={onClose}>
       <form onSubmit={onSubmit} className="space-y-4">
-        <Field label="Nom de la formule" name="nom" required minLength={2} maxLength={60} placeholder="Premium Résidence" autoFocus />
+        <Field label="Nom de la formule" name="nom" required minLength={2} maxLength={60} placeholder="Standard Annuel Résidence" autoFocus />
         <SelectField label="Cible de la formule" value={cible} onChange={(e) => setCible(e.target.value as "admin" | "sub_admin")}>
           <option value="admin">Administrateur (Résidence entière)</option>
           <option value="sub_admin">Sous-Administrateur (Bâtiment)</option>
         </SelectField>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Prix (DZD)" name="prix" type="number" required min={0} max={100000000} step={0.01} placeholder="25000" />
-          <Field label="Durée (mois)" name="duree" type="number" required min={1} max={120} step={1} placeholder="12" />
+          <Field label="Prix (DZD)" name="prix" type="number" required min={0} max={100000000} step={0.01} placeholder="36000" />
+          <Field label="Durée standard (mois)" name="duree" type="number" required min={1} max={120} step={1} defaultValue={12} placeholder="12" />
         </div>
         <FormError error={error} />
         <ModalActions submitting={submitting} label="Créer la formule" onCancel={onClose} />
@@ -594,12 +674,29 @@ function AttribuerModal({
   const [formuleId, setFormuleId] = useState(formules[0]?.id ?? "");
   const [debut, setDebut] = useState(() => new Date().toLocaleDateString("en-CA"));
   const [paye, setPaye] = useState(true);
+  const [modePaiement, setModePaiement] = useState("Virement bancaire");
+  const [montantPaye, setMontantPaye] = useState<string>(() => String(formules[0]?.prix ?? 0));
+  const [notesPaiement, setNotesPaiement] = useState("");
   const formule = formules.find((f) => f.id === formuleId);
+
+  useEffect(() => {
+    if (formule) {
+      setMontantPaye(String(formule.prix));
+    }
+  }, [formuleId]);
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     void run(async () => {
-      await createSouscription({ idAdmin: target.id, idAbonnement: formuleId, debut, statutPaiement: paye });
+      await createSouscription({
+        idAdmin: target.id,
+        idAbonnement: formuleId,
+        debut,
+        statutPaiement: paye,
+        modePaiement,
+        montantPaye: Number(montantPaye) || (formule ? formule.prix : 0),
+        notesPaiement,
+      });
       onCreated();
     });
   }
@@ -632,9 +729,38 @@ function AttribuerModal({
               <span className="font-semibold text-ink">{addMonths(debut, formule.duree).toLocaleDateString("fr-FR", { timeZone: "UTC" })}</span>
             </div>
           )}
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <SelectField label="Mode de règlement (flexible)" value={modePaiement} onChange={(e) => setModePaiement(e.target.value)}>
+              <option value="Virement bancaire">Virement bancaire</option>
+              <option value="Espèces">Espèces (Reçu direct)</option>
+              <option value="Chèque">Chèque bancaire</option>
+              <option value="Paiement échelonné">Paiement échelonné</option>
+              <option value="Edahabia / CIB">Edahabia / CIB</option>
+            </SelectField>
+            <Field
+              label="Montant réglé (DZD)"
+              type="number"
+              value={montantPaye}
+              onChange={(e) => setMontantPaye(e.target.value)}
+              min={0}
+              placeholder="Montant payé"
+            />
+          </div>
+
+          <Field
+            label="Notes ou référence du règlement (optionnel)"
+            placeholder="Ex: Réf virement BNA, chèque n°12948, accord 50% avance..."
+            value={notesPaiement}
+            onChange={(e) => setNotesPaiement(e.target.value)}
+          />
+
           <label className="flex items-center gap-3 rounded-xl border border-stone-200 px-4 py-3 text-sm font-medium text-ink cursor-pointer">
             <input type="checkbox" checked={paye} onChange={(e) => setPaye(e.target.checked)} className="h-4 w-4 accent-brand" />
-            <span>Paiement déjà reçu / validé</span>
+            <div>
+              <span className="block font-semibold">Paiement validé (Accès immédiat au dashboard)</span>
+              <span className="block text-xs text-stone-500">Si décoché, le compte reste bloqué jusqu'à confirmation du règlement.</span>
+            </div>
           </label>
           <FormError error={error} />
           <ModalActions submitting={submitting} label="Attribuer l'abonnement" onCancel={onClose} />

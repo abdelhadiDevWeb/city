@@ -4,6 +4,7 @@ import { Appartement, type AppartementDocument } from "../models/Appartement";
 import { Batiment, type BatimentDocument } from "../models/Batiment";
 import { Charge } from "../models/Charge";
 import { RefreshToken } from "../models/RefreshToken";
+import { Residence } from "../models/Residence";
 import { User, type UserDocument } from "../models/User";
 import { AppError } from "../utils/AppError";
 import { isDuplicateKeyError } from "../utils/mongo";
@@ -123,6 +124,16 @@ export async function createResident(actor: ActorInfo, input: NewResident) {
 
   if (input.etage > batiment.etages) {
     throw new AppError(400, `Le bâtiment ${batiment.nom} a ${batiment.etages} étage(s) : choisissez un étage entre 0 (rez-de-chaussée) et ${batiment.etages}`);
+  }
+
+  if (batiment.idResidence) {
+    const residence = await Residence.findById(batiment.idResidence);
+    if (residence && residence.maxResidents) {
+      const currentCount = await User.countDocuments({ idResidence: residence._id });
+      if (currentCount >= residence.maxResidents) {
+        throw new AppError(403, `Quota atteint : cette résidence est limitée à ${residence.maxResidents} résidents. Contactez le Super Admin pour une extension.`);
+      }
+    }
   }
 
   const cleanedNin = input.nin?.trim() ? input.nin.trim() : null;

@@ -24,6 +24,18 @@ async function resolveFinanceScope(req: Request) {
   };
 }
 
+async function resolveActorName(req: Request): Promise<string> {
+  const roles = req.user?.roles ?? [];
+  if (roles.includes("super_admin")) return "Super Admin";
+  try {
+    const admin = await loadActiveAdmin(req.user!.sub);
+    const roleLabel = admin.role === "sub_admin" ? "Sous-Admin" : "Admin";
+    return `${admin.prenom} ${admin.nom} (${roleLabel})`;
+  } catch {
+    return "Syndic";
+  }
+}
+
 export const getFinances = asyncHandler(async (req, res) => {
   const { idResidence, idBatiment } = await resolveFinanceScope(req);
   const data = await financesService.getFinances(idResidence, idBatiment);
@@ -32,13 +44,15 @@ export const getFinances = asyncHandler(async (req, res) => {
 
 export const encaisser = asyncHandler(async (req, res) => {
   const { idResidence, idBatiment } = await resolveFinanceScope(req);
-  const charge = await financesService.encaisser(idResidence, req.params.id as string, req.body, idBatiment);
+  const encaissePar = await resolveActorName(req);
+  const charge = await financesService.encaisser(idResidence, req.params.id as string, { ...req.body, encaissePar }, idBatiment);
   res.status(200).json({ ok: true, charge });
 });
 
 export const createPaiement = asyncHandler(async (req, res) => {
   const { idResidence, idBatiment } = await resolveFinanceScope(req);
-  const paiement = await financesService.createPaiement(idResidence, { ...req.body, idBatiment });
+  const encaissePar = await resolveActorName(req);
+  const paiement = await financesService.createPaiement(idResidence, { ...req.body, idBatiment, encaissePar });
   res.status(201).json({ ok: true, paiement });
 });
 

@@ -17,6 +17,7 @@ type ResidenceBase = {
   nom: string;
   localisation: string;
   maxBatiments: number;
+  maxResidents?: number;
   createdAt: string;
   updatedAt: string;
 };
@@ -67,7 +68,7 @@ export async function getResidence(id: string): Promise<ResidenceDetails> {
   return { residence, admin, batiments };
 }
 
-export async function createResidence(input: { nom: string; localisation: string; maxBatiments?: number }): Promise<ResidenceSummary> {
+export async function createResidence(input: { nom: string; localisation: string; maxBatiments?: number; maxResidents?: number }): Promise<ResidenceSummary> {
   const res = await apiRequest<{ residence: ResidenceSummary }>("/residences", { method: "POST", body: input });
   return res.residence;
 }
@@ -133,7 +134,10 @@ export async function createResident(input: NewResidentInput): Promise<Resident>
   return res.resident;
 }
 
-export async function updateResidence(id: string, input: { nom?: string; localisation?: string; maxBatiments?: number }): Promise<void> {
+export async function updateResidence(
+  id: string,
+  input: { nom?: string; localisation?: string; maxBatiments?: number; maxResidents?: number },
+): Promise<void> {
   await apiRequest(`/residences/${encodeURIComponent(id)}`, { method: "PUT", body: input });
 }
 

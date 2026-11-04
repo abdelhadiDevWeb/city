@@ -13,11 +13,14 @@ export type Impaye = {
 export type Paiement = {
   id: string;
   date: string;
+  dateIso?: string;
   logement: string;
   resident: string;
+  telephone?: string;
   mode: string;
   reference: string;
   montant: number;
+  encaissePar?: string;
 };
 
 export type Depense = {

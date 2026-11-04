@@ -38,11 +38,14 @@ export async function getFinances(idResidence: string, idBatiment?: string) {
     .map((c) => ({
       id: String(c._id),
       date: c.datePaiement ? new Date(c.datePaiement).toLocaleDateString("fr-FR") : "Récemment",
+      dateIso: c.datePaiement ? c.datePaiement.toISOString() : c.createdAt?.toISOString(),
       logement: c.logement,
       resident: c.resident,
+      telephone: c.telephone,
       mode: c.modePaiement ?? "Espèces",
       reference: c.reference ?? `REF-${String(c._id).slice(-6)}`,
       montant: c.totalDu,
+      encaissePar: c.encaissePar ?? "Syndic",
     }));
 
   const depensesList = allDepenses
@@ -75,7 +78,7 @@ export async function getFinances(idResidence: string, idBatiment?: string) {
 export async function encaisser(
   idResidence: string,
   chargeId: string,
-  input: { modePaiement?: string; reference?: string },
+  input: { modePaiement?: string; reference?: string; encaissePar?: string },
   idBatiment?: string,
 ) {
   const query: Record<string, unknown> = { _id: chargeId, idResidence };
@@ -92,6 +95,7 @@ export async function encaisser(
   charge.modePaiement = input.modePaiement ?? "Espèces";
   charge.reference = input.reference ?? `ENC-${Date.now().toString().slice(-6)}`;
   charge.dernierReglement = new Date().toLocaleDateString("fr-FR");
+  if (input.encaissePar) charge.encaissePar = input.encaissePar;
   await charge.save();
 
   return charge.toJSON();
@@ -99,7 +103,7 @@ export async function encaisser(
 
 export async function createPaiement(
   idResidence: string,
-  input: { logement: string; resident: string; telephone: string; montant: number; modePaiement: string; reference?: string; idBatiment?: string },
+  input: { logement: string; resident: string; telephone: string; montant: number; modePaiement: string; reference?: string; idBatiment?: string; encaissePar?: string },
 ) {
   const charge = await Charge.create({
     idResidence,
@@ -114,6 +118,7 @@ export async function createPaiement(
     reference: input.reference || `PAY-${Date.now().toString().slice(-6)}`,
     datePaiement: new Date(),
     dernierReglement: new Date().toLocaleDateString("fr-FR"),
+    encaissePar: input.encaissePar || "Syndic",
   });
   return charge.toJSON();
 }

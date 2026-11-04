@@ -59,6 +59,7 @@ export async function listResidences() {
   return residences.map((r) => ({
     ...r.toJSON(),
     maxBatiments: r.maxBatiments ?? 5,
+    maxResidents: r.maxResidents ?? 100,
     batiments: countByResidence.get(r.id) ?? 0,
     admin: responsable(adminByResidence.get(r.id), activeIds),
   }));
@@ -99,6 +100,7 @@ export async function getResidenceDetails(id: string) {
     residence: {
       ...residence.toJSON(),
       maxBatiments: residence.maxBatiments ?? 5,
+      maxResidents: residence.maxResidents ?? 100,
     },
     admin: responsable(admin, activeIds),
     batiments: batiments.map((b) => ({
@@ -130,11 +132,12 @@ export async function getResidenceDetails(id: string) {
   };
 }
 
-export async function createResidence(input: { nom: string; localisation: string; maxBatiments?: number }) {
+export async function createResidence(input: { nom: string; localisation: string; maxBatiments?: number; maxResidents?: number }) {
   const residence = await Residence.create({
     nom: input.nom,
     localisation: input.localisation,
     maxBatiments: input.maxBatiments ?? 5,
+    maxResidents: input.maxResidents ?? 100,
   });
   return { ...residence.toJSON(), batiments: 0, admin: null };
 }
@@ -169,7 +172,7 @@ export async function createBatiment(
 
 export async function updateResidence(
   id: string,
-  input: { nom?: string; localisation?: string; maxBatiments?: number },
+  input: { nom?: string; localisation?: string; maxBatiments?: number; maxResidents?: number },
   isSuperAdmin = false,
 ) {
   const residence = await Residence.findById(id);
@@ -178,6 +181,9 @@ export async function updateResidence(
   if (input.localisation !== undefined) residence.localisation = input.localisation;
   if (input.maxBatiments !== undefined && isSuperAdmin) {
     residence.maxBatiments = input.maxBatiments;
+  }
+  if (input.maxResidents !== undefined && isSuperAdmin) {
+    residence.maxResidents = input.maxResidents;
   }
   await residence.save();
   return residence.toJSON();

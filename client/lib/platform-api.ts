@@ -39,6 +39,9 @@ export type Souscription = {
   debut: string;
   fin: string;
   statutPaiement: boolean;
+  modePaiement?: string;
+  montantPaye?: number;
+  notesPaiement?: string;
 };
 
 export type AdminAbonne = {
@@ -92,7 +95,15 @@ export async function getSousAdminKPIs(): Promise<{ total: number; payes: number
   return (await apiRequest<{ kpis: { total: number; payes: number; impayes: number } }>("/abonnements/sous-admins/kpis")).kpis;
 }
 
-export async function createSouscription(input: { idAdmin: string; idAbonnement: string; debut: string; statutPaiement: boolean }): Promise<void> {
+export async function createSouscription(input: {
+  idAdmin: string;
+  idAbonnement: string;
+  debut: string;
+  statutPaiement: boolean;
+  modePaiement?: string;
+  montantPaye?: number;
+  notesPaiement?: string;
+}): Promise<void> {
   await apiRequest("/abonnements/souscriptions", { method: "POST", body: input });
 }
 

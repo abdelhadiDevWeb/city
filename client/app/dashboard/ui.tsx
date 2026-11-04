@@ -1,6 +1,7 @@
 "use client";
 
-import { Check, ChevronRight, CircleAlert, Copy, Info, KeyRound, Pencil, RefreshCw, Trash2, TriangleAlert, X, type LucideIcon } from "lucide-react";
+import { Calendar, Check, ChevronRight, CircleAlert, Copy, Download, FileSpreadsheet, Info, KeyRound, Pencil, Printer, Receipt, RefreshCw, Trash2, TriangleAlert, X, type LucideIcon } from "lucide-react";
+import { formatDZD } from "@/lib/format";
 import {
   createContext,
   useCallback,
@@ -723,5 +724,265 @@ export function ActionGroup({
         </button>
       )}
     </div>
+  );
+}
+
+export function downloadCsv(
+  param1: Record<string, unknown>[] | string,
+  param2?: string | string[],
+  param3?: (string | number)[][],
+) {
+  if (Array.isArray(param1)) {
+    const data = param1;
+    const filename = typeof param2 === "string" ? param2.replace(/\.csv$/i, "") : "export";
+    if (data.length === 0) return;
+    const headers = Object.keys(data[0]!);
+    const sanitize = (val: unknown) => `"${String(val ?? "").replace(/"/g, '""')}"`;
+    const lines = [
+      headers.map(sanitize).join(";"),
+      ...data.map((item) => headers.map((h) => sanitize(item[h])).join(";")),
+    ];
+    const csvContent = "\uFEFF" + lines.join("\r\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `${filename}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    return;
+  }
+
+  const filename = typeof param1 === "string" ? param1.replace(/\.csv$/i, "") : "export";
+  const headers = Array.isArray(param2) ? param2 : [];
+  const rows = param3 ?? [];
+  const sanitize = (val: string | number) => `"${String(val ?? "").replace(/"/g, '""')}"`;
+  const csvContent = "\uFEFF" + [headers.map(sanitize).join(";"), ...rows.map((row) => row.map(sanitize).join(";"))].join("\r\n");
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.setAttribute("href", url);
+  link.setAttribute("download", `${filename}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+export function ExportPeriodToolbar({
+  title = "Exporter les données",
+  onExportCsv,
+  onPrint,
+  startDate,
+  endDate,
+  onPeriodChange,
+}: {
+  title?: string;
+  onExportCsv?: () => void;
+  onPrint?: () => void;
+  startDate: string;
+  endDate: string;
+  onPeriodChange: (start: string, end: string) => void;
+}) {
+  function setPreset(type: "month" | "quarter" | "year" | "all") {
+    const now = new Date();
+    const pad = (n: number) => String(n).padStart(2, "0");
+    const today = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+
+    if (type === "all") {
+      onPeriodChange("2024-01-01", today);
+      return;
+    }
+    if (type === "month") {
+      const start = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-01`;
+      onPeriodChange(start, today);
+      return;
+    }
+    if (type === "quarter") {
+      const qMonth = Math.floor(now.getMonth() / 3) * 3 + 1;
+      const start = `${now.getFullYear()}-${pad(qMonth)}-01`;
+      onPeriodChange(start, today);
+      return;
+    }
+    if (type === "year") {
+      const start = `${now.getFullYear()}-01-01`;
+      onPeriodChange(start, today);
+      return;
+    }
+  }
+
+  return (
+    <div className={`${card} flex flex-col gap-3 p-4 text-xs sm:flex-row sm:items-center sm:justify-between`}>
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="flex items-center gap-1.5 font-bold text-ink">
+          <Calendar className="h-4 w-4 text-brand" aria-hidden />
+          {title} :
+        </span>
+        <div className="flex items-center gap-1.5">
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => onPeriodChange(e.target.value, endDate)}
+            className="rounded-lg border border-stone-200 bg-white px-2.5 py-1.5 text-xs text-ink focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+          />
+          <span className="text-stone-400">➔</span>
+          <input
+            type="date"
+            value={endDate}
+            onChange={(e) => onPeriodChange(startDate, e.target.value)}
+            className="rounded-lg border border-stone-200 bg-white px-2.5 py-1.5 text-xs text-ink focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+          />
+        </div>
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => setPreset("month")}
+            className="rounded-md border border-stone-200 bg-stone-50 px-2 py-1 font-medium text-stone-600 hover:bg-stone-100"
+          >
+            Ce mois
+          </button>
+          <button
+            type="button"
+            onClick={() => setPreset("quarter")}
+            className="rounded-md border border-stone-200 bg-stone-50 px-2 py-1 font-medium text-stone-600 hover:bg-stone-100"
+          >
+            Trimestre
+          </button>
+          <button
+            type="button"
+            onClick={() => setPreset("year")}
+            className="rounded-md border border-stone-200 bg-stone-50 px-2 py-1 font-medium text-stone-600 hover:bg-stone-100"
+          >
+            Année
+          </button>
+          <button
+            type="button"
+            onClick={() => setPreset("all")}
+            className="rounded-md border border-stone-200 bg-stone-50 px-2 py-1 font-medium text-stone-600 hover:bg-stone-100"
+          >
+            Tout
+          </button>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-2 self-end sm:self-auto">
+        {onExportCsv && (
+          <button
+            type="button"
+            onClick={onExportCsv}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-1.5 font-semibold text-emerald-800 hover:bg-emerald-100"
+          >
+            <FileSpreadsheet className="h-3.5 w-3.5 text-emerald-600" aria-hidden />
+            Excel / CSV
+          </button>
+        )}
+        {onPrint && (
+          <button
+            type="button"
+            onClick={onPrint}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-stone-300 bg-white px-3 py-1.5 font-semibold text-stone-700 shadow-xs hover:bg-stone-50 hover:text-ink"
+          >
+            <Printer className="h-3.5 w-3.5 text-stone-500" aria-hidden />
+            Imprimer / PDF
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export function QuittanceModal({
+  paiement,
+  residenceNom = "Résidence",
+  onClose,
+}: {
+  paiement: {
+    resident: string;
+    logement: string;
+    montant: number;
+    date: string;
+    reference: string;
+    mode: string;
+    telephone?: string;
+    encaissePar?: string;
+  };
+  residenceNom?: string;
+  onClose: () => void;
+}) {
+  return (
+    <Modal title="Quittance de Cotisation & Charges" description="Reçu d'encaissement officiel pour le copropriétaire ou locataire." onClose={onClose}>
+      <div id="quittance-print" className="space-y-6 rounded-2xl border border-stone-200 bg-stone-50/50 p-6 text-sm">
+        <div className="flex items-start justify-between border-b border-stone-200 pb-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand text-white font-black text-sm">C</span>
+              <span className="text-base font-extrabold tracking-tight text-ink">CITY SYNDIC</span>
+            </div>
+            <p className="mt-1 text-xs text-stone-500">{residenceNom}</p>
+          </div>
+          <div className="text-right">
+            <span className="rounded-md border border-emerald-300 bg-emerald-50 px-2 py-0.5 text-[11px] font-bold text-emerald-800">
+              ACQUITTÉ
+            </span>
+            <p className="mt-1 font-mono text-xs text-stone-500">Réf : {paiement.reference}</p>
+          </div>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-wide text-stone-400">Copropriétaire / Résident</p>
+            <p className="mt-0.5 text-sm font-bold text-ink">{paiement.resident}</p>
+            {paiement.telephone && <p className="font-mono text-xs text-stone-500">{paiement.telephone}</p>}
+          </div>
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-wide text-stone-400">Logement Assigné</p>
+            <p className="mt-0.5 text-sm font-bold text-ink">{paiement.logement}</p>
+            <p className="text-xs text-stone-500">Charges communes & entretien</p>
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-stone-200 bg-white p-4">
+          <div className="flex items-center justify-between border-b border-stone-100 pb-2 text-xs text-stone-500">
+            <span>Désignation</span>
+            <span>Date d&apos;encaissement</span>
+            <span>Montant Réglé</span>
+          </div>
+          <div className="flex items-center justify-between pt-3">
+            <div>
+              <p className="font-bold text-ink">Charges de Copropriété</p>
+              <p className="text-xs text-stone-500">Règlement par {paiement.mode}</p>
+            </div>
+            <span className="text-xs text-stone-600">{paiement.date}</span>
+            <span className="font-mono text-lg font-bold text-emerald-600">+{formatDZD(paiement.montant)}</span>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between text-xs text-stone-500">
+          <div>
+            <span className="font-medium text-stone-400">Encaissé par : </span>
+            <span className="font-semibold text-ink">{paiement.encaissePar || "Administration du Syndic"}</span>
+          </div>
+          <div className="text-right italic">
+            Document officiel tenant lieu de reçu de paiement.
+          </div>
+        </div>
+
+        <div className="mt-6 flex justify-end gap-2 border-t border-stone-200 pt-4 print:hidden">
+          <button type="button" onClick={onClose} className={button("secondary")}>
+            Fermer
+          </button>
+          <button
+            type="button"
+            onClick={() => window.print()}
+            className={button("primary")}
+          >
+            <Printer className="h-4 w-4" aria-hidden />
+            Imprimer la Quittance
+          </button>
+        </div>
+      </div>
+    </Modal>
   );
 }

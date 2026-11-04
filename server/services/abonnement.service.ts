@@ -33,6 +33,9 @@ function souscriptionJson(s: AbonnementUserDocument, planById: Map<string, Abonn
     debut: s.debut,
     fin: s.fin,
     statutPaiement: s.statutPaiement,
+    modePaiement: s.modePaiement,
+    montantPaye: s.montantPaye,
+    notesPaiement: s.notesPaiement,
   };
 }
 
@@ -147,7 +150,15 @@ export async function getSousAdminKPIs(actor?: { sub: string; roles: string[] })
 }
 
 export async function createSouscription(
-  input: { idAdmin: string; idAbonnement: string; debut: Date; statutPaiement: boolean },
+  input: {
+    idAdmin: string;
+    idAbonnement: string;
+    debut: Date;
+    statutPaiement: boolean;
+    modePaiement?: string;
+    montantPaye?: number;
+    notesPaiement?: string;
+  },
   actor?: { sub: string; roles: string[] },
 ) {
   const isSuperAdmin = actor?.roles.includes("super_admin") ?? false;
@@ -180,6 +191,9 @@ export async function createSouscription(
     debut,
     fin,
     statutPaiement: input.statutPaiement,
+    modePaiement: input.modePaiement || "Virement bancaire",
+    montantPaye: input.montantPaye !== undefined ? input.montantPaye : plan.prix,
+    notesPaiement: input.notesPaiement || "",
   });
   return souscriptionJson(souscription, new Map([[plan.id as string, plan]]));
 }

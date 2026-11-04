@@ -27,6 +27,7 @@ import {
   Breadcrumbs,
   ConfirmModal,
   DataTable,
+  ExportPeriodToolbar,
   FacetFilter,
   Field,
   FormError,
@@ -38,6 +39,7 @@ import {
   button,
   card,
   describeError,
+  downloadCsv,
   useToast,
   type Column,
 } from "../ui";
@@ -65,6 +67,11 @@ export default function ResidentsPage() {
   const [query, setQuery] = useState("");
   const [statutFilter, setStatutFilter] = useState<"all" | "paye" | "impaye">("all");
   const closeModal = useCallback(() => setAdding(false), []);
+
+  const now = new Date();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const [startDate, setStartDate] = useState(`${now.getFullYear()}-01-01`);
+  const [endDate, setEndDate] = useState(`${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`);
 
   useEffect(() => {
     let active = true;
@@ -304,6 +311,35 @@ export default function ResidentsPage() {
               className="w-full bg-transparent text-sm text-ink placeholder:text-stone-400 focus:outline-none"
             />
           </label>
+
+          <ExportPeriodToolbar
+            startDate={startDate}
+            endDate={endDate}
+            onPeriodChange={(s, e) => {
+              setStartDate(s);
+              setEndDate(e);
+            }}
+            onExportCsv={() => {
+              const dataToExport = rows.map((r) => {
+                const impaye = impayesMap.get(r.id);
+                return {
+                  "Nom complet": fullName(r),
+                  Email: r.email,
+                  Téléphone: r.telephone,
+                  Bâtiment: r.batiment?.nom ?? "Non assigné",
+                  Appartement: r.appartement?.nom ?? "Non assigné",
+                  Étage: r.appartement?.etage !== undefined ? etageLabel(r.appartement.etage) : "-",
+                  "Statut Cotisations": impaye ? `En retard (${impaye.moisImpayes} mois)` : "À jour",
+                  "Total dû (DZD)": impaye ? impaye.totalDu : 0,
+                };
+              });
+              downloadCsv(dataToExport, `registre-residents-${startDate}_${endDate}.csv`);
+              notify("Registre des résidents exporté en CSV.");
+            }}
+            onPrint={() => window.print()}
+            title="Période du registre"
+          />
+
           <DataTable
             columns={columns}
             rows={rows}

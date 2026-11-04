@@ -40,6 +40,7 @@ import {
   Avatar,
   ConfirmModal,
   DataTable,
+  ExportPeriodToolbar,
   FacetFilter,
   Field,
   FormError,
@@ -47,10 +48,12 @@ import {
   Mono,
   PageHeader,
   Pill,
+  QuittanceModal,
   Tabs,
   button,
   card,
   describeError,
+  downloadCsv,
   useToast,
   type Column,
   type TabItem,
@@ -85,6 +88,12 @@ export default function FinancesPage() {
   const [editingDepense, setEditingDepense] = useState<Depense | null>(null);
   const [editingFacture, setEditingFacture] = useState<Facture | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<{ kind: "charge" | "depense" | "facture"; id: string; nom: string } | null>(null);
+
+  const now = new Date();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const [startDate, setStartDate] = useState(`${now.getFullYear()}-${pad(now.getMonth() + 1)}-01`);
+  const [endDate, setEndDate] = useState(`${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`);
+  const [quittancePaiement, setQuittancePaiement] = useState<Paiement | null>(null);
 
   const [queryImpayes, setQueryImpayes] = useState("");
   const [filterImpayes, setFilterImpayes] = useState<"all" | "critique" | "recent">("all");
@@ -192,6 +201,55 @@ export default function FinancesPage() {
     }
   }
 
+  function handleExportCsv() {
+    if (tab === "journal") {
+      const rows = filteredPaiements.map((p) => ({
+        Date: p.date,
+        Résident: p.resident,
+        Logement: p.logement,
+        "Montant (DZD)": p.montant,
+        Mode: p.mode,
+        Référence: p.reference,
+        "Encaissé par": p.encaissePar || "Syndic",
+      }));
+      downloadCsv(rows, `journal-paiements-${startDate}_${endDate}.csv`);
+      notify("Export CSV du journal des paiements généré.");
+    } else if (tab === "impayes") {
+      const rows = filteredImpayes.map((r) => ({
+        Logement: r.logement,
+        Résident: r.resident,
+        Téléphone: r.telephone,
+        "Mois impayés": r.moisImpayes,
+        "Dernier règlement": r.dernierReglement,
+        "Total dû (DZD)": r.totalDu,
+      }));
+      downloadCsv(rows, `impayes-recouvrement-${startDate}_${endDate}.csv`);
+      notify("Export CSV des impayés généré.");
+    } else if (tab === "depenses") {
+      const rows = depenses.map((d) => ({
+        Date: d.date,
+        Fournisseur: d.fournisseur,
+        Catégorie: d.categorie,
+        Description: d.description,
+        Statut: d.statut,
+        "Montant (DZD)": d.montant,
+      }));
+      downloadCsv(rows, `depenses-residence-${startDate}_${endDate}.csv`);
+      notify("Export CSV des dépenses généré.");
+    } else {
+      const rows = filteredFactures.map((f) => ({
+        Fournisseur: f.fournisseur,
+        Service: f.service,
+        Période: f.periode,
+        Échéance: f.echeance,
+        Statut: f.statut,
+        "Montant (DZD)": f.montant,
+      }));
+      downloadCsv(rows, `factures-services-${startDate}_${endDate}.csv`);
+      notify("Export CSV des factures généré.");
+    }
+  }
+
   const impayeColumns: Column<Impaye>[] = [
     {
       header: "Logement & Bâtiment",
@@ -248,7 +306,10 @@ export default function FinancesPage() {
       cell: (p) => (
         <div className="flex items-center gap-2">
           <Avatar name={p.resident} size="md" />
-          <span className="font-medium text-ink">{p.resident}</span>
+          <div>
+            <span className="block font-medium text-ink">{p.resident}</span>
+            <span className="block text-[10px] text-stone-400">Encaissé par : {p.encaissePar || "Syndic"}</span>
+          </div>
         </div>
       ),
     },
@@ -259,10 +320,21 @@ export default function FinancesPage() {
       header: "Actions",
       align: "right",
       cell: (p) => (
-        <ActionGroup
-          deleteLabel="Supprimer paiement"
-          onDelete={() => setConfirmDelete({ kind: "charge", id: p.id, nom: `Paiement ${p.resident} (${p.logement})` })}
-        />
+        <span className="inline-flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setQuittancePaiement(p)}
+            className={button("secondary", "sm")}
+            title="Générer la quittance officielle"
+          >
+            <Receipt className="h-3.5 w-3.5 text-stone-500" aria-hidden />
+            Quittance
+          </button>
+          <ActionGroup
+            deleteLabel="Supprimer paiement"
+            onDelete={() => setConfirmDelete({ kind: "charge", id: p.id, nom: `Paiement ${p.resident} (${p.logement})` })}
+          />
+        </span>
       ),
     },
   ];
@@ -432,6 +504,18 @@ export default function FinancesPage() {
               </div>
             </div>
           </div>
+
+          <ExportPeriodToolbar
+            startDate={startDate}
+            endDate={endDate}
+            onPeriodChange={(start, end) => {
+              setStartDate(start);
+              setEndDate(end);
+            }}
+            onExportCsv={handleExportCsv}
+            onPrint={() => window.print()}
+            title="Période comptable"
+          />
 
           <Tabs tabs={tabs} active={tab} onChange={setTab} />
 
@@ -638,6 +722,13 @@ export default function FinancesPage() {
               notify(describeError(err).message);
             }
           }}
+        />
+      )}
+
+      {quittancePaiement && (
+        <QuittanceModal
+          paiement={quittancePaiement}
+          onClose={() => setQuittancePaiement(null)}
         />
       )}
     </div>

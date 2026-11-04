@@ -16,7 +16,29 @@ import {
   type Tache,
 } from "@/lib/personnel-api";
 import { ModalActions, SelectField, formText, useSubmit } from "../forms";
-import { ActionGroup, Avatar, ConfirmModal, DataTable, EmptyState, Field, FormError, Modal, Mono, PageHeader, Pill, Tabs, button, card, describeError, useToast, type Column, type TabItem, type Tone } from "../ui";
+import {
+  ActionGroup,
+  Avatar,
+  ConfirmModal,
+  DataTable,
+  EmptyState,
+  ExportPeriodToolbar,
+  Field,
+  FormError,
+  Modal,
+  Mono,
+  PageHeader,
+  Pill,
+  Tabs,
+  button,
+  card,
+  describeError,
+  downloadCsv,
+  useToast,
+  type Column,
+  type TabItem,
+  type Tone,
+} from "../ui";
 
 type TabId = "taches" | "personnel";
 
@@ -34,6 +56,11 @@ export default function PersonnelPage() {
   const [editingEmploye, setEditingEmploye] = useState<Employe | null>(null);
   const [editingTache, setEditingTache] = useState<Tache | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<{ kind: "personnel" | "tache"; id: string; nom: string } | null>(null);
+
+  const now = new Date();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const [startDate, setStartDate] = useState(`${now.getFullYear()}-${pad(now.getMonth() + 1)}-01`);
+  const [endDate, setEndDate] = useState(`${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`);
 
   useEffect(() => {
     let active = true;
@@ -107,6 +134,31 @@ export default function PersonnelPage() {
     },
   ];
 
+  function handleExportCsv() {
+    if (tab === "taches") {
+      const rows = taches.map((t) => ({
+        Tâche: t.titre,
+        "Assigné à": t.assigneA,
+        Localisation: t.lieu,
+        Échéance: t.echeance,
+        Statut: t.statut,
+        Urgent: t.urgente ? "Oui" : "Non",
+      }));
+      downloadCsv(rows, `taches-personnel-${startDate}_${endDate}.csv`);
+      notify("Export CSV des tâches du personnel généré.");
+    } else {
+      const rows = personnel.map((p) => ({
+        "Nom de l'employé": p.nom,
+        Poste: p.poste,
+        Statut: p.statut,
+        Téléphone: p.telephone,
+        Horaires: p.horaire,
+      }));
+      downloadCsv(rows, `liste-personnel.csv`);
+      notify("Export CSV de l'équipe généré.");
+    }
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -135,6 +187,18 @@ export default function PersonnelPage() {
         </div>
       ) : (
         <>
+          <ExportPeriodToolbar
+            startDate={startDate}
+            endDate={endDate}
+            onPeriodChange={(s, e) => {
+              setStartDate(s);
+              setEndDate(e);
+            }}
+            onExportCsv={handleExportCsv}
+            onPrint={() => window.print()}
+            title="Période des interventions"
+          />
+
           <Tabs tabs={tabs} active={tab} onChange={setTab} />
 
           {tab === "taches" && <DataTable columns={tacheColumns} rows={taches} rowKey={(t) => t.id} empty="Aucune tâche en cours." />}

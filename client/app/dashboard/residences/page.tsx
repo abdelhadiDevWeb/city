@@ -424,24 +424,19 @@ export default function ResidencesPage() {
               </section>
             ) : (
               <div className="space-y-5">
-                <div className="grid gap-4 sm:grid-cols-3">
-                  <div className="sm:col-span-2">
-                    <QuotaProgress
-                      current={batiments.length}
-                      max={maxBatiments}
-                      label={`Capacité des blocs dans « ${residence.nom} »`}
-                      unit="bâtiments"
-                    />
-                  </div>
-                  <div className={`${card} flex items-center justify-between p-4`}>
-                    <div>
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-stone-500">Taux d&apos;occupation</span>
-                      <p className="mt-0.5 text-2xl font-bold text-ink">{tauxOccupation}%</p>
-                    </div>
-                    <span className="text-xs text-stone-500 font-medium">
-                      {totalOccupes} / {totalAppartements} logements
-                    </span>
-                  </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <QuotaProgress
+                    current={batiments.length}
+                    max={maxBatiments}
+                    label={`Capacité des blocs dans « ${residence.nom} »`}
+                    unit="bâtiments"
+                  />
+                  <QuotaProgress
+                    current={totalOccupes}
+                    max={residence.maxResidents || 100}
+                    label={`Capacité des résidents (« ${residence.nom} »)`}
+                    unit="résidents"
+                  />
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
