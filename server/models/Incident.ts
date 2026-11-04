@@ -14,6 +14,7 @@ export interface IncidentDocument extends Document {
   cout: number;
   isPanneEquipement: boolean;
   equipement: string;
+  photoUrl?: string;
   clotureLe?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -38,6 +39,7 @@ const incidentSchema = new Schema<IncidentDocument>(
     cout: { type: Number, default: 0 },
     isPanneEquipement: { type: Boolean, default: false },
     equipement: { type: String, default: "" },
+    photoUrl: { type: String, default: "" },
     clotureLe: { type: String },
   },
   {

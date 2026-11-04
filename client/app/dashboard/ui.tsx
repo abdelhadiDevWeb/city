@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, Check, ChevronRight, CircleAlert, Copy, Download, FileSpreadsheet, Info, KeyRound, Pencil, Printer, Receipt, RefreshCw, Trash2, TriangleAlert, X, type LucideIcon } from "lucide-react";
+import { Calendar, Check, ChevronRight, CircleAlert, Copy, Download, FileSpreadsheet, Info, KeyRound, MessageCircle, Pencil, Printer, Receipt, RefreshCw, Send, ShieldAlert, Trash2, TriangleAlert, X, type LucideIcon } from "lucide-react";
 import { formatDZD } from "@/lib/format";
 import {
   createContext,
@@ -893,6 +893,22 @@ export function ExportPeriodToolbar({
   );
 }
 
+export function formatWhatsAppPhone(phone?: string): string {
+  if (!phone) return "";
+  const cleaned = phone.replace(/[^0-9]/g, "");
+  if (cleaned.startsWith("0") && cleaned.length === 10) {
+    return `213${cleaned.slice(1)}`;
+  }
+  return cleaned;
+}
+
+export function shareViaWhatsApp(phone: string | undefined, message: string) {
+  const intlPhone = formatWhatsAppPhone(phone);
+  const encodedText = encodeURIComponent(message);
+  const url = intlPhone ? `https://wa.me/${intlPhone}?text=${encodedText}` : `https://api.whatsapp.com/send?text=${encodedText}`;
+  window.open(url, "_blank", "noopener,noreferrer");
+}
+
 export function QuittanceModal({
   paiement,
   residenceNom = "Résidence",
@@ -911,6 +927,8 @@ export function QuittanceModal({
   residenceNom?: string;
   onClose: () => void;
 }) {
+  const whatsappMsg = `Bonjour ${paiement.resident}, voici votre quittance de règlement des charges de copropriété pour le logement ${paiement.logement} : Montant ${formatDZD(paiement.montant)}, date ${paiement.date}, réf ${paiement.reference}. Document officiel délivré par le Syndic ${residenceNom}. Merci pour votre contribution !`;
+
   return (
     <Modal title="Quittance de Cotisation & Charges" description="Reçu d'encaissement officiel pour le copropriétaire ou locataire." onClose={onClose}>
       <div id="quittance-print" className="space-y-6 rounded-2xl border border-stone-200 bg-stone-50/50 p-6 text-sm">
@@ -969,9 +987,17 @@ export function QuittanceModal({
           </div>
         </div>
 
-        <div className="mt-6 flex justify-end gap-2 border-t border-stone-200 pt-4 print:hidden">
+        <div className="mt-6 flex flex-wrap justify-end gap-2 border-t border-stone-200 pt-4 print:hidden">
           <button type="button" onClick={onClose} className={button("secondary")}>
             Fermer
+          </button>
+          <button
+            type="button"
+            onClick={() => shareViaWhatsApp(paiement.telephone, whatsappMsg)}
+            className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-300 bg-emerald-50 px-4 py-2.5 text-sm font-semibold text-emerald-800 hover:bg-emerald-100"
+          >
+            <MessageCircle className="h-4 w-4 text-emerald-600" aria-hidden />
+            Partager WhatsApp
           </button>
           <button
             type="button"
@@ -980,6 +1006,183 @@ export function QuittanceModal({
           >
             <Printer className="h-4 w-4" aria-hidden />
             Imprimer la Quittance
+          </button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+export type RelanceLevel = "amiable" | "avertissement" | "mise_en_demeure";
+
+export function RelanceMiseEnDemeureModal({
+  impaye,
+  residenceNom = "Résidence",
+  onClose,
+}: {
+  impaye: {
+    resident: string;
+    logement: string;
+    totalDu: number;
+    moisImpayes: number;
+    telephone?: string;
+    dernierReglement?: string;
+  };
+  residenceNom?: string;
+  onClose: () => void;
+}) {
+  const [level, setLevel] = useState<RelanceLevel>("amiable");
+  const today = new Date().toLocaleDateString("fr-FR");
+
+  const levelConfigs = {
+    amiable: {
+      badge: "Niveau 1 · Rappel Amiable",
+      badgeTone: "warning" as Tone,
+      title: "RAPPEL DE CHARGES IMPAYÉES (RELANCE AMIABLE)",
+      delai: "8 jours",
+      objet: `Rappel de cotisations en attente - Logement ${impaye.logement}`,
+      intro: `Sauf erreur ou omission de notre part, nous constatons à ce jour que votre compte de charges de copropriété présente un solde débiteur.`,
+      actionText: `Nous vous invitons courtoisement à bien vouloir régulariser cette situation sous un délai de huit (8) jours, soit par virement, versement bancaire/CCP ou directement auprès du bureau du syndic.`,
+      legalNotice: `En cas de paiement déjà effectué entre-temps, nous vous prions de ne pas tenir compte de cette présente correspondance.`,
+      whatsappIntro: `Bonjour ${impaye.resident}, nous constatons un retard de cotisation de ${formatDZD(impaye.totalDu)} (${impaye.moisImpayes} mois) pour votre logement ${impaye.logement}. Merci de bien vouloir régulariser auprès du Syndic sous 8 jours. Bien cordialement.`,
+    },
+    avertissement: {
+      badge: "Niveau 2 · Avertissement Formel",
+      badgeTone: "danger" as Tone,
+      title: "AVERTISSEMENT FORMEL POUR RETARD DE COTISATION",
+      delai: "8 jours",
+      objet: `Dernier avis avant mise en demeure - Logement ${impaye.logement}`,
+      intro: `Malgré notre précédent rappel resté sans suite favorable, votre compte présente toujours un arriéré important de ${impaye.moisImpayes} mois d'impayés pour un montant total de ${formatDZD(impaye.totalDu)}.`,
+      actionText: `Le bon fonctionnement des services communs (électricité Sonelgaz, sécurité, ascenseurs, hygiène) dépend de la contribution rigoureuse de chaque copropriétaire. Nous vous demandons impérativement de solder ce montant sous huitaine.`,
+      legalNotice: `À défaut de régularisation intégrale dans ce délai, une procédure officielle de mise en demeure avec majorations et frais de recouvrement sera engagée à votre charge.`,
+      whatsappIntro: `AVIS FORMEL : M./Mme ${impaye.resident}, malgré nos relances, vos charges de copropriété (${impaye.logement}) demeurent impayées pour un total de ${formatDZD(impaye.totalDu)}. Merci de régulariser d'urgence sous 8 jours afin d'éviter l'ouverture d'un contentieux.`,
+    },
+    mise_en_demeure: {
+      badge: "Niveau 3 · Mise en Demeure Officielle",
+      badgeTone: "dark" as Tone,
+      title: "MISE EN DEMEURE OFFICIELLE (SOMMATION DE PAYER SOUS 15 JOURS)",
+      delai: "15 jours francs",
+      objet: `SOMMATION DE PAYER AVANT ACTION CONTENTIEUSE ET SAISIE - Logement ${impaye.logement}`,
+      intro: `Par la présente, en notre qualité de Syndic légalement mandaté de la copropriété ${residenceNom}, nous vous METTONS EN DEMEURE FORMELLE de procéder au règlement immédiat de votre dette s'élevant à ${formatDZD(impaye.totalDu)}.`,
+      actionText: `Vous disposez d'un délai impératif de QUINZE (15) JOURS FRANCS à compter de la date de notification de la présente pour solder l'intégralité de cette créance liquide et exigible.`,
+      legalNotice: `Vu les dispositions légales régissant la copropriété des immeubles bâtis (Ordonnance n° 76-80 et décrets d'application), à défaut de paiement intégral dans le délai imparti de 15 jours, le dossier sera transmis à notre conseil juridique pour saisine de la juridiction compétente en référé-provision, inscription de privilège immobilier et recouvrement forcé par voie d'huissier de justice, tous frais de justice et intérêts de retard restant intégralement à votre charge exclusive.`,
+      whatsappIntro: `MISE EN DEMEURE OFFICIELLE : M./Mme ${impaye.resident} (Logement ${impaye.logement}). Vous êtes mis en demeure de payer la somme de ${formatDZD(impaye.totalDu)} sous 15 jours francs. Passé ce délai, le dossier sera transmis à l'huissier de justice pour poursuite judiciaire. Syndic ${residenceNom}.`,
+    },
+  };
+
+  const current = levelConfigs[level];
+
+  return (
+    <Modal
+      title="Recouvrement & Relance Officielle"
+      description="Génération de relance amiable, avertissement ou mise en demeure officielle avec sommation de payer."
+      onClose={onClose}
+    >
+      <div className="space-y-6 text-sm">
+        {/* Level selector tabs */}
+        <div className="flex flex-wrap items-center gap-2 rounded-xl border border-stone-200 bg-stone-50 p-2">
+          <button
+            type="button"
+            onClick={() => setLevel("amiable")}
+            className={`flex-1 rounded-lg px-3 py-2 text-xs font-bold transition ${
+              level === "amiable" ? "bg-amber-100 text-amber-900 shadow-xs" : "text-stone-600 hover:bg-stone-200/50"
+            }`}
+          >
+            1. Rappel Amiable
+          </button>
+          <button
+            type="button"
+            onClick={() => setLevel("avertissement")}
+            className={`flex-1 rounded-lg px-3 py-2 text-xs font-bold transition ${
+              level === "avertissement" ? "bg-red-100 text-red-900 shadow-xs" : "text-stone-600 hover:bg-stone-200/50"
+            }`}
+          >
+            2. Avertissement
+          </button>
+          <button
+            type="button"
+            onClick={() => setLevel("mise_en_demeure")}
+            className={`flex-1 rounded-lg px-3 py-2 text-xs font-bold transition ${
+              level === "mise_en_demeure" ? "bg-stone-900 text-white shadow-xs" : "text-stone-600 hover:bg-stone-200/50"
+            }`}
+          >
+            3. Mise en Demeure (15j)
+          </button>
+        </div>
+
+        {/* Legal Letter Document to Print / Preview */}
+        <div id="relance-print" className="space-y-5 rounded-2xl border border-stone-300 bg-white p-6 shadow-xs text-stone-800">
+          <div className="flex items-start justify-between border-b border-stone-200 pb-4">
+            <div>
+              <p className="font-extrabold tracking-tight text-ink text-base">LE SYNDIC DE COPROPRIÉTÉ</p>
+              <p className="text-xs text-stone-600 font-semibold">{residenceNom}</p>
+              <p className="text-xs text-stone-500">Bureau de gestion immobilière</p>
+            </div>
+            <div className="text-right">
+              <Pill tone={current.badgeTone}>{current.badge}</Pill>
+              <p className="mt-1 text-xs text-stone-500">Date : {today}</p>
+            </div>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2 rounded-xl bg-stone-50 p-4 border border-stone-200">
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-stone-400">Destinataire (Copropriétaire)</p>
+              <p className="text-sm font-bold text-ink mt-0.5">{impaye.resident}</p>
+              <p className="text-xs text-stone-600">Lot assigné : {impaye.logement}</p>
+              {impaye.telephone && <p className="font-mono text-xs text-stone-500">{impaye.telephone}</p>}
+            </div>
+            <div className="sm:text-right">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-stone-400">Situation Comptable</p>
+              <p className="font-mono text-base font-black text-red-600 mt-0.5">{formatDZD(impaye.totalDu)}</p>
+              <p className="text-xs text-stone-500">{impaye.moisImpayes} mois d&apos;arriérés constatés</p>
+              <p className="text-xs text-stone-400">Dernier règlement : {impaye.dernierReglement || "Néant"}</p>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <p className="text-xs font-bold uppercase text-stone-700 tracking-wide">
+              Objet : <span className="text-ink">{current.objet}</span>
+            </p>
+            <p className="text-xs leading-relaxed text-stone-700">{current.intro}</p>
+            <div className="rounded-lg border border-red-200 bg-red-50/60 p-3 text-xs font-medium text-red-900 leading-relaxed">
+              {current.actionText} Délai accordé : <strong className="underline">{current.delai}</strong>.
+            </div>
+            <p className="text-[11px] leading-relaxed text-stone-500 italic border-l-2 border-stone-300 pl-3">
+              {current.legalNotice}
+            </p>
+          </div>
+
+          <div className="flex items-end justify-between border-t border-stone-200 pt-4 text-xs text-stone-600">
+            <div>
+              <p className="font-semibold text-ink">Pour le Syndic de Copropriété</p>
+              <p className="text-[11px] text-stone-400">Signature & Cachet Officiel</p>
+            </div>
+            <div className="h-14 w-32 border border-dashed border-stone-300 rounded flex items-center justify-center text-[10px] text-stone-400 italic">
+              Emplacement Cachet
+            </div>
+          </div>
+        </div>
+
+        {/* Modal Actions */}
+        <div className="flex flex-wrap items-center justify-end gap-2 border-t border-stone-200 pt-4 print:hidden">
+          <button type="button" onClick={onClose} className={button("secondary")}>
+            Fermer
+          </button>
+          <button
+            type="button"
+            onClick={() => shareViaWhatsApp(impaye.telephone, current.whatsappIntro)}
+            className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-300 bg-emerald-50 px-4 py-2.5 text-sm font-semibold text-emerald-800 hover:bg-emerald-100"
+          >
+            <MessageCircle className="h-4 w-4 text-emerald-600" aria-hidden />
+            Envoyer via WhatsApp
+          </button>
+          <button
+            type="button"
+            onClick={() => window.print()}
+            className={button("primary")}
+          >
+            <Printer className="h-4 w-4" aria-hidden />
+            Imprimer Lettre Recommandée / PDF
           </button>
         </div>
       </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { Droplets, History, Plus, Siren, TriangleAlert, UserCheck, Wrench } from "lucide-react";
+import { Camera, Droplets, Eye, History, Image, Plus, Siren, TriangleAlert, UserCheck, Wrench } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 import {
   createIncident,
@@ -60,6 +60,7 @@ export default function MaintenancePage() {
   const [editingIncident, setEditingIncident] = useState<Incident | null>(null);
   const [deletingIncident, setDeletingIncident] = useState<{ id: string; titre?: string } | null>(null);
   const [assigningIncident, setAssigningIncident] = useState<Incident | null>(null);
+  const [previewPhoto, setPreviewPhoto] = useState<{ url: string; titre: string } | null>(null);
 
   const now = new Date();
   const pad = (n: number) => String(n).padStart(2, "0");
@@ -140,12 +141,31 @@ export default function MaintenancePage() {
 
   const incidentColumns: Column<Incident>[] = [
     {
-      header: "Incident",
+      header: "Incident & Preuve Visuelle",
       cell: (i) => (
-        <span>
-          <span className="block font-semibold text-ink">{i.titre}</span>
-          <span className="block text-xs text-stone-500">Signalé par {i.signalePar}</span>
-        </span>
+        <div className="flex items-center gap-3">
+          {i.photoUrl ? (
+            <button
+              type="button"
+              onClick={() => setPreviewPhoto({ url: i.photoUrl!, titre: i.titre })}
+              className="relative h-11 w-11 shrink-0 overflow-hidden rounded-xl border border-stone-200 group focus:outline-none focus:ring-2 focus:ring-brand"
+              title="Cliquer pour afficher la photo de preuve en grand"
+            >
+              <img src={i.photoUrl} alt={i.titre} className="h-full w-full object-cover group-hover:scale-105 transition" />
+              <span className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                <Eye className="h-4 w-4 text-white" />
+              </span>
+            </button>
+          ) : (
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-orange-50 text-brand">
+              <Camera className="h-5 w-5 text-stone-400" />
+            </span>
+          )}
+          <div>
+            <span className="block font-semibold text-ink">{i.titre}</span>
+            <span className="block text-xs text-stone-500">Signalé par {i.signalePar}</span>
+          </div>
+        </div>
       ),
     },
     { header: "Localisation", cell: (i) => i.lieu },
@@ -196,7 +216,31 @@ export default function MaintenancePage() {
   ];
 
   const panneColumns: Column<PanneEquipement>[] = [
-    { header: "Équipement", cell: (p) => <span className="font-semibold text-ink">{p.equipement}</span> },
+    {
+      header: "Équipement & Photo",
+      cell: (p) => (
+        <div className="flex items-center gap-3">
+          {p.photoUrl ? (
+            <button
+              type="button"
+              onClick={() => setPreviewPhoto({ url: p.photoUrl!, titre: p.equipement })}
+              className="relative h-11 w-11 shrink-0 overflow-hidden rounded-xl border border-stone-200 group focus:outline-none focus:ring-2 focus:ring-brand"
+              title="Cliquer pour afficher la photo en grand"
+            >
+              <img src={p.photoUrl} alt={p.equipement} className="h-full w-full object-cover group-hover:scale-105 transition" />
+              <span className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                <Eye className="h-4 w-4 text-white" />
+              </span>
+            </button>
+          ) : (
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-600">
+              <Siren className="h-5 w-5" />
+            </span>
+          )}
+          <span className="font-semibold text-ink">{p.equipement}</span>
+        </div>
+      ),
+    },
     { header: "Localisation", cell: (p) => p.lieu },
     { header: "En panne depuis", cell: (p) => <span className="text-stone-500">{p.depuis}</span> },
     { header: "Prestataire", cell: (p) => p.prestataire },
@@ -233,6 +277,7 @@ export default function MaintenancePage() {
                 prestataire: p.prestataire,
                 statut: p.statut,
                 signalePar: "Système",
+                photoUrl: p.photoUrl,
               })
             }
             onDelete={() => setDeletingIncident({ id: p.id, titre: p.equipement })}
@@ -243,7 +288,31 @@ export default function MaintenancePage() {
   ];
 
   const historiqueColumns: Column<InterventionPassee>[] = [
-    { header: "Intervention", cell: (h) => <span className="font-semibold text-ink">{h.titre}</span> },
+    {
+      header: "Intervention",
+      cell: (h) => (
+        <div className="flex items-center gap-3">
+          {h.photoUrl ? (
+            <button
+              type="button"
+              onClick={() => setPreviewPhoto({ url: h.photoUrl!, titre: h.titre })}
+              className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-stone-200 group focus:outline-none"
+              title="Voir photo après intervention"
+            >
+              <img src={h.photoUrl} alt={h.titre} className="h-full w-full object-cover group-hover:scale-105 transition" />
+              <span className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                <Eye className="h-3.5 w-3.5 text-white" />
+              </span>
+            </button>
+          ) : (
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-stone-100 text-stone-600">
+              <History className="h-4 w-4" />
+            </span>
+          )}
+          <span className="font-semibold text-ink">{h.titre}</span>
+        </div>
+      ),
+    },
     { header: "Localisation", cell: (h) => h.lieu },
     { header: "Clôturée le", cell: (h) => <span className="text-stone-500">{h.clotureLe}</span> },
     { header: "Prestataire", cell: (h) => h.prestataire },
@@ -419,6 +488,27 @@ export default function MaintenancePage() {
           }}
         />
       )}
+
+      {/* MODALE VISUALISATION PHOTO LIGHTBOX */}
+      {previewPhoto && (
+        <Modal
+          title="Preuve Visuelle / Photo de l'Incident"
+          description={previewPhoto.titre}
+          onClose={() => setPreviewPhoto(null)}
+        >
+          <div className="space-y-4">
+            <div className="overflow-hidden rounded-2xl border border-stone-200 bg-stone-900 flex items-center justify-center max-h-[460px]">
+              <img src={previewPhoto.url} alt={previewPhoto.titre} className="max-h-[460px] w-auto object-contain" />
+            </div>
+            <div className="flex items-center justify-between text-xs text-stone-500">
+              <span className="truncate max-w-sm">{previewPhoto.url}</span>
+              <button type="button" onClick={() => setPreviewPhoto(null)} className={button("secondary")}>
+                Fermer
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }
@@ -432,6 +522,7 @@ function SignalerIncidentModal({
 }) {
   const { submitting, error, run } = useSubmit();
   const [priorite, setPriorite] = useState<Priorite>("Moyenne");
+  const [photoUrl, setPhotoUrl] = useState("");
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -443,13 +534,14 @@ function SignalerIncidentModal({
         signalePar: formText(form, "signalePar"),
         prestataire: formText(form, "prestataire") || "À désigner",
         priorite,
+        photoUrl: photoUrl.trim() || undefined,
       });
       onCreated();
     });
   }
 
   return (
-    <Modal title="Signaler un incident" description="Enregistrement d'un incident ou d'une anomalie générale" onClose={onClose}>
+    <Modal title="Signaler un incident" description="Enregistrement d'un incident ou d'une anomalie générale avec preuve visuelle" onClose={onClose}>
       <form onSubmit={onSubmit} className="space-y-4">
         <Field label="Titre de l'incident" name="titre" required placeholder="Ex: Fuite d'eau colonne générale, ampoules grillées" autoFocus />
         <div className="grid gap-4 sm:grid-cols-2">
@@ -464,6 +556,45 @@ function SignalerIncidentModal({
           </SelectField>
           <Field label="Prestataire assigné" name="prestataire" placeholder="Ex: Plomberie Express (facultatif)" />
         </div>
+
+        <div className="space-y-2">
+          <Field
+            label="Preuve Visuelle / Photo de l'incident (URL)"
+            value={photoUrl}
+            onChange={(e) => setPhotoUrl(e.target.value)}
+            placeholder="Ex: https://images.unsplash.com/... ou lien de photo"
+          />
+          <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-stone-500">
+            <span>Photos d&apos;exemple rapides :</span>
+            <button
+              type="button"
+              onClick={() => setPhotoUrl("https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=600&auto=format&fit=crop&q=80")}
+              className="rounded border border-stone-200 bg-stone-50 px-2 py-0.5 hover:bg-stone-100 font-medium"
+            >
+              Fuite d&apos;eau
+            </button>
+            <button
+              type="button"
+              onClick={() => setPhotoUrl("https://images.unsplash.com/photo-1513694203232-719a280e022f?w=600&auto=format&fit=crop&q=80")}
+              className="rounded border border-stone-200 bg-stone-50 px-2 py-0.5 hover:bg-stone-100 font-medium"
+            >
+              Éclairage palier
+            </button>
+            <button
+              type="button"
+              onClick={() => setPhotoUrl("https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&auto=format&fit=crop&q=80")}
+              className="rounded border border-stone-200 bg-stone-50 px-2 py-0.5 hover:bg-stone-100 font-medium"
+            >
+              Câbles / Tableau
+            </button>
+          </div>
+          {photoUrl && (
+            <div className="mt-2 h-24 w-36 overflow-hidden rounded-lg border border-stone-200">
+              <img src={photoUrl} alt="Aperçu preuve" className="h-full w-full object-cover" />
+            </div>
+          )}
+        </div>
+
         <FormError error={error} />
         <ModalActions submitting={submitting} label="Enregistrer l'incident" onCancel={onClose} />
       </form>
@@ -481,6 +612,7 @@ function DeclarerPanneModal({
   const { submitting, error, run } = useSubmit();
   const [equipement, setEquipement] = useState("Ascenseur Bloc A");
   const [priorite, setPriorite] = useState<Priorite>("Haute");
+  const [photoUrl, setPhotoUrl] = useState("");
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -495,6 +627,7 @@ function DeclarerPanneModal({
         signalePar: "Système / Syndic",
         prestataire: formText(form, "prestataire") || "Prestataire sous contrat",
         priorite,
+        photoUrl: photoUrl.trim() || undefined,
       });
       onCreated();
     });
@@ -519,11 +652,19 @@ function DeclarerPanneModal({
           <Field label="Localisation" name="lieu" required placeholder="Ex: Sous-sol, Hall d'entrée" />
           <Field label="Prestataire contractuel" name="prestataire" placeholder="Ex: SARL Otis Algérie, SARL Énergie" />
         </div>
-        <SelectField label="Niveau d'urgence" value={priorite} onChange={(e) => setPriorite(e.target.value as Priorite)}>
-          <option value="Haute">Haute (Bloquant / Intervention sous 2h)</option>
-          <option value="Moyenne">Moyenne (Sous 24h)</option>
-          <option value="Basse">Basse</option>
-        </SelectField>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <SelectField label="Niveau d'urgence" value={priorite} onChange={(e) => setPriorite(e.target.value as Priorite)}>
+            <option value="Haute">Haute (Bloquant / Intervention sous 2h)</option>
+            <option value="Moyenne">Moyenne (Sous 24h)</option>
+            <option value="Basse">Basse</option>
+          </SelectField>
+          <Field
+            label="Photo de la panne (URL)"
+            value={photoUrl}
+            onChange={(e) => setPhotoUrl(e.target.value)}
+            placeholder="Ex: https://..."
+          />
+        </div>
         <FormError error={error} />
         <ModalActions submitting={submitting} label="Déclarer la panne" onCancel={onClose} />
       </form>
