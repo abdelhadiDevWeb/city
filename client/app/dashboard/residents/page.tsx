@@ -139,7 +139,7 @@ export default function ResidentsPage() {
     if (statutFilter === "paye" && isImpaye) return false;
     if (statutFilter === "impaye" && !isImpaye) return false;
     if (!needle) return true;
-    return [fullName(r), r.email, r.nin, r.telephone, r.batiment?.nom ?? "", r.appartement?.nom ?? ""].some((v) =>
+    return [fullName(r), r.email, r.nin ?? "", r.telephone, r.batiment?.nom ?? "", r.appartement?.nom ?? ""].some((v) =>
       v.toLowerCase().includes(needle),
     );
   });
@@ -157,7 +157,7 @@ export default function ResidentsPage() {
         </span>
       ),
     },
-    { header: "NIN", cell: (r) => <Mono>{r.nin}</Mono> },
+    { header: "NIN", cell: (r) => r.nin ? <Mono>{r.nin}</Mono> : <span className="text-stone-400">—</span> },
     { header: "Téléphone", cell: (r) => <Mono>{r.telephone}</Mono> },
     { header: "Bâtiment", cell: (r) => (r.batiment ? <span className="font-semibold text-ink">{r.batiment.nom}</span> : "—") },
     {
@@ -300,7 +300,7 @@ export default function ResidentsPage() {
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Rechercher par nom, email, NIN, bâtiment ou appartement…"
+              placeholder="Rechercher par nom, email, téléphone, bâtiment ou appartement…"
               className="w-full bg-transparent text-sm text-ink placeholder:text-stone-400 focus:outline-none"
             />
           </label>
@@ -497,7 +497,6 @@ function ResidentModal({
           nom: formText(form, "nom"),
           email: formText(form, "email").toLowerCase(),
           telephone: formText(form, "telephone"),
-          nin: formText(form, "nin"),
           idBatiment: activeBatId,
           etage,
           appartement: formText(form, "appartement"),
@@ -574,19 +573,6 @@ function ResidentModal({
             <Field label="Email" name="email" type="email" required maxLength={254} autoComplete="off" />
             <Field label="Téléphone" name="telephone" type="tel" required pattern="\+?[0-9]{8,15}" title="8 à 15 chiffres, + facultatif" placeholder="0555123456" />
           </div>
-          <Field
-            label="NIN (numéro d'identification nationale)"
-            name="nin"
-            required
-            inputMode="numeric"
-            pattern="[0-9]{18}"
-            minLength={18}
-            maxLength={18}
-            title="18 chiffres"
-            placeholder="18 chiffres"
-            autoComplete="off"
-            className="font-mono"
-          />
         </fieldset>
 
         <fieldset className="space-y-4">
@@ -621,7 +607,7 @@ function EditResidentModal({
   const [nom, setNom] = useState(resident.nom);
   const [email, setEmail] = useState(resident.email);
   const [telephone, setTelephone] = useState(resident.telephone);
-  const [nin, setNin] = useState(resident.nin);
+  const [nin, setNin] = useState(resident.nin ?? "");
   const [batimentId, setBatimentId] = useState(resident.batiment?.id ?? batiments[0]?.id ?? "");
   const [etage, setEtage] = useState(resident.appartement?.etage ?? 0);
   const [appartement, setAppartement] = useState(resident.appartement?.nom ?? "");
@@ -659,18 +645,13 @@ function EditResidentModal({
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required maxLength={254} />
-            <Field label="Téléphone" type="tel" value={telephone} onChange={(e) => setTelephone(e.target.value)} required pattern="\\+?[0-9]{8,15}" title="8 à 15 chiffres, + facultatif" />
+            <Field label="Téléphone" type="tel" value={telephone} onChange={(e) => setTelephone(e.target.value)} required pattern="\+?[0-9]{8,15}" title="8 à 15 chiffres, + facultatif" />
           </div>
           <Field
-            label="NIN (numéro d'identification nationale)"
-            value={nin}
+            label="NIN (numéro d'identification nationale) — Optionnel"
+            value={nin ?? ""}
             onChange={(e) => setNin(e.target.value)}
-            required
-            inputMode="numeric"
-            pattern="[0-9]{18}"
-            minLength={18}
-            maxLength={18}
-            title="18 chiffres"
+            placeholder="Optionnel"
             className="font-mono"
           />
         </fieldset>

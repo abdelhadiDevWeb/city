@@ -21,6 +21,7 @@ const SUPER_ADMIN_NAV: NavItem[] = [
   { href: "/dashboard", label: "Tableau de bord", icon: LayoutDashboard },
   { href: "/dashboard/ajouter-residence", label: "Résidences & Bâtiments", icon: Building2 },
   { href: "/dashboard/residents", label: "Résidents & Propriétaires", icon: Users },
+  { href: "/dashboard/personnel", label: "Personnel & Tâches", icon: UserCog },
   { href: "/dashboard/statistiques", label: "Statistiques", icon: ChartLine },
   { href: "/dashboard/abonnements", label: "Gestion Abonnements", icon: CreditCard },
   { href: "/dashboard/rapports", label: "Rapports & Exports", icon: ChartColumn },

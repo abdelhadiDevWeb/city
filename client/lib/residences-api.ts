@@ -99,7 +99,7 @@ export type Resident = {
   nom: string;
   email: string;
   telephone: string;
-  nin: string;
+  nin?: string;
   createdAt: string;
   batiment: { id: string; nom: string } | null;
   appartement: { id: string; nom: string; etage: number } | null;
@@ -111,7 +111,7 @@ export type NewResidentInput = {
   nom: string;
   email: string;
   telephone: string;
-  nin: string;
+  nin?: string;
   idBatiment: string;
   etage: number;
   appartement: string;

@@ -16,7 +16,7 @@ import {
   type Tache,
 } from "@/lib/personnel-api";
 import { ModalActions, SelectField, formText, useSubmit } from "../forms";
-import { ActionGroup, Avatar, ConfirmModal, DataTable, Field, FormError, Modal, Mono, PageHeader, Pill, Tabs, button, card, describeError, useToast, type Column, type TabItem, type Tone } from "../ui";
+import { ActionGroup, Avatar, ConfirmModal, DataTable, EmptyState, Field, FormError, Modal, Mono, PageHeader, Pill, Tabs, button, card, describeError, useToast, type Column, type TabItem, type Tone } from "../ui";
 
 type TabId = "taches" | "personnel";
 
@@ -139,8 +139,11 @@ export default function PersonnelPage() {
 
           {tab === "taches" && <DataTable columns={tacheColumns} rows={taches} rowKey={(t) => t.id} empty="Aucune tâche en cours." />}
 
-          {tab === "personnel" && (
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {tab === "personnel" &&
+            (personnel.length === 0 ? (
+              <EmptyState icon={UsersRound} title="Aucun membre du personnel" description="Aucun employé n'a encore été enregistré pour cette résidence." />
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
               {personnel.map((e) => (
                 <article key={e.id} className={`${card} flex flex-col p-5`}>
                   <div className="flex items-start justify-between gap-2">
@@ -170,7 +173,7 @@ export default function PersonnelPage() {
                 </article>
               ))}
             </div>
-          )}
+          ))}
         </>
       )}
 

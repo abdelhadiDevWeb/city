@@ -20,7 +20,7 @@ export type NewResident = {
   nom: string;
   email: string;
   telephone: string;
-  nin: string;
+  nin?: string | null;
   idBatiment: string;
   etage: number;
   appartement: string;
@@ -125,7 +125,11 @@ export async function createResident(actor: ActorInfo, input: NewResident) {
     throw new AppError(400, `Le bâtiment ${batiment.nom} a ${batiment.etages} étage(s) : choisissez un étage entre 0 (rez-de-chaussée) et ${batiment.etages}`);
   }
 
-  const [emailTaken, ninTaken] = await Promise.all([isLoginEmailTaken(input.email), User.exists({ nin: input.nin })]);
+  const cleanedNin = input.nin?.trim() ? input.nin.trim() : null;
+  const [emailTaken, ninTaken] = await Promise.all([
+    isLoginEmailTaken(input.email),
+    cleanedNin ? User.exists({ nin: cleanedNin }) : Promise.resolve(null),
+  ]);
   if (emailTaken) throw new AppError(409, "Cet email est déjà utilisé par un compte (résident ou administrateur)");
   if (ninTaken) throw new AppError(409, "Ce NIN est déjà enregistré pour un autre résident");
 
@@ -141,7 +145,7 @@ export async function createResident(actor: ActorInfo, input: NewResident) {
       nom: input.nom,
       email: input.email,
       telephone: input.telephone,
-      nin: input.nin,
+      ...(cleanedNin ? { nin: cleanedNin } : {}),
       motDePasseHash,
       idResidence: batiment.idResidence,
       idBatiment: batiment._id,

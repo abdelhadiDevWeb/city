@@ -4,6 +4,9 @@ import { Tache } from "../models/Tache";
 import { AppError } from "../utils/AppError";
 
 export async function getPersonnel(idResidence: string) {
+  if (!idResidence || !mongoose.Types.ObjectId.isValid(idResidence)) {
+    return { personnel: [], taches: [] };
+  }
   const resId = new mongoose.Types.ObjectId(idResidence);
 
   const [staff, taches] = await Promise.all([
