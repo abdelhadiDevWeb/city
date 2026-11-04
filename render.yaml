@@ -1,0 +1,40 @@
+services:
+  - type: web
+    name: city-server
+    runtime: node
+    rootDir: server
+    plan: free
+    region: frankfurt
+    buildCommand: npm ci
+    startCommand: bun run start
+    healthCheckPath: /api/health
+    envVars:
+      - key: BUN_VERSION
+        value: 1.2.3
+      - key: NODE_ENV
+        value: production
+      - key: TRUST_PROXY
+        value: "1"
+      - key: SOCKET_REQUIRE_AUTH
+        value: "true"
+      - key: REDIS_ENABLED
+        value: "false"
+      # mongodb+srv://user:password@cluster.xxxxx.mongodb.net/<db> (credentials are mandatory in production)
+      - key: MONGODB_URI
+        sync: false
+      # https:// origins only, comma-separated (e.g. the deployed Next.js client URL)
+      - key: CORS_ORIGINS
+        sync: false
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      - key: COOKIE_SECRET
+        generateValue: true
+      - key: CSRF_SECRET
+        generateValue: true
+      # Only used to create the first super admin on an empty database; the password can be removed afterwards.
+      - key: DEFAULT_SUPER_ADMIN_NOM_COMPLET
+        sync: false
+      - key: DEFAULT_SUPER_ADMIN_EMAIL
+        sync: false
+      - key: DEFAULT_SUPER_ADMIN_PASSWORD
+        sync: false

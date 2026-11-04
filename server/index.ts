@@ -114,7 +114,8 @@ async function start(): Promise<void> {
 start().catch((err) => {
   // eslint-disable-next-line no-console
   console.error("Startup error", err);
-  process.exitCode = 1;
+  // An open Mongo/Redis connection would otherwise keep the process alive without a listening port.
+  process.exit(1);
 });
 
 async function shutdown(signal: string) {
