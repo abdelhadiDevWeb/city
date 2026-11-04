@@ -172,7 +172,7 @@ export function DataTable<T>({
   columns: Column<T>[];
   rows: T[];
   rowKey: (row: T) => string;
-  empty?: string;
+  empty?: ReactNode;
 }) {
   return (
     <div className={`${card} overflow-hidden`}>
