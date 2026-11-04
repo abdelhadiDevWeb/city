@@ -114,6 +114,7 @@ export default function ResidencesPage() {
   const [busySubId, setBusySubId] = useState<string | null>(null);
   const [subAdminFilter, setSubAdminFilter] = useState<"all" | "paye" | "impaye">("all");
   const [queryGestionnaires, setQueryGestionnaires] = useState("");
+  const [queryBatiments, setQueryBatiments] = useState("");
   const [occupancyFilter, setOccupancyFilter] = useState<"all" | "occupes" | "vacants">("all");
 
   useEffect(() => {
@@ -201,6 +202,169 @@ export default function ResidencesPage() {
       setBusySubId(null);
     }
   }
+
+  const batimentColumns: Column<BatimentDetail>[] = [
+    {
+      header: "Bâtiment / Bloc",
+      cell: (b) => (
+        <span className="flex items-center gap-2.5 font-bold text-ink">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-50 text-brand font-black text-xs">
+            {b.nom.slice(0, 2).toUpperCase()}
+          </span>
+          <div>
+            <span className="block text-sm font-bold text-ink">Bâtiment {b.nom}</span>
+            <span className="block text-xs font-normal text-stone-500">{b.etages} étages ({etageLabel(b.etages)})</span>
+          </div>
+        </span>
+      ),
+    },
+    {
+      header: "Capacité Logements",
+      cell: (b) => {
+        const nbAppart = b.appartements.length;
+        const max = b.maxAppartements ?? 50;
+        return (
+          <div>
+            <span className="font-semibold text-ink">{nbAppart}</span>
+            <span className="text-xs text-stone-400"> / {max} max</span>
+          </div>
+        );
+      },
+    },
+    {
+      header: "Taux d'occupation",
+      cell: (b) => {
+        const nbAppart = b.appartements.length;
+        const nbOccupes = b.appartements.filter((a) => a.proprietaire).length;
+        const taux = nbAppart > 0 ? Math.round((nbOccupes / nbAppart) * 100) : 0;
+        return (
+          <div className="min-w-[130px]">
+            <div className="flex items-center justify-between text-xs mb-1">
+              <span className="font-medium text-stone-600">{nbOccupes} occupés</span>
+              <span className="font-bold text-ink">{taux}%</span>
+            </div>
+            <ProgressBar value={taux} label={`Occupation Bâtiment ${b.nom}`} />
+          </div>
+        );
+      },
+    },
+    {
+      header: "Sous-Admin Responsable",
+      cell: (b) =>
+        b.sousAdmin ? (
+          <div className="flex items-center gap-2">
+            <Avatar name={fullName(b.sousAdmin)} size="md" />
+            <div>
+              <span className="block font-semibold text-ink text-xs">{fullName(b.sousAdmin)}</span>
+              <span className="block text-[11px] text-stone-500">{b.sousAdmin.telephone}</span>
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-stone-400 italic">Non assigné</span>
+            {isAdmin && (
+              <button
+                type="button"
+                onClick={() => setCreatingSubAdminBatiment({ id: b.id, nom: b.nom })}
+                className={button("secondary", "sm")}
+              >
+                <UserPlus className="h-3.5 w-3.5" aria-hidden />
+                Nommer
+              </button>
+            )}
+          </div>
+        ),
+    },
+    {
+      header: "Actions",
+      align: "right",
+      cell: (b) => (
+        <div className="flex items-center justify-end gap-2">
+          <button
+            type="button"
+            onClick={() => showApartments(b.nom)}
+            className={button("secondary", "sm")}
+            title="Consulter les appartements de ce bâtiment"
+          >
+            <DoorOpen className="h-3.5 w-3.5" aria-hidden />
+            Appartements ({b.appartements.length})
+          </button>
+          {isAdmin && (
+            <ActionGroup
+              editLabel="Modifier Bâtiment"
+              deleteLabel="Supprimer Bâtiment"
+              onEdit={() => setEditingBatiment({ id: b.id, nom: b.nom, etages: b.etages, maxAppartements: b.maxAppartements })}
+              onDelete={() => setDeletingItem({ type: "batiment", id: b.id, name: `le bâtiment « ${b.nom} »` })}
+            />
+          )}
+        </div>
+      ),
+    },
+  ];
+
+  const repartitionColumns: Column<BatimentDetail>[] = [
+    {
+      header: "Bâtiment / Bloc",
+      cell: (b) => (
+        <span className="flex items-center gap-2 font-bold text-ink">
+          <Building2 className="h-4 w-4 text-brand" />
+          Bâtiment {b.nom}
+        </span>
+      ),
+    },
+    {
+      header: "Étages",
+      cell: (b) => <span className="text-stone-600">{b.etages} étages ({etageLabel(b.etages)})</span>,
+    },
+    {
+      header: "Logements créés",
+      cell: (b) => (
+        <span className="font-semibold text-ink">
+          {b.appartements.length} <span className="text-xs text-stone-400 font-normal">/ {b.maxAppartements ?? 50} max</span>
+        </span>
+      ),
+    },
+    {
+      header: "Occupation",
+      cell: (b) => {
+        const nbAppart = b.appartements.length;
+        const nbOccupes = b.appartements.filter((a) => a.proprietaire).length;
+        const taux = nbAppart > 0 ? Math.round((nbOccupes / nbAppart) * 100) : 0;
+        return (
+          <div className="flex items-center gap-2">
+            <Pill tone={taux > 50 ? "success" : "neutral"}>{taux}%</Pill>
+            <span className="text-xs text-stone-500">{nbOccupes} occupés ({nbAppart - nbOccupes} vacants)</span>
+          </div>
+        );
+      },
+    },
+    {
+      header: "Sous-Admin Responsable",
+      cell: (b) =>
+        b.sousAdmin ? (
+          <div>
+            <span className="block font-semibold text-ink text-xs">{fullName(b.sousAdmin)}</span>
+            <span className="block text-[11px] text-stone-400">{b.sousAdmin.telephone}</span>
+          </div>
+        ) : (
+          <span className="text-xs text-stone-400 italic">Aucun sous-admin</span>
+        ),
+    },
+    {
+      header: "Détails",
+      align: "right",
+      cell: (b) => (
+        <button
+          type="button"
+          onClick={() => showApartments(b.nom)}
+          className={button("secondary", "sm")}
+        >
+          <DoorOpen className="h-3.5 w-3.5" aria-hidden />
+          Appartements ({b.appartements.length})
+        </button>
+      ),
+    },
+  ];
 
   const gestionnaireColumns: Column<GestionnaireRow>[] = [
     {
@@ -353,6 +517,15 @@ export default function ResidencesPage() {
     return [fullName(g), g.email, g.telephone, g.batimentNom].some((v) => v.toLowerCase().includes(needleGest));
   });
 
+  const needleBat = queryBatiments.trim().toLowerCase();
+  const filteredBatiments = batiments.filter((b) => {
+    if (!needleBat) return true;
+    return (
+      b.nom.toLowerCase().includes(needleBat) ||
+      (b.sousAdmin && [fullName(b.sousAdmin), b.sousAdmin.email, b.sousAdmin.telephone].some((v) => v.toLowerCase().includes(needleBat)))
+    );
+  });
+
   const finalAppartements = filteredAppartements.filter((a) => {
     if (occupancyFilter === "occupes") return !!a.proprietaire;
     if (occupancyFilter === "vacants") return !a.proprietaire;
@@ -439,93 +612,29 @@ export default function ResidencesPage() {
                   />
                 </div>
 
-                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                  {batiments.map((b) => {
-                    const nbAppart = b.appartements.length;
-                    const nbOccupes = b.appartements.filter((a) => a.proprietaire).length;
-                    const taux = nbAppart > 0 ? Math.round((nbOccupes / nbAppart) * 100) : 0;
-                    return (
-                      <article key={b.id} className={`${card} flex flex-col p-5 hover:shadow-md transition`}>
-                        <div className="flex items-start justify-between gap-2">
-                          <div>
-                            <h3 className="text-base font-bold text-ink">Bâtiment {b.nom}</h3>
-                            <p className="text-xs text-stone-500">
-                              {b.etages} Étages ({etageLabel(b.etages)}) · {b.maxAppartements ?? 50} logements max
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            <Pill tone={taux > 50 ? "success" : "neutral"}>{taux}% occupé</Pill>
-                            {isAdmin && (
-                              <ActionGroup
-                                onEdit={() => setEditingBatiment({ id: b.id, nom: b.nom, etages: b.etages, maxAppartements: b.maxAppartements })}
-                                onDelete={() => setDeletingItem({ type: "batiment", id: b.id, name: `le bâtiment « ${b.nom} »` })}
-                              />
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="mt-3">
-                          <ProgressBar value={taux} label={`Occupation Bâtiment ${b.nom}`} />
-                          <div className="mt-1.5 flex justify-between text-xs text-stone-500">
-                            <span>{nbOccupes} occupés</span>
-                            <span>{nbAppart - nbOccupes} vacants</span>
-                          </div>
-                        </div>
-
-                        <div className="mt-4 rounded-xl border border-stone-200 bg-stone-50/70 p-3.5">
-                          <div className="flex items-center justify-between">
-                            <p className="text-[10px] font-bold uppercase tracking-wide text-stone-500">Gestionnaire du bloc</p>
-                            {b.sousAdmin && <Pill tone="success">Affecté</Pill>}
-                          </div>
-                          {b.sousAdmin ? (
-                            <div className="mt-2 flex items-center justify-between gap-2">
-                              <div className="flex items-center gap-2 min-w-0">
-                                <Avatar name={fullName(b.sousAdmin)} size="md" />
-                                <div className="min-w-0">
-                                  <p className="truncate text-sm font-semibold text-ink">{fullName(b.sousAdmin)}</p>
-                                  <p className="truncate text-xs text-stone-500">{b.sousAdmin.email}</p>
-                                </div>
-                              </div>
-                              <a
-                                href={`tel:${b.sousAdmin.telephone}`}
-                                className={button("secondary", "sm")}
-                                title={`Appeler ${fullName(b.sousAdmin)}`}
-                              >
-                                <Phone className="h-3.5 w-3.5" />
-                              </a>
-                            </div>
-                          ) : (
-                            <div className="mt-2 text-center py-1">
-                              <p className="text-xs text-stone-400 mb-2">Aucun sous-admin assigné à ce bâtiment</p>
-                              {isAdmin && (
-                                <button
-                                  type="button"
-                                  onClick={() => setCreatingSubAdminBatiment({ id: b.id, nom: b.nom })}
-                                  className={`${button("primary", "sm")} w-full`}
-                                >
-                                  <UserPlus className="h-3.5 w-3.5" aria-hidden />
-                                  Nommer le gestionnaire
-                                </button>
-                              )}
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="mt-4 flex items-center justify-between border-t border-stone-100 pt-3 text-xs">
-                          <span className="text-stone-500">{nbAppart} logements créés</span>
-                          <button
-                            type="button"
-                            onClick={() => showApartments(b.nom)}
-                            className="inline-flex items-center gap-1 font-semibold text-brand hover:underline"
-                          >
-                            Voir les appartements
-                            <ChevronRight className="h-3.5 w-3.5" aria-hidden />
-                          </button>
-                        </div>
-                      </article>
-                    );
-                  })}
-                </div>
+                <DataTable
+                  columns={batimentColumns}
+                  rows={filteredBatiments}
+                  rowKey={(b) => b.id}
+                  toolbar={
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="relative min-w-[260px]">
+                        <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-stone-400" />
+                        <input
+                          type="text"
+                          value={queryBatiments}
+                          onChange={(e) => setQueryBatiments(e.target.value)}
+                          placeholder="Rechercher un bâtiment ou sous-admin..."
+                          className="w-full rounded-xl border border-stone-200 bg-white py-1.5 pl-9 pr-3 text-xs text-ink placeholder:text-stone-400 focus:outline-none focus:ring-1 focus:ring-brand"
+                        />
+                      </div>
+                      <span className="text-xs font-semibold text-stone-500">
+                        {filteredBatiments.length} bâtiment{filteredBatiments.length > 1 ? "s" : ""} enregistré{filteredBatiments.length > 1 ? "s" : ""}
+                      </span>
+                    </div>
+                  }
+                  empty="Aucun bâtiment ne correspond à votre recherche."
+                />
               </div>
             ))}
 
@@ -702,76 +811,118 @@ export default function ResidencesPage() {
           )}
 
           {tab === "residence" && (
-            <div className="grid gap-6 lg:grid-cols-2">
-              <article className={`${card} p-6`}>
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <h3 className="text-xl font-bold tracking-tight text-ink">{residence.nom}</h3>
-                    <p className="mt-1 text-sm text-stone-500">{residence.localisation}</p>
+            <div className="space-y-6">
+              {/* Tableau 1 : Fiche des Paramètres & Caractéristiques de la Résidence */}
+              <div className={`${card} overflow-hidden`}>
+                <div className="flex flex-wrap items-center justify-between gap-4 border-b border-stone-200 bg-stone-50/75 px-6 py-4">
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-50 text-brand">
+                      <Building2 className="h-5 w-5" />
+                    </span>
+                    <div>
+                      <h3 className="text-base font-bold text-ink">{residence.nom}</h3>
+                      <p className="text-xs text-stone-500">{residence.localisation}</p>
+                    </div>
                   </div>
                   {isAdmin && (
                     <button type="button" onClick={() => setEditingResidence(true)} className={button("secondary", "sm")}>
-                      Modifier
+                      Modifier la résidence
                     </button>
                   )}
                 </div>
 
-                <div className="mt-5 grid grid-cols-2 gap-3">
-                  <div className="rounded-xl border border-stone-200 bg-stone-50/70 p-3">
-                    <p className="text-[10px] font-bold uppercase tracking-wide text-stone-500">Bâtiments (Quota)</p>
-                    <p className="mt-0.5 text-xl font-bold text-ink">
-                      {batiments.length} / {maxBatiments}
-                    </p>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm">
+                    <tbody className="divide-y divide-stone-100">
+                      <tr className="hover:bg-stone-50/50">
+                        <td className="w-1/3 px-6 py-3.5 font-bold text-stone-600">Nom de la résidence</td>
+                        <td className="px-6 py-3.5 font-semibold text-ink">{residence.nom}</td>
+                      </tr>
+                      <tr className="hover:bg-stone-50/50">
+                        <td className="px-6 py-3.5 font-bold text-stone-600">Emplacement & Adresse</td>
+                        <td className="px-6 py-3.5 text-ink">{residence.localisation}</td>
+                      </tr>
+                      <tr className="hover:bg-stone-50/50">
+                        <td className="px-6 py-3.5 font-bold text-stone-600">Capacité Bâtiments (Quota)</td>
+                        <td className="px-6 py-3.5">
+                          <span className="inline-flex items-center gap-2">
+                            <span className="font-bold text-ink">{batiments.length} / {maxBatiments} blocs créés</span>
+                            {quotaAtteint ? (
+                              <Pill tone="warning">Quota atteint</Pill>
+                            ) : (
+                              <Pill tone="success">{maxBatiments - batiments.length} disponibles</Pill>
+                            )}
+                          </span>
+                        </td>
+                      </tr>
+                      <tr className="hover:bg-stone-50/50">
+                        <td className="px-6 py-3.5 font-bold text-stone-600">Capacité Logements & Résidents</td>
+                        <td className="px-6 py-3.5">
+                          <div className="space-y-1.5 max-w-md">
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="font-semibold text-ink">{totalOccupes} occupés / {totalAppartements} logements créés</span>
+                              <span className="font-bold text-brand">{tauxOccupation}%</span>
+                            </div>
+                            <ProgressBar value={tauxOccupation} label="Occupation" />
+                            <span className="text-[11px] text-stone-400">Limite autorisée : {residence.maxResidents || 100} résidents max</span>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr className="hover:bg-stone-50/50">
+                        <td className="px-6 py-3.5 font-bold text-stone-600">Administrateur Responsable</td>
+                        <td className="px-6 py-3.5">
+                          {espace.admin ? (
+                            <div className="flex items-center gap-3">
+                              <Avatar name={fullName(espace.admin)} size="md" />
+                              <div>
+                                <span className="block font-semibold text-ink">{fullName(espace.admin)}</span>
+                                <span className="block text-xs text-stone-500">{espace.admin.email} · <Mono>{espace.admin.telephone}</Mono></span>
+                              </div>
+                            </div>
+                          ) : (
+                            <span className="text-xs text-stone-400 italic">Non affecté</span>
+                          )}
+                        </td>
+                      </tr>
+                      <tr className="hover:bg-stone-50/50">
+                        <td className="px-6 py-3.5 font-bold text-stone-600">Formule d&apos;Abonnement Résidence</td>
+                        <td className="px-6 py-3.5">
+                          {espace.abonnement ? (
+                            <div className="inline-flex items-center gap-2">
+                              <Pill tone="success">{espace.abonnement.nom ?? "Actif"}</Pill>
+                              <span className="text-xs text-stone-500 font-medium">Standard 12 mois</span>
+                            </div>
+                          ) : (
+                            <Pill tone="neutral">Standard</Pill>
+                          )}
+                        </td>
+                      </tr>
+                      <tr className="hover:bg-stone-50/50">
+                        <td className="px-6 py-3.5 font-bold text-stone-600">Date d&apos;enregistrement</td>
+                        <td className="px-6 py-3.5 text-stone-600">{residence.createdAt ? formatDate(residence.createdAt) : "01/01/2026"}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Tableau 2 : Répartition Détaillée par Bâtiment */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-sm font-bold text-ink">Répartition Détaillée par Bâtiment</h4>
+                    <p className="text-xs text-stone-500">Statistiques d&apos;occupation, étages et sous-administrateurs de chaque bloc</p>
                   </div>
-                  <div className="rounded-xl border border-stone-200 bg-stone-50/70 p-3">
-                    <p className="text-[10px] font-bold uppercase tracking-wide text-stone-500">Appartements</p>
-                    <p className="mt-0.5 text-xl font-bold text-ink">{totalAppartements}</p>
-                  </div>
+                  <span className="text-xs font-semibold text-stone-500">{batiments.length} blocs au total</span>
                 </div>
 
-                <div className="mt-5">
-                  <div className="mb-1.5 flex justify-between text-sm">
-                    <span className="text-stone-500">Taux d&apos;occupation</span>
-                    <span className="font-semibold text-ink">{tauxOccupation}%</span>
-                  </div>
-                  <ProgressBar value={tauxOccupation} label={`Taux d'occupation ${residence.nom}`} />
-                </div>
-
-                <div className="mt-5 space-y-2 border-t border-stone-100 pt-4 text-sm">
-                  <StatLine label="Administrateur Responsable" value={espace.admin ? fullName(espace.admin) : "Non affecté"} />
-                  {espace.admin && <StatLine label="Contact Admin" value={<Mono>{espace.admin.telephone}</Mono>} />}
-                  <StatLine
-                    label="Abonnement Résidence"
-                    value={
-                      espace.abonnement ? (
-                        <Pill tone="success">{espace.abonnement.nom ?? "Actif"}</Pill>
-                      ) : (
-                        <Pill tone="neutral">Standard</Pill>
-                      )
-                    }
-                  />
-                </div>
-              </article>
-
-              <article className={`${card} p-6 space-y-4`}>
-                <h4 className="text-sm font-bold uppercase tracking-wide text-stone-500">Répartition par Bâtiment</h4>
-                <div className="space-y-3">
-                  {batiments.map((b) => (
-                    <div key={b.id} className="rounded-xl border border-stone-100 bg-stone-50/50 p-3">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="font-semibold text-ink">Bâtiment {b.nom}</span>
-                        <span className="text-xs text-stone-500">{b.etages} étages</span>
-                      </div>
-                      <div className="mt-1 flex items-center justify-between text-xs text-stone-500">
-                        <span>
-                          {b.appartements.length} / {b.maxAppartements ?? 50} appartements
-                        </span>
-                        <span>{b.sousAdmin ? `Sous-admin : ${fullName(b.sousAdmin)}` : "Pas de sous-admin"}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </article>
+                <DataTable
+                  columns={repartitionColumns}
+                  rows={batiments}
+                  rowKey={(b) => b.id}
+                  empty="Aucun bâtiment dans cette résidence."
+                />
+              </div>
             </div>
           )}
         </>
