@@ -37,6 +37,7 @@ import {
   updateAccount,
   updateBatiment,
   updateResidence,
+  type BatimentDetail,
   type MonEspace,
   type Responsable,
 } from "@/lib/residences-api";
@@ -96,7 +97,7 @@ export default function ResidencesPage() {
   const [editingResidence, setEditingResidence] = useState(false);
   const [deletingItem, setDeletingItem] = useState<{ type: "batiment" | "gestionnaire"; id: string; name: string } | null>(null);
 
-  // Sous-admin creation modal
+  // Sous-admin creation modal (null = closed, object = open with optional pre-selected building)
   const [creatingSubAdminBatiment, setCreatingSubAdminBatiment] = useState<{ id: string; nom: string } | null>(null);
 
   // Sous-admin subscriptions
@@ -343,16 +344,26 @@ export default function ResidencesPage() {
         }
         actions={
           isAdmin && residence ? (
-            quotaAtteint ? (
-              <span className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-700">
-                Quota atteint ({maxBatiments} max)
-              </span>
-            ) : (
-              <button type="button" onClick={() => setAddingBatiment(true)} className={button("primary")}>
-                <Plus className="h-4 w-4" aria-hidden />
-                Nouveau Bâtiment (Bloc)
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setCreatingSubAdminBatiment({ id: "", nom: "" })}
+                className={button("secondary")}
+              >
+                <UserPlus className="h-4 w-4" aria-hidden />
+                Nouveau Sous-Admin
               </button>
-            )
+              {quotaAtteint ? (
+                <span className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-700">
+                  Quota atteint ({maxBatiments} max)
+                </span>
+              ) : (
+                <button type="button" onClick={() => setAddingBatiment(true)} className={button("primary")}>
+                  <Plus className="h-4 w-4" aria-hidden />
+                  Nouveau Bâtiment (Bloc)
+                </button>
+              )}
+            </div>
           ) : null
         }
       />
@@ -455,16 +466,67 @@ export default function ResidencesPage() {
             ))}
 
           {tab === "gestionnaires" && (
-            <DataTable
-              columns={gestionnaireColumns}
-              rows={allGestionnaires}
-              rowKey={(g) => `${g.batimentId}-${g.id}`}
-              empty="Aucun gestionnaire de bâtiment affecté pour le moment."
-            />
+            <div className="space-y-4">
+              {isAdmin && (
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-stone-200 bg-stone-50/60 p-4">
+                  <div>
+                    <h3 className="text-sm font-bold text-ink">Gestionnaires de Bâtiments (Sous-Admins)</h3>
+                    <p className="text-xs text-stone-500">
+                      Vous pouvez créer et attribuer un sous-admin pour chaque bâtiment de votre résidence.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setCreatingSubAdminBatiment({ id: "", nom: "" })}
+                    className={button("primary", "sm")}
+                  >
+                    <UserPlus className="h-3.5 w-3.5" aria-hidden />
+                    Nouveau Sous-Admin
+                  </button>
+                </div>
+              )}
+              <DataTable
+                columns={gestionnaireColumns}
+                rows={allGestionnaires}
+                rowKey={(g) => `${g.batimentId}-${g.id}`}
+                empty={
+                  isAdmin ? (
+                    <div className="py-8 text-center">
+                      <p className="text-sm text-stone-500">Aucun gestionnaire de bâtiment affecté pour le moment.</p>
+                      <button
+                        type="button"
+                        onClick={() => setCreatingSubAdminBatiment({ id: "", nom: "" })}
+                        className={`${button("primary", "sm")} mt-4`}
+                      >
+                        <UserPlus className="h-3.5 w-3.5" aria-hidden />
+                        Créer le premier Sous-Admin
+                      </button>
+                    </div>
+                  ) : (
+                    "Aucun gestionnaire de bâtiment affecté pour le moment."
+                  )
+                }
+              />
+            </div>
           )}
 
           {tab === "abonnements_sous_admins" && isAdmin && (
             <div className="space-y-6">
+              {/* Top Banner with Actions */}
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="text-sm text-stone-500">
+                  Suivez les abonnements des sous-admins et validez leurs cotisations de bâtiment.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setCreatingSubAdminBatiment({ id: "", nom: "" })}
+                  className={button("secondary", "sm")}
+                >
+                  <UserPlus className="h-3.5 w-3.5" aria-hidden />
+                  Nouveau Sous-Admin
+                </button>
+              </div>
+
               {/* KPI Header Cards */}
               <div className="grid gap-4 sm:grid-cols-3">
                 <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
@@ -643,7 +705,8 @@ export default function ResidencesPage() {
 
       {creatingSubAdminBatiment && (
         <SubAdminModal
-          batiment={creatingSubAdminBatiment}
+          preselectedBatiment={creatingSubAdminBatiment.id ? creatingSubAdminBatiment : null}
+          batiments={batiments}
           onClose={() => setCreatingSubAdminBatiment(null)}
           onCreated={(email) => {
             setCreatingSubAdminBatiment(null);
@@ -779,24 +842,35 @@ function EditBatimentModal({
 }
 
 function SubAdminModal({
-  batiment,
+  preselectedBatiment,
+  batiments,
   onClose,
   onCreated,
 }: {
-  batiment: { id: string; nom: string };
+  preselectedBatiment?: { id: string; nom: string } | null;
+  batiments: BatimentDetail[];
   onClose: () => void;
   onCreated: (email: string) => void;
 }) {
   const { submitting, error, run } = useSubmit();
+  const defaultBatimentId = preselectedBatiment?.id || batiments.find((b) => !b.sousAdmin)?.id || batiments[0]?.id || "";
+  const [selectedBatimentId, setSelectedBatimentId] = useState(defaultBatimentId);
   const [password, setPassword] = useState("");
+
+  const selectedBuilding = batiments.find((b) => b.id === selectedBatimentId);
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
+    if (!selectedBatimentId) {
+      alert("Veuillez sélectionner un bâtiment.");
+      return;
+    }
+
     void run(async () => {
       await createAccount({
         role: "sub_admin",
-        idBatiment: batiment.id,
+        idBatiment: selectedBatimentId,
         prenom: formText(form, "prenom"),
         nom: formText(form, "nom"),
         email: formText(form, "email"),
@@ -804,15 +878,36 @@ function SubAdminModal({
         wilaya: formText(form, "wilaya"),
         daira: formText(form, "daira"),
         baladia: formText(form, "baladia"),
-        password,
+        password: password || "City@2026!",
       });
       onCreated(formText(form, "email"));
     });
   }
 
   return (
-    <Modal title="Nouveau Sous-Admin" description={`Nommez le responsable du bâtiment « ${batiment.nom} ».`} onClose={onClose}>
+    <Modal
+      title="Nouveau Sous-Admin"
+      description={selectedBuilding ? `Assigné au bâtiment « ${selectedBuilding.nom} »` : "Nommez un gestionnaire de bâtiment."}
+      onClose={onClose}
+    >
       <form onSubmit={onSubmit} className="space-y-4">
+        {batiments.length === 0 ? (
+          <p className="text-sm text-stone-500">Aucun bâtiment disponible. Créez d&apos;abord un bâtiment dans la résidence.</p>
+        ) : (
+          <SelectField
+            label="Bâtiment assigné"
+            value={selectedBatimentId}
+            onChange={(e) => setSelectedBatimentId(e.target.value)}
+            required
+          >
+            {batiments.map((b) => (
+              <option key={b.id} value={b.id}>
+                Bâtiment {b.nom} {b.sousAdmin ? `(Sous-admin actuel : ${fullName(b.sousAdmin)})` : "(Disponible)"}
+              </option>
+            ))}
+          </SelectField>
+        )}
+
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Prénom" name="prenom" required maxLength={60} autoFocus />
           <Field label="Nom" name="nom" required maxLength={60} />
@@ -866,7 +961,7 @@ function AttribuerPlanModal({
   return (
     <Modal
       title="Attribuer un Abonnement"
-      description={`Souscription pour ${fullName(target)} (${target.batiment?.nom ?? "Bâtiment"}).`}
+      description={`Souscription pour ${fullName(target)} (${target.batiment?.nom ? `Bâtiment ${target.batiment.nom}` : "Bâtiment"}).`}
       onClose={onClose}
     >
       <form onSubmit={onSubmit} className="space-y-4">

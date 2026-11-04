@@ -24,7 +24,7 @@ const createAdminSchema = Joi.object({
     role: Joi.string().valid(...ADMIN_ROLES).required(),
     idResidence: Joi.when("role", { is: "admin", then: objectId.required(), otherwise: Joi.forbidden() }),
     idBatiment: Joi.when("role", { is: "sub_admin", then: objectId.required(), otherwise: Joi.forbidden() }),
-    password: Joi.string().min(12).max(128).required(),
+    password: Joi.string().min(6).max(128).required(),
   }).required(),
 });
 
