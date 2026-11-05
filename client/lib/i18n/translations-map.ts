@@ -3947,6 +3947,798 @@ export const TRANSLATIONS_MAP: Record<string, TranslationEntry> = {
     ar: "إضافة العبء",
     en: "Add charge"
   },
+
+  // === EXHAUSTIVE ALL-MODALS DICTIONARY ===
+  "chargement": {
+    fr: "Chargement",
+    ar: "جار التحميل",
+    en: "Loading"
+  },
+  "standard annuel résidence": {
+    fr: "Standard Annuel Résidence",
+    ar: "السنوي القياسي للإقامة",
+    en: "Standard Annual Residence"
+  },
+  "prix (dzd)": {
+    fr: "Prix (DZD)",
+    ar: "السعر (د.ج)",
+    en: "Price (DZD)"
+  },
+  "date de début": {
+    fr: "Date de début",
+    ar: "تاريخ البدء",
+    en: "Start date"
+  },
+  "mode de règlement (flexible)": {
+    fr: "Mode de règlement (flexible)",
+    ar: "طريقة التسديد (مرنة)",
+    en: "Payment method (flexible)"
+  },
+  "montant réglé (dzd)": {
+    fr: "Montant réglé (DZD)",
+    ar: "المبلغ المدفوع (د.ج)",
+    en: "Amount paid (DZD)"
+  },
+  "montant payé": {
+    fr: "Montant payé",
+    ar: "المبلغ المدفوع",
+    en: "Amount paid"
+  },
+  "notes ou référence du règlement (optionnel)": {
+    fr: "Notes ou référence du règlement (optionnel)",
+    ar: "ملاحظات أو مرجع التسديد (اختياري)",
+    en: "Payment notes or reference (optional)"
+  },
+  "ex: réf virement bna, chèque n°12948, accord 50% avance...": {
+    fr: "Ex: Réf virement BNA, chèque n°12948, accord 50% avance...",
+    ar: "مثال: مرجع تحويل بنكي، شيك رقم 12948، اتفاق 50% تسبيق...",
+    en: "e.g.: Bank transfer ref, check #12948, 50% advance agreement..."
+  },
+  "attribuer l'abonnement": {
+    fr: "Attribuer l'abonnement",
+    ar: "إسناد الاشتراك",
+    en: "Assign subscription"
+  },
+  "historique des abonnements": {
+    fr: "Historique des abonnements",
+    ar: "سجل الاشتراكات",
+    en: "Subscription history"
+  },
+  "supprimer cette souscription": {
+    fr: "Supprimer cette souscription",
+    ar: "حذف هذا الاشتراك",
+    en: "Delete this subscription"
+  },
+  "le prix est en dinars algériens et la durée en mois.": {
+    fr: "Le prix est en dinars algériens et la durée en mois.",
+    ar: "السعر بالدينار الجزائري والمدة بالأشهر.",
+    en: "Price is in Algerian Dinars and duration in months."
+  },
+  "durée (mois)": {
+    fr: "Durée (mois)",
+    ar: "المدة (أشهر)",
+    en: "Duration (months)"
+  },
+  "valider l'abonnement": {
+    fr: "Valider l'abonnement",
+    ar: "تأكيد الاشتراك",
+    en: "Validate subscription"
+  },
+  "résidences": {
+    fr: "Résidences",
+    ar: "الإقامات",
+    en: "Residences"
+  },
+  "cité 1500 logements aadl": {
+    fr: "Cité 1500 Logements AADL",
+    ar: "حي 1500 مسكن عدل",
+    en: "1500 AADL Housing Estate"
+  },
+  "bab ezzouar, alger": {
+    fr: "Bab Ezzouar, Alger",
+    ar: "باب الزوار، الجزائر",
+    en: "Bab Ezzouar, Algiers"
+  },
+  "ajouter le bâtiment": {
+    fr: "Ajouter le bâtiment",
+    ar: "إضافة العمارة",
+    en: "Add building"
+  },
+  "créer le compte": {
+    fr: "Créer le compte",
+    ar: "إنشاء الحساب",
+    en: "Create account"
+  },
+  "modifier la résidence": {
+    fr: "Modifier la Résidence",
+    ar: "تعديل الإقامة",
+    en: "Edit Residence"
+  },
+  "modifiez le nom, l'emplacement et les quotas autorisés.": {
+    fr: "Modifiez le nom, l'emplacement et les quotas autorisés.",
+    ar: "تعديل الاسم والموقع والحدود المسموح بها.",
+    en: "Edit name, location, and allowed quotas."
+  },
+  "modifier le gestionnaire": {
+    fr: "Modifier le Gestionnaire",
+    ar: "تعديل بيانات المسير",
+    en: "Edit Manager"
+  },
+  "ex: résidence les palmiers": {
+    fr: "Ex: Résidence Les Palmiers",
+    ar: "مثال: إقامة النخيل",
+    en: "e.g.: Palm Residence"
+  },
+  "adresse / localisation": {
+    fr: "Adresse / Localisation",
+    ar: "العنوان / الموقع",
+    en: "Address / Location"
+  },
+  "ex: hydra, alger": {
+    fr: "Ex: Hydra, Alger",
+    ar: "مثال: حيدرة، الجزائر",
+    en: "e.g.: Hydra, Algiers"
+  },
+  "nombre max de bâtiments": {
+    fr: "Nombre max de bâtiments",
+    ar: "العدد الأقصى للعمارات",
+    en: "Max buildings count"
+  },
+  "nombre max d'appartements": {
+    fr: "Nombre max d'appartements",
+    ar: "العدد الأقصى للشقق",
+    en: "Max apartments count"
+  },
+  "diffuser à nouveau l'alerte urgente": {
+    fr: "Diffuser à nouveau l'alerte urgente",
+    ar: "إعادة بث تنبيه الطوارئ",
+    en: "Re-broadcast urgent alert"
+  },
+  "supprimer l'alerte": {
+    fr: "Supprimer l'alerte",
+    ar: "حذف التنبيه",
+    en: "Delete alert"
+  },
+  "ex: tous les résidents, bloc a": {
+    fr: "Ex: Tous les résidents, Bloc A",
+    ar: "مثال: جميع السكان، العمارة A",
+    en: "e.g.: All residents, Block A"
+  },
+  "ex: tous les résidents, bâtiment b, étages 1 à 4": {
+    fr: "Ex: Tous les résidents, Bâtiment B, Étages 1 à 4",
+    ar: "مثال: جميع السكان، العمارة B، الطوابق 1 إلى 4",
+    en: "e.g.: All residents, Block B, Floors 1 to 4"
+  },
+  "modifier l'alerte": {
+    fr: "Modifier l'Alerte",
+    ar: "تعديل التنبيه",
+    en: "Edit Alert"
+  },
+  "mettre à jour les informations et consignes de l'alerte": {
+    fr: "Mettre à jour les informations et consignes de l'alerte",
+    ar: "تحديث معلومات وتعليمات التنبيه",
+    en: "Update alert details and instructions"
+  },
+  "lancer le mode projection plein écran pour grand écran ou vidéo-projecteur": {
+    fr: "Lancer le mode projection plein écran pour grand écran ou vidéo-projecteur",
+    ar: "تشغيل وضع العرض على كامل الشاشة للعرض المرئي",
+    en: "Launch full screen projection mode for large displays"
+  },
+  "procès-verbal officiel d'assemblée générale (pv d'ag)": {
+    fr: "Procès-Verbal Officiel d'Assemblée Générale (PV d'AG)",
+    ar: "المحضر الرسمي للجمعية العامة (PV d'AG)",
+    en: "Official General Assembly Minutes (GA Minutes)"
+  },
+  "document juridique certifié consignant l'ensemble des votes, délibérations et résolutions de la copropriété.": {
+    fr: "Document juridique certifié consignant l'ensemble des votes, délibérations et résolutions de la copropriété.",
+    ar: "وثيقة قانونية معتمدة تدون كافة عمليات التصويت والمداولات والقرارات المتخذة.",
+    en: "Certified legal document recording all votes, deliberations and resolutions."
+  },
+  "recherche rapide": {
+    fr: "Recherche rapide",
+    ar: "بحث سريع",
+    en: "Quick search"
+  },
+  "modifier le type de charge": {
+    fr: "Modifier le type de charge",
+    ar: "تعديل نوع العبء",
+    en: "Edit charge type"
+  },
+  "mettre à jour le barème de la charge": {
+    fr: "Mettre à jour le barème de la charge",
+    ar: "تحديث جدول قيمة العبء",
+    en: "Update charge scale"
+  },
+  "catégoriser les pannes et assigner un délai d'intervention": {
+    fr: "Catégoriser les pannes et assigner un délai d'intervention",
+    ar: "تصنيف الأعطال وتحديد مهلة التدخل",
+    en: "Categorize breakdowns and assign response SLA"
+  },
+  "catégorie / nom de l'incident": {
+    fr: "Catégorie / Nom de l'incident",
+    ar: "فئة / تسمية العطل",
+    en: "Incident category / name"
+  },
+  "ex: panne d'ascenseur, fuite plomberie": {
+    fr: "Ex: Panne d'ascenseur, Fuite plomberie",
+    ar: "مثال: عطل المصعد، تسرب مياه الترصيص",
+    en: "e.g.: Elevator breakdown, Plumbing leak"
+  },
+  "délai d'intervention cible": {
+    fr: "Délai d'intervention cible",
+    ar: "مهلة التدخل المستهدفة",
+    en: "Target response SLA"
+  },
+  "prestataire assigné par défaut": {
+    fr: "Prestataire assigné par défaut",
+    ar: "مقدم الخدمة التلقائي",
+    en: "Default assigned contractor"
+  },
+  "ex: sarl otis algérie, plomberie express": {
+    fr: "Ex: SARL Otis Algérie, Plomberie Express",
+    ar: "مثال: ش.ذ.م.م أوتيس الجزائر، ترصيص سريع",
+    en: "e.g.: Otis Algeria LLC, Plumbing Express"
+  },
+  "ajouter le type d'incident": {
+    fr: "Ajouter le type d'incident",
+    ar: "إضافة نوع العطل",
+    en: "Add incident type"
+  },
+  "modifier le type d'incident": {
+    fr: "Modifier le type d'incident",
+    ar: "تعديل نوع العطل",
+    en: "Edit incident type"
+  },
+  "mettre à jour les paramètres d'intervention": {
+    fr: "Mettre à jour les paramètres d'intervention",
+    ar: "تحديث إعدادات التدخل",
+    en: "Update intervention settings"
+  },
+  "catégorie / nom": {
+    fr: "Catégorie / Nom",
+    ar: "الفئة / الاسم",
+    en: "Category / Name"
+  },
+  "délai cible": {
+    fr: "Délai cible",
+    ar: "المهلة المحددة",
+    en: "Target SLA"
+  },
+  "prestataire par défaut": {
+    fr: "Prestataire par défaut",
+    ar: "مقدم الخدمة الافتراضي",
+    en: "Default contractor"
+  },
+  "ajouter un mode de paiement": {
+    fr: "Ajouter un mode de paiement",
+    ar: "إضافة طريقة دفع",
+    en: "Add payment method"
+  },
+  "moyens de paiement acceptés pour les charges de copropriété": {
+    fr: "Moyens de paiement acceptés pour les charges de copropriété",
+    ar: "طرق الدفع المعتمدة لتسديد أعباء الإقامة",
+    en: "Accepted payment methods for co-ownership charges"
+  },
+  "moyen de paiement prédéfini": {
+    fr: "Moyen de paiement prédéfini",
+    ar: "طريقة دفع محددة مسبقاً",
+    en: "Predefined payment method"
+  },
+  "nom personnalisé du moyen de paiement": {
+    fr: "Nom personnalisé du moyen de paiement",
+    ar: "التسمية المخصصة لطريقة الدفع",
+    en: "Custom payment method name"
+  },
+  "ex: mandat postal express": {
+    fr: "Ex: Mandat postal express",
+    ar: "مثال: حوالة بريدية سريعة",
+    en: "e.g.: Postal money order"
+  },
+  "frais applicables": {
+    fr: "Frais applicables",
+    ar: "الرسوم المطبقة",
+    en: "Applicable fees"
+  },
+  "ex: gratuit, sans frais, 1.5%...": {
+    fr: "Ex: Gratuit, Sans frais, 1.5%...",
+    ar: "مثال: مجاناً، بدون رسوم، 1.5%...",
+    en: "e.g.: Free, No fees, 1.5%..."
+  },
+  "activer le mode de paiement": {
+    fr: "Activer le mode de paiement",
+    ar: "تفعيل طريقة الدفع",
+    en: "Enable payment method"
+  },
+  "modifier le mode de paiement": {
+    fr: "Modifier le mode de paiement",
+    ar: "تعديل طريقة الدفع",
+    en: "Edit payment method"
+  },
+  "paramètres d'encaissement": {
+    fr: "Paramètres d'encaissement",
+    ar: "إعدادات التحصيل",
+    en: "Collection settings"
+  },
+  "nom du moyen de paiement": {
+    fr: "Nom du moyen de paiement",
+    ar: "اسم طريقة الدفع",
+    en: "Payment method name"
+  },
+  "modifier le contrat": {
+    fr: "Modifier le contrat",
+    ar: "تعديل العقد",
+    en: "Edit contract"
+  },
+  "statut du contrat": {
+    fr: "Statut du contrat",
+    ar: "حالة العقد",
+    en: "Contract status"
+  },
+  "ex: 01 jan 2026": {
+    fr: "Ex: 01 Jan 2026",
+    ar: "مثال: 01 جانفي 2026",
+    en: "e.g.: 01 Jan 2026"
+  },
+  "ex: 31 déc 2026": {
+    fr: "Ex: 31 Déc 2026",
+    ar: "مثال: 31 ديسمبر 2026",
+    en: "e.g.: 31 Dec 2026"
+  },
+  "modifier le document": {
+    fr: "Modifier le document",
+    ar: "تعديل الوثيقة",
+    en: "Edit document"
+  },
+  "ex: 2.4 mo, 650 ko": {
+    fr: "Ex: 2.4 Mo, 650 Ko",
+    ar: "مثال: 2.4 ميغابايت، 650 كيلوبايت",
+    en: "e.g.: 2.4 MB, 650 KB"
+  },
+  "ex: 1.5 mo": {
+    fr: "Ex: 1.5 Mo",
+    ar: "مثال: 1.5 ميغابايت",
+    en: "e.g.: 1.5 MB"
+  },
+  "générer la quittance officielle": {
+    fr: "Générer la quittance officielle",
+    ar: "استخراج الوصل الرسمي",
+    en: "Generate official receipt"
+  },
+  "total dépenses": {
+    fr: "Total dépenses",
+    ar: "إجمالي المصاريف",
+    en: "Total expenses"
+  },
+  "modifier la dépense": {
+    fr: "Modifier la dépense",
+    ar: "تعديل المصروف",
+    en: "Edit expense"
+  },
+  "mettre à jour les détails de la dépense": {
+    fr: "Mettre à jour les détails de la dépense",
+    ar: "تحديث تفاصيل المصروف",
+    en: "Update expense details"
+  },
+  "modifier la facture": {
+    fr: "Modifier la facture",
+    ar: "تعديل الفاتورة",
+    en: "Edit invoice"
+  },
+  "détails du service ou fournisseur d'énergie": {
+    fr: "Détails du service ou fournisseur d'énergie",
+    ar: "تفاصيل الخدمة أو مورد الطاقة",
+    en: "Service or energy provider details"
+  },
+  "service": {
+    fr: "Service",
+    ar: "الخدمة",
+    en: "Service"
+  },
+  "enregistrer une dépense résidence": {
+    fr: "Enregistrer une dépense résidence",
+    ar: "تسجيل مصروف للإقامة",
+    en: "Record residence expense"
+  },
+  "achats, travaux, prestataires et charges opérationnelles": {
+    fr: "Achats, travaux, prestataires et charges opérationnelles",
+    ar: "المشتريات، الأشغال، المتعاقدون والمصاريف التشغيلية",
+    en: "Purchases, repairs, contractors, and operational costs"
+  },
+  "fournisseur / prestataire": {
+    fr: "Fournisseur / Prestataire",
+    ar: "المورد / مقدم الخدمة",
+    en: "Supplier / Contractor"
+  },
+  "ex: plomberie express, sarl net": {
+    fr: "Ex: Plomberie Express, SARL Net",
+    ar: "مثال: ترصيص سريع، ش.ذ.م.م نت",
+    en: "e.g.: Plumbing Express, Net LLC"
+  },
+  "description de la dépense": {
+    fr: "Description de la dépense",
+    ar: "بيان المصروف",
+    en: "Expense description"
+  },
+  "ex: remplacement lampe hall et serrures portail": {
+    fr: "Ex: Remplacement lampe hall et serrures portail",
+    ar: "مثال: تغيير مصابيح البهو وأقفال البوابة",
+    en: "e.g.: Hall lamp and gate locks replacement"
+  },
+  "ex: 8500": {
+    fr: "Ex: 8500",
+    ar: "مثال: 8500",
+    en: "e.g.: 8500"
+  },
+  "statut du règlement": {
+    fr: "Statut du règlement",
+    ar: "حالة التسديد",
+    en: "Payment status"
+  },
+  "enregistrer la dépense": {
+    fr: "Enregistrer la dépense",
+    ar: "حفظ المصروف",
+    en: "Save expense"
+  },
+  "ajouter une facture service ou sonelgaz": {
+    fr: "Ajouter une facture service ou Sonelgaz",
+    ar: "إضافة فاتورة خدمات أو سونلغاز",
+    en: "Add service or utility invoice"
+  },
+  "factures d'énergie, d'eau, télécoms ou contrats réguliers": {
+    fr: "Factures d'énergie, d'eau, télécoms ou contrats réguliers",
+    ar: "فواتير الكهرباء، الغاز، الماء، الاتصالات أو العقود الدورية",
+    en: "Electricity, gas, water, telecom, or regular contracts"
+  },
+  "organisme / fournisseur": {
+    fr: "Organisme / Fournisseur",
+    ar: "الهيئة / المورد",
+    en: "Organization / Supplier"
+  },
+  "service / réf. facture": {
+    fr: "Service / Réf. Facture",
+    ar: "الخدمة / مرجع الفاتورة",
+    en: "Service / Invoice Ref"
+  },
+  "ex: éclairage parties communes": {
+    fr: "Ex: Éclairage parties communes",
+    ar: "مثال: إنارة الأجزاء المشتركة",
+    en: "e.g.: Common areas lighting"
+  },
+  "période couverte": {
+    fr: "Période couverte",
+    ar: "الفترة المغطاة",
+    en: "Covered period"
+  },
+  "ex: 3e trimestre 2026": {
+    fr: "Ex: 3e Trimestre 2026",
+    ar: "مثال: الثلاثي الثالث 2026",
+    en: "e.g.: 3rd Quarter 2026"
+  },
+  "date d'échéance": {
+    fr: "Date d'échéance",
+    ar: "تاريخ الاستحقاق",
+    en: "Due date"
+  },
+  "ex: 15/11/2026": {
+    fr: "Ex: 15/11/2026",
+    ar: "مثال: 15/11/2026",
+    en: "e.g.: 15/11/2026"
+  },
+  "montant à payer (dzd)": {
+    fr: "Montant à payer (DZD)",
+    ar: "المبلغ المستحق للدفع (د.ج)",
+    en: "Amount payable (DZD)"
+  },
+  "ex: 24500": {
+    fr: "Ex: 24500",
+    ar: "مثال: 24500",
+    en: "e.g.: 24500"
+  },
+  "statut de la facture": {
+    fr: "Statut de la facture",
+    ar: "حالة الفاتورة",
+    en: "Invoice status"
+  },
+  "ajouter la facture": {
+    fr: "Ajouter la facture",
+    ar: "إضافة الفاتورة",
+    en: "Add invoice"
+  },
+  "mode de règlement": {
+    fr: "Mode de règlement",
+    ar: "طريقة التسديد",
+    en: "Payment method"
+  },
+  "encaisser la charge": {
+    fr: "Encaisser la charge",
+    ar: "تحصيل المستحق",
+    en: "Collect charge"
+  },
+  "déclarer une panne d'équipement": {
+    fr: "Déclarer une panne d'équipement",
+    ar: "تسجيل عطل في تجهيز",
+    en: "Report equipment breakdown"
+  },
+  "équipements communs sous contrat ou lourds de la résidence": {
+    fr: "Équipements communs sous contrat ou lourds de la résidence",
+    ar: "التجهيزات المشتركة الخاضعة لعقد صيانة بالإقامة",
+    en: "Common contracted or heavy equipment of the residence"
+  },
+  "équipement en panne": {
+    fr: "Équipement en panne",
+    ar: "التجهيز المعطل",
+    en: "Faulty equipment"
+  },
+  "nom de l'équipement": {
+    fr: "Nom de l'équipement",
+    ar: "تسمية التجهيز",
+    en: "Equipment name"
+  },
+  "ex: porte automatique garage": {
+    fr: "Ex: Porte automatique garage",
+    ar: "مثال: الباب الآلي للمرآب",
+    en: "e.g.: Garage automatic door"
+  },
+  "ex: sous-sol, hall d'entrée": {
+    fr: "Ex: Sous-sol, Hall d'entrée",
+    ar: "مثال: الطابق تحت الأرضي، بهو المدخل",
+    en: "e.g.: Basement, Entrance hall"
+  },
+  "prestataire contractuel": {
+    fr: "Prestataire contractuel",
+    ar: "مقدم الخدمة المتعاقد",
+    en: "Contracted provider"
+  },
+  "ex: sarl otis algérie, sarl énergie": {
+    fr: "Ex: SARL Otis Algérie, SARL Énergie",
+    ar: "مثال: ش.ذ.م.م أوتيس الجزائر، ش.ذ.م.م طاقة",
+    en: "e.g.: Otis Algeria LLC, Energy LLC"
+  },
+  "photo de la panne (url)": {
+    fr: "Photo de la panne (URL)",
+    ar: "رابط صورة العطل",
+    en: "Breakdown photo (URL)"
+  },
+  "déclarer la panne": {
+    fr: "Déclarer la panne",
+    ar: "تسجيل العطل",
+    en: "Report breakdown"
+  },
+  "consigner une intervention réalisée": {
+    fr: "Consigner une intervention réalisée",
+    ar: "توثيق تدخل تم إنجازه",
+    en: "Log completed intervention"
+  },
+  "archiver des travaux ou une réparation effectuée avec coût": {
+    fr: "Archiver des travaux ou une réparation effectuée avec coût",
+    ar: "أرشفة أشغال أو تصليحات منجزة مع تكلفتها المالية",
+    en: "Archive completed works or repairs with cost"
+  },
+  "objet des travaux / réparation": {
+    fr: "Objet des travaux / réparation",
+    ar: "موضوع الأشغال / الإصلاح",
+    en: "Work / Repair subject"
+  },
+  "ex: remplacement vanne générale d'arrivée d'eau": {
+    fr: "Ex: Remplacement vanne générale d'arrivée d'eau",
+    ar: "مثال: استبدال الصمام الرئيسي لشبكة المياه",
+    en: "e.g.: Main water inlet valve replacement"
+  },
+  "ex: bloc a · local technique": {
+    fr: "Ex: Bloc A · Local technique",
+    ar: "مثال: العمارة A · الغرفة التقنية",
+    en: "e.g.: Block A · Technical room"
+  },
+  "prestataire ayant intervenu": {
+    fr: "Prestataire ayant intervenu",
+    ar: "مقدم الخدمة الذي نفذ التدخل",
+    en: "Intervening contractor"
+  },
+  "coût de l'intervention (dzd)": {
+    fr: "Coût de l'intervention (DZD)",
+    ar: "تكلفة التدخل (د.ج)",
+    en: "Intervention cost (DZD)"
+  },
+  "ex: 18500": {
+    fr: "Ex: 18500",
+    ar: "مثال: 18500",
+    en: "e.g.: 18500"
+  },
+  "date d'achèvement": {
+    fr: "Date d'achèvement",
+    ar: "تاريخ الإنجاز والانتهاء",
+    en: "Completion date"
+  },
+  "enregistrer dans l'historique": {
+    fr: "Enregistrer dans l'historique",
+    ar: "حفظ في السجل التاريخي",
+    en: "Save to history"
+  },
+  "valider la fin des réparations et enregistrer le coût": {
+    fr: "Valider la fin des réparations et enregistrer le coût",
+    ar: "المصادقة على انتهاء الإصلاحات وحفظ التكلفة",
+    en: "Validate repair completion and record cost"
+  },
+  "prestataire ayant effectué la réparation": {
+    fr: "Prestataire ayant effectué la réparation",
+    ar: "مقدم الخدمة الذي أجرى الإصلاح",
+    en: "Repairing contractor"
+  },
+  "coût final de l'intervention (dzd)": {
+    fr: "Coût final de l'intervention (DZD)",
+    ar: "التكلفة النهائية للتدخل (د.ج)",
+    en: "Final intervention cost (DZD)"
+  },
+  "valider et clôturer": {
+    fr: "Valider et clôturer",
+    ar: "مصادقة وإغلاق البلاغ",
+    en: "Validate and close"
+  },
+  "assigner l'incident au personnel technique": {
+    fr: "Assigner l'incident au personnel technique",
+    ar: "توكيل العطل للفريق التقني",
+    en: "Assign incident to tech staff"
+  },
+  "personnel / technicien responsable": {
+    fr: "Personnel / Technicien responsable",
+    ar: "الموظف / التقني المسؤول",
+    en: "Responsible staff / technician"
+  },
+  "nom de l'employé ou technicien": {
+    fr: "Nom de l'employé ou technicien",
+    ar: "اسم الموظف أو التقني",
+    en: "Employee or technician name"
+  },
+  "ex: mourad hadj (plombier / maintenance)": {
+    fr: "Ex: Mourad Hadj (Plombier / Maintenance)",
+    ar: "مثال: مراد حاج (ترصيص / صيانة)",
+    en: "e.g.: Mourad Hadj (Plumber / Maintenance)"
+  },
+  "titre de la tâche d'intervention": {
+    fr: "Titre de la tâche d'intervention",
+    ar: "عنوان مهمة التدخل",
+    en: "Intervention task title"
+  },
+  "localisation précise": {
+    fr: "Localisation précise",
+    ar: "الموقع الدقيق",
+    en: "Precise location"
+  },
+  "assigner la tâche & démarrer": {
+    fr: "Assigner la tâche & Démarrer",
+    ar: "تعيين المهمة وبدء التدخل",
+    en: "Assign task & Start"
+  },
+  "clôturer l'incident": {
+    fr: "Clôturer l'incident",
+    ar: "إغلاق البلاغ",
+    en: "Close incident"
+  },
+  "modifier l'employé": {
+    fr: "Modifier l'employé",
+    ar: "تعديل بيانات الموظف",
+    en: "Edit employee"
+  },
+  "mettre à jour les coordonnées et horaires de l'employé": {
+    fr: "Mettre à jour les coordonnées et horaires de l'employé",
+    ar: "تحديث معلومات الاتصال وساعات عمل الموظف",
+    en: "Update employee contact details and schedule"
+  },
+  "supprimer le super admin": {
+    fr: "Supprimer le Super Admin",
+    ar: "حذف المدير العام",
+    en: "Delete Super Admin"
+  },
+  "ce compte aura exactement les mêmes droits que vous. il pourra se connecter avec cet email et ce mot de passe.": {
+    fr: "Ce compte aura exactement les mêmes droits que vous. Il pourra se connecter avec cet email et ce mot de passe.",
+    ar: "سيمتلك هذا الحساب نفس الصلاحيات تماماً. وسيمكنه تسجيل الدخول بهذا البريد وكلمة المرور.",
+    en: "This account will have full administrative privileges."
+  },
+  "créer le super admin": {
+    fr: "Créer le Super Admin",
+    ar: "إنشاء المدير العام",
+    en: "Create Super Admin"
+  },
+  "modifier le super admin": {
+    fr: "Modifier le Super Admin",
+    ar: "تعديل المدير العام",
+    en: "Edit Super Admin"
+  },
+  "adresse email": {
+    fr: "Adresse email",
+    ar: "البريد الإلكتروني",
+    en: "Email address"
+  },
+  "supprimer cet export": {
+    fr: "Supprimer cet export",
+    ar: "حذف هذا الملف المصدر",
+    en: "Delete this export"
+  },
+  "supprimer l'export": {
+    fr: "Supprimer l'export",
+    ar: "حذف التصدير",
+    en: "Delete export"
+  },
+  "rechercher nom, bloc...": {
+    fr: "Rechercher nom, bloc...",
+    ar: "بحث بالاسم، العمارة...",
+    en: "Search name, block..."
+  },
+  "fil d'ariane": {
+    fr: "Fil d'Ariane",
+    ar: "مسار التنقل",
+    en: "Breadcrumbs"
+  },
+  "menu": {
+    fr: "Menu",
+    ar: "القائمة",
+    en: "Menu"
+  },
+  "checking your session": {
+    fr: "Vérification de votre session...",
+    ar: "جار التحقق من جلستك...",
+    en: "Checking your session..."
+  },
+  "ouvrir le menu": {
+    fr: "Ouvrir le menu",
+    ar: "فتح القائمة",
+    en: "Open menu"
+  },
+  "recherche universelle (ctrl + k)": {
+    fr: "Recherche universelle (Ctrl + K)",
+    ar: "بحث شامل (Ctrl + K)",
+    en: "Universal search (Ctrl + K)"
+  },
+  "changer de langue / change language / تغيير اللغة": {
+    fr: "Changer de langue",
+    ar: "تغيير اللغة",
+    en: "Change language"
+  },
+  "cliquer pour afficher la photo de preuve en grand": {
+    fr: "Cliquer pour afficher la photo de preuve en grand",
+    ar: "اضغط لعرض صورة الإثبات بالحجم الكامل",
+    en: "Click to view full size evidence photo"
+  },
+  "cliquer pour afficher la photo en grand": {
+    fr: "Cliquer pour afficher la photo en grand",
+    ar: "اضغط لعرض الصورة بالحجم الكامل",
+    en: "Click to view full size photo"
+  },
+  "voir photo après intervention": {
+    fr: "Voir photo après intervention",
+    ar: "معاينة الصورة بعد التدخل",
+    en: "View photo after intervention"
+  },
+  "preuve visuelle / photo de l'incident": {
+    fr: "Preuve Visuelle / Photo de l'Incident",
+    ar: "دليل مرئي / صورة العطل",
+    en: "Visual proof / Incident photo"
+  },
+  "ex: bloc a · 2e étage": {
+    fr: "Ex: Bloc A · 2e étage",
+    ar: "مثال: العمارة A · الطابق 2",
+    en: "e.g.: Block A · 2nd floor"
+  },
+  "numéro de téléphone": {
+    fr: "Numéro de téléphone",
+    ar: "رقم الهاتف",
+    en: "Phone number"
+  },
+  "numéro / nom d'appartement": {
+    fr: "Numéro / Nom d'appartement",
+    ar: "رقم / اسم الشقة",
+    en: "Apartment number / name"
+  },
+  "a12": {
+    fr: "A12",
+    ar: "A12",
+    en: "A12"
+  },
+  "ex : 12, a-04...": {
+    fr: "Ex : 12, A-04...",
+    ar: "مثال : 12، A-04...",
+    en: "e.g.: 12, A-04..."
+  },
 };
 
 // Fast lookup helper
