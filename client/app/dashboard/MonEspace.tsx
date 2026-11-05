@@ -624,11 +624,11 @@ export function MonEspace() {
                       <div>
                         <p className="font-semibold text-ink">{p.resident}</p>
                         <p className="text-[11px] text-stone-500">
-                          {p.logement} · <span className="font-medium text-stone-600">{p.mode}</span> · {p.date}
+                          {p.logement} · <span className="font-medium text-stone-600">{tText(p.mode)}</span> · {p.date}
                         </p>
                       </div>
                       <Mono strong className="text-emerald-700">
-                        +{formatDZD(p.montant)}
+                        +{formatDZD(p.montant, locale)}
                       </Mono>
                     </li>
                   ))}
@@ -656,41 +656,41 @@ export function MonEspace() {
                 <Wrench className="h-5 w-5" aria-hidden />
               </span>
               <div>
-                <h2 className="text-base font-bold text-ink">Incidents & Pannes du {myBatiment?.nom ?? "Bâtiment"}</h2>
-                <p className="text-xs text-stone-500">Ascenseur, éclairage du hall, pompes et parties communes</p>
+                <h2 className="text-base font-bold text-ink">{tText("Incidents & Pannes du")} {myBatiment?.nom ? tText(myBatiment.nom) : tText("Bâtiment")}</h2>
+                <p className="text-xs text-stone-500">{tText("Ascenseur, éclairage du hall, pompes et parties communes")}</p>
               </div>
             </div>
             <Link href="/dashboard/maintenance" className="text-xs font-semibold text-brand hover:underline">
-              Signaler un problème →
+              {tText("Signaler un problème")} →
             </Link>
           </div>
 
           <div className="my-4">
             {myIncidents.length === 0 ? (
-              <p className="py-6 text-center text-xs text-stone-500">Aucun incident ouvert sur ce bâtiment. Équipements opérationnels.</p>
+              <p className="py-6 text-center text-xs text-stone-500">{tText("Aucun incident ouvert sur ce bâtiment. Équipements opérationnels.")}</p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-start text-xs">
                   <thead>
                     <tr className="border-b border-stone-200 text-[11px] font-bold uppercase tracking-wider text-stone-500">
-                      <th className="pb-2.5">Incident</th>
-                      <th className="pb-2.5">Emplacement</th>
-                      <th className="pb-2.5">Prestataire / Intervenant</th>
-                      <th className="pb-2.5">Priorité</th>
-                      <th className="pb-2.5 text-end">Statut</th>
+                      <th className="pb-2.5">{tText("Incident")}</th>
+                      <th className="pb-2.5">{tText("Emplacement")}</th>
+                      <th className="pb-2.5">{tText("Prestataire / Intervenant")}</th>
+                      <th className="pb-2.5">{tText("Priorité")}</th>
+                      <th className="pb-2.5 text-end">{tText("Statut")}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-stone-100">
                     {myIncidents.slice(0, 4).map((i) => (
                       <tr key={i.id} className="hover:bg-stone-50/60 transition">
-                        <td className="py-2.5 font-semibold text-ink">{i.titre}</td>
-                        <td className="py-2.5 text-stone-500">{i.lieu}</td>
-                        <td className="py-2.5 text-stone-600 font-medium">{i.prestataire}</td>
+                        <td className="py-2.5 font-semibold text-ink">{tText(i.titre)}</td>
+                        <td className="py-2.5 text-stone-500">{tText(i.lieu)}</td>
+                        <td className="py-2.5 text-stone-600 font-medium">{tText(i.prestataire)}</td>
                         <td className="py-2.5">
-                          <Pill tone={PRIORITE_TONE[i.priorite]}>{i.priorite}</Pill>
+                          <Pill tone={PRIORITE_TONE[i.priorite]}>{tText(i.priorite)}</Pill>
                         </td>
                         <td className="py-2.5 text-end">
-                          <Pill tone={i.statut === "En cours" ? "brand" : "neutral"}>{i.statut}</Pill>
+                          <Pill tone={i.statut === "En cours" ? "brand" : "neutral"}>{tText(i.statut)}</Pill>
                         </td>
                       </tr>
                     ))}
@@ -701,9 +701,9 @@ export function MonEspace() {
           </div>
 
           <div className="border-t border-stone-100 pt-3 flex items-center justify-between text-xs">
-            <span className="text-stone-500">{myPannes.length} équipement(s) sous surveillance technique</span>
+            <span className="text-stone-500">{myPannes.length} {tText("équipement(s) sous surveillance technique")}</span>
             <Link href="/dashboard/maintenance" className="font-semibold text-brand hover:underline flex items-center gap-1">
-              Ouvrir le registre de maintenance
+              <span>{tText("Ouvrir le registre de maintenance")}</span>
               <ChevronRight className="h-3.5 w-3.5 rtl:rotate-180" aria-hidden />
             </Link>
           </div>
@@ -892,9 +892,9 @@ export function MonEspace() {
               <Wallet className="h-4 w-4" aria-hidden />
             </span>
           </div>
-          <p className="mt-2 text-2xl font-bold tracking-tight text-ink">{formatDZD(solde)}</p>
+          <p className="mt-2 text-2xl font-bold tracking-tight text-ink">{formatDZD(solde, locale)}</p>
           <div className="mt-2 flex items-center justify-between text-xs text-stone-500 border-t border-stone-100 pt-2">
-            <span>{tText("Encaissé :")} {formatDZD(totalEncaisse)}</span>
+            <span>{tText("Encaissé :")} {formatDZD(totalEncaisse, locale)}</span>
             <span className="text-emerald-600 font-semibold">{tText("Caisse active")}</span>
           </div>
         </div>
@@ -909,7 +909,7 @@ export function MonEspace() {
           </div>
           <p className="mt-2 text-2xl font-bold tracking-tight text-ink">{tauxRecouvrement}%</p>
           <div className="mt-2 flex items-center justify-between text-xs text-stone-500 border-t border-stone-100 pt-2">
-            <span>{tText("Impayés :")} {formatDZD(totalImpayes)}</span>
+            <span>{tText("Impayés :")} {formatDZD(totalImpayes, locale)}</span>
             <span className={impayes.length > 0 ? "text-amber-600 font-semibold" : "text-emerald-600 font-semibold"}>
               {impayes.length} {tText("en retard")}
             </span>
@@ -1011,46 +1011,46 @@ export function MonEspace() {
                 <Building2 className="h-5 w-5" aria-hidden />
               </span>
               <div>
-                <h2 className="text-base font-bold text-ink">Bâtiments & Sous-Admins Délégués</h2>
-                <p className="text-xs text-stone-500">Nomination et suivi des responsables par bloc</p>
+                <h2 className="text-base font-bold text-ink">{tText("Bâtiments & Sous-Admins Délégués")}</h2>
+                <p className="text-xs text-stone-500">{tText("Nomination et suivi des responsables par bloc")}</p>
               </div>
             </div>
             <Link href="/dashboard/residences" className="text-xs font-semibold text-brand hover:underline">
-              Gérer →
+              {tText("Gérer")} →
             </Link>
           </div>
 
           <div className="my-4 flex-1">
             {batiments.length === 0 ? (
-              <p className="py-6 text-center text-xs text-stone-500">Aucun bâtiment configuré pour cette résidence.</p>
+              <p className="py-6 text-center text-xs text-stone-500">{tText("Aucun bâtiment configuré pour cette résidence.")}</p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-start text-xs">
                   <thead>
                     <tr className="border-b border-stone-200 text-[11px] font-bold uppercase tracking-wider text-stone-500">
-                      <th className="pb-2.5">Bâtiment</th>
-                      <th className="pb-2.5">Étages</th>
-                      <th className="pb-2.5">Logements</th>
-                      <th className="pb-2.5">Sous-Admin Délégué</th>
-                      <th className="pb-2.5 text-end">Action</th>
+                      <th className="pb-2.5">{tText("Bâtiment")}</th>
+                      <th className="pb-2.5">{tText("Étages")}</th>
+                      <th className="pb-2.5">{tText("Logements")}</th>
+                      <th className="pb-2.5">{tText("Sous-Admin Délégué")}</th>
+                      <th className="pb-2.5 text-end">{tText("Action")}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-stone-100">
                     {batiments.slice(0, 5).map((b) => (
                       <tr key={b.id} className="hover:bg-stone-50/60 transition">
-                        <td className="py-2.5 font-bold text-ink">{b.nom}</td>
-                        <td className="py-2.5 text-stone-500">{b.etages} étages</td>
-                        <td className="py-2.5 text-stone-600 font-medium">{b.appartements.length} apts</td>
+                        <td className="py-2.5 font-bold text-ink">{tText(b.nom)}</td>
+                        <td className="py-2.5 text-stone-500">{b.etages} {tText("étages")}</td>
+                        <td className="py-2.5 text-stone-600 font-medium">{b.appartements.length} {tText("apts")}</td>
                         <td className="py-2.5">
                           {b.sousAdmin ? (
                             <Pill tone="dark">{fullName(b.sousAdmin)}</Pill>
                           ) : (
-                            <Pill tone="warning">Non délégué</Pill>
+                            <Pill tone="warning">{tText("Non délégué")}</Pill>
                           )}
                         </td>
                         <td className="py-2.5 text-end">
                           <Link href="/dashboard/residences" className="font-semibold text-brand hover:underline">
-                            Gérer
+                            {tText("Gérer")}
                           </Link>
                         </td>
                       </tr>
@@ -1066,7 +1066,7 @@ export function MonEspace() {
               href="/dashboard/residences"
               className="flex items-center justify-between text-xs font-semibold text-stone-600 hover:text-brand transition"
             >
-              <span>Accéder aux tableaux détaillés des blocs et appartements</span>
+              <span>{tText("Accéder aux tableaux détaillés des blocs et appartements")}</span>
               <ChevronRight className="h-4 w-4 rtl:rotate-180" aria-hidden />
             </Link>
           </div>
@@ -1080,36 +1080,36 @@ export function MonEspace() {
                 <CircleDollarSign className="h-5 w-5" aria-hidden />
               </span>
               <div>
-                <h2 className="text-base font-bold text-ink">Finances & Derniers Règlements</h2>
-                <p className="text-xs text-stone-500">Recouvrement des charges et cotisations</p>
+                <h2 className="text-base font-bold text-ink">{tText("Finances & Derniers Règlements")}</h2>
+                <p className="text-xs text-stone-500">{tText("Recouvrement des charges et cotisations")}</p>
               </div>
             </div>
             <Link href="/dashboard/finances" className="text-xs font-semibold text-brand hover:underline">
-              Gérer →
+              {tText("Gérer")} →
             </Link>
           </div>
 
           {/* Quick Metrics Bar */}
           <div className="my-3 grid grid-cols-3 gap-2 text-center text-xs">
             <div className="rounded-xl border border-stone-100 bg-stone-50/60 p-2.5">
-              <p className="text-[10px] uppercase font-bold text-stone-400">Encaissé</p>
-              <p className="mt-1 font-bold text-emerald-600 truncate">{formatDZD(totalEncaisse)}</p>
+              <p className="text-[10px] uppercase font-bold text-stone-400">{tText("Encaissé")}</p>
+              <p className="mt-1 font-bold text-emerald-600 truncate">{formatDZD(totalEncaisse, locale)}</p>
             </div>
             <div className="rounded-xl border border-stone-100 bg-stone-50/60 p-2.5">
-              <p className="text-[10px] uppercase font-bold text-stone-400">Dépenses</p>
-              <p className="mt-1 font-bold text-stone-700 truncate">{formatDZD(totalDepenses)}</p>
+              <p className="text-[10px] uppercase font-bold text-stone-400">{tText("Dépenses")}</p>
+              <p className="mt-1 font-bold text-stone-700 truncate">{formatDZD(totalDepenses, locale)}</p>
             </div>
             <div className="rounded-xl border border-stone-100 bg-stone-50/60 p-2.5">
-              <p className="text-[10px] uppercase font-bold text-stone-400">Factures Serv.</p>
-              <p className="mt-1 font-bold text-stone-700 truncate">{formatDZD(totalFactures)}</p>
+              <p className="text-[10px] uppercase font-bold text-stone-400">{tText("Factures Serv.")}</p>
+              <p className="mt-1 font-bold text-stone-700 truncate">{formatDZD(totalFactures, locale)}</p>
             </div>
           </div>
 
           {/* Paiements récents */}
           <div className="flex-1">
-            <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-stone-400">Derniers règlements enregistrés</p>
+            <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-stone-400">{tText("Derniers règlements enregistrés")}</p>
             {paiements.length === 0 ? (
-              <p className="py-6 text-center text-xs text-stone-500">Aucun paiement enregistré pour l&apos;instant.</p>
+              <p className="py-6 text-center text-xs text-stone-500">{tText("Aucun paiement enregistré pour l'instant.")}</p>
             ) : (
               <ul className="divide-y divide-stone-100 text-xs">
                 {paiements.slice(0, 4).map((p) => (
@@ -1117,11 +1117,11 @@ export function MonEspace() {
                     <div>
                       <p className="font-semibold text-ink">{p.resident}</p>
                       <p className="text-[11px] text-stone-500">
-                        {p.logement} · <span className="font-medium text-stone-600">{p.mode}</span> · {p.date}
+                        {p.logement} · <span className="font-medium text-stone-600">{tText(p.mode)}</span> · {p.date}
                       </p>
                     </div>
                     <Mono strong className="text-emerald-700">
-                      +{formatDZD(p.montant)}
+                      +{formatDZD(p.montant, locale)}
                     </Mono>
                   </li>
                 ))}
@@ -1134,7 +1134,7 @@ export function MonEspace() {
               href="/dashboard/finances"
               className="flex items-center justify-between text-xs font-semibold text-stone-600 hover:text-brand transition"
             >
-              <span>Consulter l&apos;historique complet ({paiements.length} encaissements)</span>
+              <span>{tText("Consulter l'historique complet")} ({paiements.length} {tText("encaissements")})</span>
               <ChevronRight className="h-4 w-4 rtl:rotate-180" aria-hidden />
             </Link>
           </div>
@@ -1151,43 +1151,43 @@ export function MonEspace() {
                 <ScrollText className="h-5 w-5" aria-hidden />
               </span>
               <div>
-                <h2 className="text-base font-bold text-ink">Gouvernance & Assemblée Générale</h2>
-                <p className="text-xs text-stone-500">Délibérations, votes des copropriétaires & quorum</p>
+                <h2 className="text-base font-bold text-ink">{tText("Gouvernance & Assemblée Générale")}</h2>
+                <p className="text-xs text-stone-500">{tText("Délibérations, votes des copropriétaires & quorum")}</p>
               </div>
             </div>
             <Link href="/dashboard/assemblees" className="text-xs font-semibold text-brand hover:underline">
-              Gérer →
+              {tText("Gérer")} →
             </Link>
           </div>
 
           <div className="my-4 flex-1 space-y-4">
             <div className="rounded-xl border border-stone-100 bg-stone-50/60 p-4">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500">Prochaine Session</span>
-                <Pill tone="brand">En cours</Pill>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500">{tText("Prochaine Session")}</span>
+                <Pill tone="brand">{tText("En cours")}</Pill>
               </div>
-              <p className="mt-1.5 font-bold text-ink">Assemblée Générale Ordinaire Annuelle (2026)</p>
+              <p className="mt-1.5 font-bold text-ink">{tText("Assemblée Générale Ordinaire Annuelle (2026)")}</p>
               <p className="mt-1 text-xs text-stone-500 flex items-center gap-1">
                 <Calendar className="h-3.5 w-3.5 text-stone-400" aria-hidden />
-                20 Novembre 2026 · Hall d&apos;Honneur & Salle Polyvalente - Bloc A
+                20 {tText("Novembre")} 2026 · {tText("Hall d'Honneur & Salle Polyvalente - Bloc A")}
               </p>
 
               <div className="mt-3">
                 <div className="flex justify-between text-xs font-semibold mb-1">
-                  <span className="text-stone-600">Quorum des tantièmes atteint</span>
+                  <span className="text-stone-600">{tText("Quorum des tantièmes atteint")}</span>
                   <span className="text-emerald-600">745 / 1000 (74.5%)</span>
                 </div>
-                <ProgressBar value={74.5} label="Quorum tantièmes" />
+                <ProgressBar value={74.5} label={tText("Quorum des tantièmes")} />
               </div>
             </div>
 
             <div className="flex items-center justify-between text-xs text-stone-600 border border-stone-100 rounded-xl p-3 bg-white">
               <span className="flex items-center gap-2 font-medium">
                 <CheckCircle2 className="h-4 w-4 text-emerald-600" aria-hidden />
-                Procès-verbal (PV) certifié conforme
+                {tText("Procès-verbal (PV) certifié conforme")}
               </span>
               <Link href="/dashboard/assemblees" className="font-bold text-brand hover:underline">
-                Mode Vidéoprojection →
+                {tText("Mode Vidéoprojection")} →
               </Link>
             </div>
           </div>
@@ -1197,7 +1197,7 @@ export function MonEspace() {
               href="/dashboard/assemblees"
               className="flex items-center justify-between text-xs font-semibold text-stone-600 hover:text-brand transition"
             >
-              <span>Accéder aux résolutions et résultats de vote</span>
+              <span>{tText("Accéder aux résolutions et résultats de vote")}</span>
               <ChevronRight className="h-4 w-4 rtl:rotate-180" aria-hidden />
             </Link>
           </div>
@@ -1211,49 +1211,49 @@ export function MonEspace() {
                 <Wrench className="h-5 w-5" aria-hidden />
               </span>
               <div>
-                <h2 className="text-base font-bold text-ink">Maintenance & Équipements</h2>
-                <p className="text-xs text-stone-500">Incidents en cours et pannes matérielles</p>
+                <h2 className="text-base font-bold text-ink">{tText("Maintenance & Équipements")}</h2>
+                <p className="text-xs text-stone-500">{tText("Incidents en cours et pannes matérielles")}</p>
               </div>
             </div>
             <Link href="/dashboard/maintenance" className="text-xs font-semibold text-brand hover:underline">
-              Gérer →
+              {tText("Gérer")} →
             </Link>
           </div>
 
           {/* Quick Metrics Bar */}
           <div className="my-3 grid grid-cols-3 gap-2 text-center text-xs">
             <div className="rounded-xl border border-stone-100 bg-stone-50/60 p-2.5">
-              <p className="text-[10px] uppercase font-bold text-stone-400">Incidents</p>
-              <p className="mt-1 font-bold text-ink truncate">{incidents.length} déclarés</p>
+              <p className="text-[10px] uppercase font-bold text-stone-400">{tText("Incidents")}</p>
+              <p className="mt-1 font-bold text-ink truncate">{incidents.length} {tText("déclarés")}</p>
             </div>
             <div className="rounded-xl border border-stone-100 bg-stone-50/60 p-2.5">
-              <p className="text-[10px] uppercase font-bold text-stone-400">Pannes</p>
-              <p className="mt-1 font-bold text-amber-600 truncate">{pannes.length} en attente</p>
+              <p className="text-[10px] uppercase font-bold text-stone-400">{tText("Pannes")}</p>
+              <p className="mt-1 font-bold text-amber-600 truncate">{pannes.length} {tText("en attente")}</p>
             </div>
             <div className="rounded-xl border border-stone-100 bg-stone-50/60 p-2.5">
-              <p className="text-[10px] uppercase font-bold text-stone-400">Historique</p>
-              <p className="mt-1 font-bold text-stone-600 truncate">{interventionsPassees.length} réglés</p>
+              <p className="text-[10px] uppercase font-bold text-stone-400">{tText("Historique")}</p>
+              <p className="mt-1 font-bold text-stone-600 truncate">{interventionsPassees.length} {tText("réglés")}</p>
             </div>
           </div>
 
           {/* Incidents récents */}
           <div className="flex-1">
-            <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-stone-400">Incidents & urgences récentes</p>
+            <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-stone-400">{tText("Incidents & urgences récentes")}</p>
             {incidents.length === 0 ? (
-              <p className="py-6 text-center text-xs text-stone-500">Aucun incident actif dans la résidence. Tout fonctionne normalement.</p>
+              <p className="py-6 text-center text-xs text-stone-500">{tText("Aucun incident actif dans la résidence. Tout fonctionne normalement.")}</p>
             ) : (
               <ul className="divide-y divide-stone-100 text-xs">
                 {incidents.slice(0, 3).map((i) => (
                   <li key={i.id} className="flex items-center justify-between py-2.5 gap-2">
                     <div className="min-w-0 flex-1">
-                      <p className="font-semibold text-ink truncate">{i.titre}</p>
+                      <p className="font-semibold text-ink truncate">{tText(i.titre)}</p>
                       <p className="text-[11px] text-stone-500 truncate">
-                        {i.lieu} · Prestataire : {i.prestataire}
+                        {tText(i.lieu)} · {tText("Prestataire :")} {tText(i.prestataire)}
                       </p>
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">
-                      <Pill tone={PRIORITE_TONE[i.priorite]}>{i.priorite}</Pill>
-                      <Pill tone={i.statut === "En cours" ? "brand" : "neutral"}>{i.statut}</Pill>
+                      <Pill tone={PRIORITE_TONE[i.priorite]}>{tText(i.priorite)}</Pill>
+                      <Pill tone={i.statut === "En cours" ? "brand" : "neutral"}>{tText(i.statut)}</Pill>
                     </div>
                   </li>
                 ))}
@@ -1266,7 +1266,7 @@ export function MonEspace() {
               href="/dashboard/maintenance"
               className="flex items-center justify-between text-xs font-semibold text-stone-600 hover:text-brand transition"
             >
-              <span>Ouvrir le registre des interventions</span>
+              <span>{tText("Ouvrir le registre des interventions")}</span>
               <ChevronRight className="h-4 w-4 rtl:rotate-180" aria-hidden />
             </Link>
           </div>
@@ -1282,27 +1282,27 @@ export function MonEspace() {
               <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-50 text-brand">
                 <Megaphone className="h-4 w-4" aria-hidden />
               </span>
-              <h3 className="text-sm font-bold text-ink">Annonces & Alertes</h3>
+              <h3 className="text-sm font-bold text-ink">{tText("Annonces & Alertes")}</h3>
             </div>
             <Link href="/dashboard/annonces" className="text-xs font-semibold text-brand hover:underline">
-              Gérer →
+              {tText("Gérer")} →
             </Link>
           </div>
 
           <div className="my-3 flex-1">
             {alertes.length === 0 && annoncesList.length === 0 ? (
-              <p className="py-8 text-center text-xs text-stone-500">Aucune annonce publiée pour le moment.</p>
+              <p className="py-8 text-center text-xs text-stone-500">{tText("Aucune annonce publiée pour le moment.")}</p>
             ) : (
               <ul className="divide-y divide-stone-100 text-xs">
                 {alertes.slice(0, 3).map((a) => (
                   <li key={a.id} className="py-2.5">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="font-semibold text-ink truncate">{a.titre}</span>
+                      <span className="font-semibold text-ink truncate">{tText(a.titre)}</span>
                       <Pill tone={a.niveau === "critique" ? "danger" : a.niveau === "attention" ? "warning" : "neutral"}>
-                        {a.niveau}
+                        {tText(a.niveau)}
                       </Pill>
                     </div>
-                    <p className="mt-1 text-[11px] text-stone-500 line-clamp-2">{a.detail}</p>
+                    <p className="mt-1 text-[11px] text-stone-500 line-clamp-2">{tText(a.detail)}</p>
                     <span className="mt-1 block text-[10px] text-stone-400">{a.date}</span>
                   </li>
                 ))}
@@ -1312,7 +1312,7 @@ export function MonEspace() {
 
           <div className="border-t border-stone-100 pt-2.5">
             <Link href="/dashboard/annonces" className="flex items-center justify-between text-xs text-stone-500 hover:text-brand">
-              <span>Voir toutes les alertes ({alertes.length + annoncesList.length})</span>
+              <span>{tText("Voir toutes les alertes")} ({alertes.length + annoncesList.length})</span>
               <ChevronRight className="h-3.5 w-3.5 rtl:rotate-180" aria-hidden />
             </Link>
           </div>
@@ -1325,16 +1325,16 @@ export function MonEspace() {
               <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
                 <UsersRound className="h-4 w-4" aria-hidden />
               </span>
-              <h3 className="text-sm font-bold text-ink">Résidents & Logements</h3>
+              <h3 className="text-sm font-bold text-ink">{tText("Résidents & Logements")}</h3>
             </div>
             <Link href="/dashboard/residents" className="text-xs font-semibold text-brand hover:underline">
-              Gérer →
+              {tText("Gérer")} →
             </Link>
           </div>
 
           <div className="my-3 flex-1">
             {residents.length === 0 ? (
-              <p className="py-8 text-center text-xs text-stone-500">Aucun résident inscrit pour le moment.</p>
+              <p className="py-8 text-center text-xs text-stone-500">{tText("Aucun résident inscrit pour le moment.")}</p>
             ) : (
               <ul className="divide-y divide-stone-100 text-xs">
                 {residents.slice(0, 3).map((r) => (
@@ -1347,7 +1347,7 @@ export function MonEspace() {
                       <div className="min-w-0">
                         <p className="font-semibold text-ink truncate">{fullName(r)}</p>
                         <p className="text-[11px] text-stone-500 truncate">
-                          {r.batiment?.nom ?? "Bâtiment"} · Apt {r.appartement?.nom ?? "—"}
+                          {r.batiment?.nom ? tText(r.batiment.nom) : tText("Bâtiment")} · {tText("Apt")} {r.appartement?.nom ?? "—"}
                         </p>
                       </div>
                     </div>
@@ -1360,7 +1360,7 @@ export function MonEspace() {
 
           <div className="border-t border-stone-100 pt-2.5">
             <Link href="/dashboard/residents" className="flex items-center justify-between text-xs text-stone-500 hover:text-brand">
-              <span>Annuaire complet ({residents.length} résidents)</span>
+              <span>{tText("Annuaire complet")} ({residents.length} {tText("résidents")})</span>
               <ChevronRight className="h-3.5 w-3.5 rtl:rotate-180" aria-hidden />
             </Link>
           </div>
@@ -1373,35 +1373,35 @@ export function MonEspace() {
               <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
                 <ListChecks className="h-4 w-4" aria-hidden />
               </span>
-              <h3 className="text-sm font-bold text-ink">Personnel & Tâches</h3>
+              <h3 className="text-sm font-bold text-ink">{tText("Personnel & Tâches")}</h3>
             </div>
             <Link href="/dashboard/personnel" className="text-xs font-semibold text-brand hover:underline">
-              Gérer →
+              {tText("Gérer")} →
             </Link>
           </div>
 
           <div className="my-3 flex-1">
             <div className="mb-2.5 flex items-center justify-between text-[11px] text-stone-500">
-              <span>Agents en service</span>
+              <span>{tText("Agents en service")}</span>
               <span className="font-semibold text-emerald-700">
-                {employesEnService} / {employes.length} actifs
+                {employesEnService} / {employes.length} {tText("actifs")}
               </span>
             </div>
 
             {taches.length === 0 ? (
-              <p className="py-6 text-center text-xs text-stone-500">Aucune tâche assignée pour le moment.</p>
+              <p className="py-6 text-center text-xs text-stone-500">{tText("Aucune tâche assignée pour le moment.")}</p>
             ) : (
               <ul className="divide-y divide-stone-100 text-xs">
                 {taches.slice(0, 3).map((t) => (
                   <li key={t.id} className="py-2">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="font-semibold text-ink truncate">{t.titre}</span>
+                      <span className="font-semibold text-ink truncate">{tText(t.titre)}</span>
                       <Pill tone={t.statut === "Terminée" ? "success" : t.statut === "En cours" ? "brand" : "neutral"}>
-                        {t.statut}
+                        {tText(t.statut)}
                       </Pill>
                     </div>
                     <p className="text-[11px] text-stone-500">
-                      Assigné à {t.assigneA} · {t.lieu}
+                      {tText("Assigné à")} {tText(t.assigneA)} · {tText(t.lieu)}
                     </p>
                   </li>
                 ))}
@@ -1411,7 +1411,7 @@ export function MonEspace() {
 
           <div className="border-t border-stone-100 pt-2.5">
             <Link href="/dashboard/personnel" className="flex items-center justify-between text-xs text-stone-500 hover:text-brand">
-              <span>Plan de travail ({tachesEnCours.length} à faire)</span>
+              <span>{tText("Plan de travail")} ({tachesEnCours.length} {tText("à faire")})</span>
               <ChevronRight className="h-3.5 w-3.5 rtl:rotate-180" aria-hidden />
             </Link>
           </div>
@@ -1428,34 +1428,34 @@ export function MonEspace() {
                 <FileSignature className="h-5 w-5" aria-hidden />
               </span>
               <div>
-                <h2 className="text-base font-bold text-ink">Contrats Prestataires Clés</h2>
-                <p className="text-xs text-stone-500">Ascenseurs, gardiennage, sécurité & nettoyage</p>
+                <h2 className="text-base font-bold text-ink">{tText("Contrats Prestataires Clés")}</h2>
+                <p className="text-xs text-stone-500">{tText("Ascenseurs, gardiennage, sécurité & nettoyage")}</p>
               </div>
             </div>
             <Link href="/dashboard/documents" className="text-xs font-semibold text-brand hover:underline">
-              Gérer →
+              {tText("Gérer")} →
             </Link>
           </div>
 
           <div className="my-4 flex-1">
             {contrats.length === 0 ? (
-              <p className="py-6 text-center text-xs text-stone-500">Aucun contrat prestataire archivé.</p>
+              <p className="py-6 text-center text-xs text-stone-500">{tText("Aucun contrat prestataire archivé.")}</p>
             ) : (
               <ul className="divide-y divide-stone-100 text-xs">
                 {contrats.slice(0, 3).map((c) => (
                   <li key={c.id} className="flex items-center justify-between py-3">
                     <div>
-                      <p className="font-semibold text-ink">{c.objet}</p>
+                      <p className="font-semibold text-ink">{tText(c.objet)}</p>
                       <p className="text-[11px] text-stone-500">
-                        {c.prestataire} · Échéance : {c.fin}
+                        {tText(c.prestataire)} · {tText("Échéance :")} {c.fin}
                       </p>
                     </div>
                     <div className="text-end">
                       <Mono strong className="text-ink">
-                        {formatDZD(c.montantAnnuel)}
+                        {formatDZD(c.montantAnnuel, locale)}
                       </Mono>
                       <div className="mt-1">
-                        <Pill tone={CONTRAT_TONE[c.statut]}>{c.statut}</Pill>
+                        <Pill tone={CONTRAT_TONE[c.statut]}>{tText(c.statut)}</Pill>
                       </div>
                     </div>
                   </li>
@@ -1469,7 +1469,7 @@ export function MonEspace() {
               href="/dashboard/documents"
               className="flex items-center justify-between text-xs font-semibold text-stone-600 hover:text-brand transition"
             >
-              <span>Accéder aux documents & archives ({documentsResidence.length} pièces)</span>
+              <span>{tText("Accéder aux documents & archives")} ({documentsResidence.length} {tText("pièces")})</span>
               <ChevronRight className="h-4 w-4 rtl:rotate-180" aria-hidden />
             </Link>
           </div>
@@ -1483,19 +1483,19 @@ export function MonEspace() {
                 <SlidersHorizontal className="h-5 w-5" aria-hidden />
               </span>
               <div>
-                <h2 className="text-base font-bold text-ink">Modes de Règlement & Paramètres</h2>
-                <p className="text-xs text-stone-500">Canaux de paiement et barèmes de charges</p>
+                <h2 className="text-base font-bold text-ink">{tText("Modes de Règlement & Paramètres")}</h2>
+                <p className="text-xs text-stone-500">{tText("Canaux de paiement et barèmes de charges")}</p>
               </div>
             </div>
             <Link href="/dashboard/configuration" className="text-xs font-semibold text-brand hover:underline">
-              Gérer →
+              {tText("Gérer")} →
             </Link>
           </div>
 
           <div className="my-4 flex-1 space-y-4">
             {/* Modes de paiement */}
             <div>
-              <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-stone-400">Canaux de paiement acceptés</p>
+              <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-stone-400">{tText("Canaux de paiement acceptés")}</p>
               <div className="flex flex-wrap gap-2">
                 {(config?.modesPaiement ?? []).map((m) => (
                   <span
@@ -1507,18 +1507,18 @@ export function MonEspace() {
                     }`}
                   >
                     <span className={`h-1.5 w-1.5 rounded-full ${m.actif ? "bg-emerald-500" : "bg-stone-300"}`} />
-                    {m.nom}
+                    {tText(m.nom)}
                   </span>
                 ))}
                 {(!config || config.modesPaiement.length === 0) && (
-                  <span className="text-xs text-stone-400">Modes standard activés : CIB, Edahabia, BaridiMob, Virement, Espèces</span>
+                  <span className="text-xs text-stone-400">{tText("Modes standard activés : CIB, Edahabia, BaridiMob, Virement, Espèces")}</span>
                 )}
               </div>
             </div>
 
             {/* Quick Export Shortcuts */}
             <div className="border-t border-stone-100 pt-3">
-              <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-stone-400">Rapports & Exports Rapides</p>
+              <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-stone-400">{tText("Rapports & Exports Rapides")}</p>
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <Link
                   href="/dashboard/rapports"
@@ -1526,7 +1526,7 @@ export function MonEspace() {
                 >
                   <span className="flex items-center gap-2">
                     <FileSpreadsheet className="h-4 w-4 text-emerald-600" aria-hidden />
-                    Bilan Financier (CSV)
+                    {tText("Bilan Financier (CSV)")}
                   </span>
                   <ChevronRight className="h-3.5 w-3.5 text-stone-400 rtl:rotate-180" aria-hidden />
                 </Link>
@@ -1536,7 +1536,7 @@ export function MonEspace() {
                 >
                   <span className="flex items-center gap-2">
                     <Users className="h-4 w-4 text-blue-600" aria-hidden />
-                    Annuaire Copropriétaires
+                    {tText("Annuaire Copropriétaires")}
                   </span>
                   <ChevronRight className="h-3.5 w-3.5 text-stone-400 rtl:rotate-180" aria-hidden />
                 </Link>
@@ -1549,7 +1549,7 @@ export function MonEspace() {
               href="/dashboard/configuration"
               className="flex items-center justify-between text-xs font-semibold text-stone-600 hover:text-brand transition"
             >
-              <span>Modifier les types de charges et délais SLA</span>
+              <span>{tText("Modifier les types de charges et délais SLA")}</span>
               <ChevronRight className="h-4 w-4 rtl:rotate-180" aria-hidden />
             </Link>
           </div>

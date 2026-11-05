@@ -2449,6 +2449,500 @@ export const TRANSLATIONS_MAP: Record<string, TranslationEntry> = {
     ar: "لم يتم ضبط أي نوع من الأعطال بعد.",
     en: "No incident type configured."
   },
+
+  // === SYNDIC DETAILED DASHBOARD FIXES ===
+  "bâtiments & sous-admins délégués": {
+    fr: "Bâtiments & Sous-Admins Délégués",
+    ar: "العمارات والمسؤولون المفوّضون",
+    en: "Buildings & Delegated Sub-Admins"
+  },
+  "nomination et suivi des responsables par bloc": {
+    fr: "Nomination et suivi des responsables par bloc",
+    ar: "تعيين ومتابعة المسؤولين لكل عمارة",
+    en: "Nomination and monitoring of managers per block"
+  },
+  "logements": {
+    fr: "Logements",
+    ar: "الشقق",
+    en: "Units"
+  },
+  "sous-admin délégué": {
+    fr: "Sous-Admin Délégué",
+    ar: "المسؤول المفوّض",
+    en: "Delegated Sub-Admin"
+  },
+  "apts": {
+    fr: "apts",
+    ar: "شقق",
+    en: "apts"
+  },
+  "accéder aux tableaux détaillés des blocs et appartements": {
+    fr: "Accéder aux tableaux détaillés des blocs et appartements",
+    ar: "الاطلاع على الجداول التفصيلية للكتل والشقق",
+    en: "Access detailed tables of blocks and apartments"
+  },
+  "finances & derniers règlements": {
+    fr: "Finances & Derniers Règlements",
+    ar: "المالية وآخر المدفوعات",
+    en: "Finances & Latest Payments"
+  },
+  "recouvrement des charges et cotisations": {
+    fr: "Recouvrement des charges et cotisations",
+    ar: "تحصيل الأعباء والاشتراكات",
+    en: "Collection of dues and fees"
+  },
+  "dépenses": {
+    fr: "Dépenses",
+    ar: "المصاريف",
+    en: "Expenses"
+  },
+  "factures serv.": {
+    fr: "Factures Serv.",
+    ar: "فواتير الخدمات",
+    en: "Service Invoices"
+  },
+  "derniers règlements enregistrés": {
+    fr: "Derniers règlements enregistrés",
+    ar: "آخر عمليات التسديد المسجلة",
+    en: "Latest recorded payments"
+  },
+  "aucun paiement enregistré pour l'instant.": {
+    fr: "Aucun paiement enregistré pour l'instant.",
+    ar: "لا توجد أي دفعة مسجلة حالياً.",
+    en: "No payments recorded yet."
+  },
+  "consulter l'historique complet": {
+    fr: "Consulter l'historique complet",
+    ar: "الاطلاع على السجل الكامل",
+    en: "View full history"
+  },
+  "encaissements": {
+    fr: "encaissements",
+    ar: "عمليات تحصيل",
+    en: "collections"
+  },
+  "gouvernance & assemblée générale": {
+    fr: "Gouvernance & Assemblée Générale",
+    ar: "الحوكمة والجمعية العامة",
+    en: "Governance & General Assembly"
+  },
+  "délibérations, votes des copropriétaires & quorum": {
+    fr: "Délibérations, votes des copropriétaires & quorum",
+    ar: "المداولات، تصويت الملاك المشتركين والنصاب القانوني",
+    en: "Deliberations, co-owner votes & quorum"
+  },
+  "prochaine session": {
+    fr: "Prochaine Session",
+    ar: "الجلسة القادمة",
+    en: "Next Session"
+  },
+  "novembre": {
+    fr: "Novembre",
+    ar: "نوفمبر",
+    en: "November"
+  },
+  "hall d'honneur & salle polyvalente - bloc a": {
+    fr: "Hall d'Honneur & Salle Polyvalente - Bloc A",
+    ar: "البهو الشرفي والقاعة متعددة النشاطات - العمارة A",
+    en: "Main Hall & Multipurpose Room - Block A"
+  },
+  "quorum des tantièmes atteint": {
+    fr: "Quorum des tantièmes atteint",
+    ar: "تم بلوغ نصاب الحصص الشائعة",
+    en: "Share quorum reached"
+  },
+  "procès-verbal (pv) certifié conforme": {
+    fr: "Procès-verbal (PV) certifié conforme",
+    ar: "محضر الجمعية العامة معتمد ومطابق",
+    en: "Certified conforming minutes (PV)"
+  },
+  "accéder aux résolutions et résultats de vote": {
+    fr: "Accéder aux résolutions et résultats de vote",
+    ar: "الاطلاع على القرارات ونتائج التصويت",
+    en: "Access resolutions and voting results"
+  },
+  "maintenance & équipements": {
+    fr: "Maintenance & Équipements",
+    ar: "الصيانة والتجهيزات",
+    en: "Maintenance & Equipment"
+  },
+  "incidents en cours et pannes matérielles": {
+    fr: "Incidents en cours et pannes matérielles",
+    ar: "الأعطال الجارية ومشاكل التجهيزات",
+    en: "Ongoing incidents and hardware breakdowns"
+  },
+  "incidents": {
+    fr: "Incidents",
+    ar: "الأعطال",
+    en: "Incidents"
+  },
+  "déclarés": {
+    fr: "déclarés",
+    ar: "مسجلة",
+    en: "reported"
+  },
+  "pannes": {
+    fr: "Pannes",
+    ar: "أعطال الأجهزة",
+    en: "Breakdowns"
+  },
+  "réglés": {
+    fr: "réglés",
+    ar: "تم حلها",
+    en: "resolved"
+  },
+  "incidents & urgences récentes": {
+    fr: "Incidents & urgences récentes",
+    ar: "الأعطال والطوارئ الأخيرة",
+    en: "Recent incidents & emergencies"
+  },
+  "aucun incident actif dans la résidence. tout fonctionne normalement.": {
+    fr: "Aucun incident actif dans la résidence. Tout fonctionne normalement.",
+    ar: "لا توجد أي أعطال نشطة في الإقامة. كل المرافق تعمل بشكل طبيعي.",
+    en: "No active incidents in the residence. Everything is operating normally."
+  },
+  "prestataire :": {
+    fr: "Prestataire :",
+    ar: "مقدم الخدمة :",
+    en: "Contractor:"
+  },
+  "ouvrir le registre des interventions": {
+    fr: "Ouvrir le registre des interventions",
+    ar: "فتح سجل التدخلات",
+    en: "Open interventions registry"
+  },
+  "voir toutes les alertes": {
+    fr: "Voir toutes les alertes",
+    ar: "عرض كل التنبيهات",
+    en: "View all alerts"
+  },
+  "aucun résident inscrit pour le moment.": {
+    fr: "Aucun résident inscrit pour le moment.",
+    ar: "لا يوجد أي ساكن مسجل حالياً.",
+    en: "No residents registered yet."
+  },
+  "annuaire complet": {
+    fr: "Annuaire complet",
+    ar: "الدليل الشامل",
+    en: "Complete Directory"
+  },
+  "agents en service": {
+    fr: "Agents en service",
+    ar: "العمال المناوبون",
+    en: "On-duty staff"
+  },
+  "aucune tâche assignée pour le moment.": {
+    fr: "Aucune tâche assignée pour le moment.",
+    ar: "لا توجد أي مهام موكلة حالياً.",
+    en: "No tasks assigned yet."
+  },
+  "assigné à": {
+    fr: "Assigné à",
+    ar: "معين إلى",
+    en: "Assigned to"
+  },
+  "plan de travail": {
+    fr: "Plan de travail",
+    ar: "جدول العمل",
+    en: "Work plan"
+  },
+  "à faire": {
+    fr: "à faire",
+    ar: "قيد الإنجاز",
+    en: "to do"
+  },
+  "contrats prestataires clés": {
+    fr: "Contrats Prestataires Clés",
+    ar: "عقود المتعاقدين الرئيسية",
+    en: "Key Contractor Contracts"
+  },
+  "ascenseurs, gardiennage, sécurité & nettoyage": {
+    fr: "Ascenseurs, gardiennage, sécurité & nettoyage",
+    ar: "المصاعد، الحراسة، الأمن والنظافة",
+    en: "Elevators, concierge, security & cleaning"
+  },
+  "aucun contrat prestataire archivé.": {
+    fr: "Aucun contrat prestataire archivé.",
+    ar: "لا توجد عقود متعاقدين مؤرشفة.",
+    en: "No contractor contracts archived."
+  },
+  "échéance :": {
+    fr: "Échéance :",
+    ar: "تاريخ الانتهاء :",
+    en: "Expires:"
+  },
+  "accéder aux documents & archives": {
+    fr: "Accéder aux documents & archives",
+    ar: "الاطلاع على الوثائق والأرشيف",
+    en: "Access documents & archives"
+  },
+  "modes de règlement & paramètres": {
+    fr: "Modes de Règlement & Paramètres",
+    ar: "طرق الدفع والإعدادات",
+    en: "Payment Methods & Settings"
+  },
+  "canaux de paiement et barèmes de charges": {
+    fr: "Canaux de paiement et barèmes de charges",
+    ar: "قنوات الدفع وجداول الأعباء",
+    en: "Payment channels and dues scales"
+  },
+  "canaux de paiement acceptés": {
+    fr: "Canaux de paiement acceptés",
+    ar: "قنوات الدفع المعتمدة",
+    en: "Accepted payment channels"
+  },
+  "modes standard activés : cib, edahabia, baridimob, virement, espèces": {
+    fr: "Modes standard activés : CIB, Edahabia, BaridiMob, Virement, Espèces",
+    ar: "الطرق القياسية المفعلة : CIB، الذهبية، بريدي موب، تحويل بنكي، نقداً",
+    en: "Standard active methods: CIB, Edahabia, BaridiMob, Bank transfer, Cash"
+  },
+  "rapports & exports rapides": {
+    fr: "Rapports & Exports Rapides",
+    ar: "تقارير وتصدير سريع",
+    en: "Quick Reports & Exports"
+  },
+  "bilan financier (csv)": {
+    fr: "Bilan Financier (CSV)",
+    ar: "الحصيلة المالية (CSV)",
+    en: "Financial Balance (CSV)"
+  },
+  "annuaire copropriétaires": {
+    fr: "Annuaire Copropriétaires",
+    ar: "دليل الملاك المشتركين",
+    en: "Co-owners Directory"
+  },
+  "modifier les types de charges et délais sla": {
+    fr: "Modifier les types de charges et délais SLA",
+    ar: "تعديل أنواع الأعباء وآجال التدخل SLA",
+    en: "Edit charge types and SLA response times"
+  },
+  "carte edahabia (algérie poste)": {
+    fr: "Carte Edahabia (Algérie Poste)",
+    ar: "البطاقة الذهبية (بريد الجزائر)",
+    en: "Edahabia Card (Algeria Post)"
+  },
+  "carte cib (banques algériennes)": {
+    fr: "Carte CIB (Banques algériennes)",
+    ar: "بطاقة CIB (البنوك الجزائرية)",
+    en: "CIB Card (Algerian Banks)"
+  },
+  "virement bancaire / ccp": {
+    fr: "Virement bancaire / CCP",
+    ar: "تحويل بنكي / CCP",
+    en: "Bank Transfer / CCP"
+  },
+  "paiement en espèces au bureau du syndic": {
+    fr: "Paiement en espèces au bureau du syndic",
+    ar: "الدفع نقداً في مكتب وكيل العمارة",
+    en: "Cash payment at syndic office"
+  },
+
+  // === DEEP SECONDARY KEYS FIXES ===
+  "mode vidéoprojection →": {
+    fr: "Mode Vidéoprojection →",
+    ar: "وضع العرض المرئي ←",
+    en: "Video Projection Mode →"
+  },
+  "signaler un problème": {
+    fr: "Signaler un problème",
+    ar: "الإبلاغ عن مشكلة",
+    en: "Report an issue"
+  },
+  "signaler un problème →": {
+    fr: "Signaler un problème →",
+    ar: "الإبلاغ عن مشكلة ←",
+    en: "Report an issue →"
+  },
+  "incidents & pannes du": {
+    fr: "Incidents & Pannes du",
+    ar: "أعطال ومشاكل",
+    en: "Incidents & Breakdowns of"
+  },
+  "ascenseur, éclairage du hall, pompes et parties communes": {
+    fr: "Ascenseur, éclairage du hall, pompes et parties communes",
+    ar: "المصعد، إنارة البهو، المضخات والأجزاء المشتركة",
+    en: "Elevator, hall lighting, pumps and common areas"
+  },
+  "aucun incident ouvert sur ce bâtiment. équipements opérationnels.": {
+    fr: "Aucun incident ouvert sur ce bâtiment. Équipements opérationnels.",
+    ar: "لا توجد أي أعطال نشطة في هذا المبنى. جميع التجهيزات تعمل بصورة جيدة.",
+    en: "No open incidents in this building. Equipment is fully operational."
+  },
+  "emplacement": {
+    fr: "Emplacement",
+    ar: "الموقع",
+    en: "Location"
+  },
+  "prestataire / intervenant": {
+    fr: "Prestataire / Intervenant",
+    ar: "مقدم الخدمة / المتدخل",
+    en: "Contractor / Worker"
+  },
+  "équipement(s) sous surveillance technique": {
+    fr: "équipement(s) sous surveillance technique",
+    ar: "تجهيزات تحت المراقبة التقنية",
+    en: "equipment under technical monitoring"
+  },
+  "ouvrir le registre de maintenance": {
+    fr: "Ouvrir le registre de maintenance",
+    ar: "فتح سجل الصيانة",
+    en: "Open maintenance log"
+  },
+  "pièce": {
+    fr: "pièce",
+    ar: "وثيقة",
+    en: "document"
+  },
+  "apt": {
+    fr: "Apt",
+    ar: "شقة",
+    en: "Apt"
+  },
+  "espèces": {
+    fr: "Espèces",
+    ar: "نقداً",
+    en: "Cash"
+  },
+  "especes": {
+    fr: "Espèces",
+    ar: "نقداً",
+    en: "Cash"
+  },
+  "virement": {
+    fr: "Virement",
+    ar: "تحويل بنكي",
+    en: "Bank Transfer"
+  },
+  "chèque": {
+    fr: "Chèque",
+    ar: "شيك",
+    en: "Check"
+  },
+  "cheque": {
+    fr: "Chèque",
+    ar: "شيك",
+    en: "Check"
+  },
+  "carte": {
+    fr: "Carte",
+    ar: "بطاقة",
+    en: "Card"
+  },
+  "bloc": {
+    fr: "Bloc",
+    ar: "العمارة",
+    en: "Block"
+  },
+  "bloc a": {
+    fr: "Bloc A",
+    ar: "العمارة A",
+    en: "Block A"
+  },
+  "bloc b": {
+    fr: "Bloc B",
+    ar: "العمارة B",
+    en: "Block B"
+  },
+  "bloc c": {
+    fr: "Bloc C",
+    ar: "العمارة C",
+    en: "Block C"
+  },
+  "bloc d": {
+    fr: "Bloc D",
+    ar: "العمارة D",
+    en: "Block D"
+  },
+  "bloc t": {
+    fr: "Bloc T",
+    ar: "العمارة T",
+    en: "Block T"
+  },
+  "serrure porte principale bloc t coincée": {
+    fr: "Serrure porte principale Bloc T coincée",
+    ar: "قفل الباب الرئيسي للعمارة T معطل",
+    en: "Block T main door lock jammed"
+  },
+  "entrée principale bloc t": {
+    fr: "Entrée principale Bloc T",
+    ar: "المدخل الرئيسي للعمارة T",
+    en: "Main entrance Block T"
+  },
+  "interphone en panne bloc b": {
+    fr: "Interphone en panne Bloc B",
+    ar: "الإنترفون معطل في العمارة B",
+    en: "Intercom broken in Block B"
+  },
+  "hall bloc b": {
+    fr: "Hall Bloc B",
+    ar: "بهو العمارة B",
+    en: "Hallway Block B"
+  },
+  "fuite d'eau colonne bloc t": {
+    fr: "Fuite d'eau colonne Bloc T",
+    ar: "تسرب مياه في عمود العمارة T",
+    en: "Water leak in Block T column"
+  },
+  "cage d'escalier 2e étage": {
+    fr: "Cage d'escalier 2e étage",
+    ar: "بيت السلالم الطابق الثاني",
+    en: "Stairwell 2nd floor"
+  },
+  "intervention : serrure porte principale bloc t coincée": {
+    fr: "Intervention : Serrure porte principale Bloc T coincée",
+    ar: "تدخل : قفل الباب الرئيسي للعمارة T معطل",
+    en: "Intervention: Block T main door lock jammed"
+  },
+  "vérification des extincteurs bloc t": {
+    fr: "Vérification des extincteurs Bloc T",
+    ar: "فحص طفايات الحريق العمارة T",
+    en: "Fire extinguishers check Block T"
+  },
+  "vérification des éclairages bloc b": {
+    fr: "Vérification des éclairages Bloc B",
+    ar: "فحص الإنارة العمارة B",
+    en: "Lighting inspection Block B"
+  },
+  "bloc t paliers 1 à 4": {
+    fr: "Bloc T Paliers 1 à 4",
+    ar: "العمارة T الطوابق 1 إلى 4",
+    en: "Block T landings 1 to 4"
+  },
+  "bloc b escaliers": {
+    fr: "Bloc B Escaliers",
+    ar: "العمارة B السلالم",
+    en: "Block B stairs"
+  },
+  "équipe entretien": {
+    fr: "Équipe Entretien",
+    ar: "فريق الصيانة",
+    en: "Maintenance Team"
+  },
+  "coupure d'eau temporaire": {
+    fr: "Coupure d'eau temporaire",
+    ar: "انقطاع مؤقت للمياه",
+    en: "Temporary water outage"
+  },
+  "coupure générale programmée par la seaal de 14h à 18h pour réparations sur le réseau principal.": {
+    fr: "Coupure générale programmée par la SEAAL de 14h à 18h pour réparations sur le réseau principal.",
+    ar: "انقطاع عام مبرمج من طرف سيال من 14:00 إلى 18:00 لإجراء تصليحات على الشبكة الرئيسية.",
+    en: "General water outage scheduled by SEAAL from 2:00 PM to 6:00 PM for main network repairs."
+  },
+  "mourad gardien": {
+    fr: "Mourad Gardien",
+    ar: "مراد الحارس",
+    en: "Mourad Guard"
+  },
+  "sarl électricité générale": {
+    fr: "SARL Électricité générale",
+    ar: "ش.ذ.م.م كهرباء عامة",
+    en: "General Electricity LLC"
+  },
+  "sarl plomberie express": {
+    fr: "SARL Plomberie Express",
+    ar: "ش.ذ.م.م ترصيص سريع",
+    en: "Plumbing Express LLC"
+  },
 };
 
 // Fast lookup helper
