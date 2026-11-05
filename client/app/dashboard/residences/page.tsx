@@ -583,7 +583,7 @@ export default function ResidencesPage() {
         </div>
       ) : !residence ? (
         <section className={`${card} p-12 text-center text-sm text-stone-500`}>
-          Aucune résidence ne vous est encore attribuée. Contactez le Super Admin.
+          {tText("Aucune résidence ne vous est encore attribuée. Contactez le Super Admin.")}
         </section>
       ) : (
         <>

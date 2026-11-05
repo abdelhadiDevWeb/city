@@ -124,8 +124,8 @@ export function SuperAdminOverview() {
     },
     {
       label: "Revenus Consolidés Plateforme",
-      value: stats ? formatDZD(totalEncaisse) : "—",
-      hint: totalEnAttente > 0 ? `${formatDZD(totalEnAttente)} ${tText("en attente")}` : tText("Comptabilité SaaS à jour"),
+      value: stats ? formatDZD(totalEncaisse, locale) : "—",
+      hint: totalEnAttente > 0 ? `${formatDZD(totalEnAttente, locale)} ${tText("en attente")}` : tText("Comptabilité SaaS à jour"),
       icon: CircleDollarSign,
       tone: "brand",
     },
@@ -173,27 +173,27 @@ export function SuperAdminOverview() {
       title: "Assemblées Générales (AG)",
       route: "/dashboard/assemblees",
       icon: ScrollText,
-      badge: "Session 2026",
+      badge: tText("Session 2026"),
       description: "Supervision des votes en ligne des copropriétaires, suivi du quorum des tantièmes et certification PV.",
-      meta: "Quorum 74.5% tantièmes atteint",
+      meta: tText("Quorum 74.5% tantièmes atteint"),
       color: "bg-indigo-50 text-indigo-600 border-indigo-100",
     },
     {
       title: "Statistiques & Croissance",
       route: "/dashboard/statistiques",
       icon: ChartLine,
-      badge: "+100% rétention",
+      badge: tText("+100% rétention"),
       description: "Évolution mensuelle du parc, projection de croissance, répartition géographique des résidences.",
-      meta: "Chiffre d'affaires & métriques SaaS",
+      meta: tText("Chiffre d'affaires & métriques SaaS"),
       color: "bg-amber-50 text-amber-600 border-amber-100",
     },
     {
       title: "Rapports & Exports SaaS",
       route: "/dashboard/rapports",
       icon: ChartColumn,
-      badge: "Exports CSV & Print",
+      badge: tText("Exports CSV & Print"),
       description: "Téléchargement consolidé des journaux financiers, bilans annuels et registre complet des copropriétaires.",
-      meta: "Périodes personnalisables",
+      meta: tText("Périodes personnalisables"),
       color: "bg-teal-50 text-teal-600 border-teal-100",
     },
     {
@@ -202,7 +202,7 @@ export function SuperAdminOverview() {
       icon: ShieldPlus,
       badge: `${stats?.totaux.superAdmins ?? 1} ${tText("Super Admin(s)")}`,
       description: "Gestion des comptes maîtres plateforme, journaux d'audit de sécurité et clés de chiffrement.",
-      meta: "Droits d'accès totaux",
+      meta: tText("Droits d'accès totaux"),
       color: "bg-stone-100 text-stone-700 border-stone-200",
     },
   ];
@@ -299,14 +299,14 @@ export function SuperAdminOverview() {
                     <span className={`flex h-10 w-10 items-center justify-center rounded-xl border ${m.color}`}>
                       <Icon className="h-5 w-5" aria-hidden />
                     </span>
-                    <Pill tone="brand">{tText(m.badge)}</Pill>
+                    <Pill tone="brand">{m.badge}</Pill>
                   </div>
                   <h3 className="mt-3 text-base font-bold text-ink group-hover:text-brand transition">{tText(m.title)}</h3>
                   <p className="mt-1 text-xs text-stone-500 line-clamp-2 leading-relaxed">{tText(m.description)}</p>
                 </div>
 
                 <div className="mt-4 flex items-center justify-between border-t border-stone-100 pt-3 text-xs">
-                  <span className="font-semibold text-stone-600">{tText(m.meta)}</span>
+                  <span className="font-semibold text-stone-600">{m.meta}</span>
                   <span className="flex items-center gap-1 font-semibold text-brand group-hover:translate-x-0.5 transition">
                     {tText("Ouvrir")}
                     <ChevronRight className="h-3.5 w-3.5 rtl:rotate-180" aria-hidden />

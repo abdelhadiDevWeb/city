@@ -20,7 +20,7 @@ export function Shell({ children }: { children: ReactNode }) {
   const [emergencyOpen, setEmergencyOpen] = useState(false);
   const pathname = usePathname();
   const { account } = useSession();
-  const { t, isRTL } = useI18n();
+  const { t, tText, locale, isRTL } = useI18n();
   const role = primaryRole(account);
 
   useEffect(() => {
@@ -80,15 +80,17 @@ export function Shell({ children }: { children: ReactNode }) {
                   <ShieldX className="h-6 w-6" aria-hidden />
                 </span>
                 <h1 className="mt-4 text-lg font-bold text-ink">
-                  {isRTL ? "وصول غير مصرح به" : "Accès non autorisé"}
+                  {tText("Accès non autorisé")}
                 </h1>
                 <p className="mt-1 text-sm text-stone-500">
-                  {isRTL
+                  {locale === "ar"
                     ? `هذه الصفحة غير متاحة لرتبة ${roleLabel}.`
+                    : locale === "en"
+                    ? `This page is not available for the ${roleLabel} role.`
                     : `Cette page n'est pas disponible pour le rôle ${roleLabel}.`}
                 </p>
                 <Link href="/dashboard" className={`${button("primary")} mt-6`}>
-                  {t.common.back} {t.nav.dashboard}
+                  {locale === "ar" ? "العودة إلى لوحة التحكم" : locale === "en" ? "Back to Dashboard" : "Retour au tableau de bord"}
                 </Link>
               </section>
             )}

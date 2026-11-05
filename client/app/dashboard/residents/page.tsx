@@ -254,7 +254,7 @@ export default function ResidentsPage() {
         title={t.residents.title}
         subtitle={
           isSuperAdmin
-            ? "Gestion globale des résidents et propriétaires de toutes les résidences."
+            ? tText("Gestion globale des résidents et propriétaires de toutes les résidences.")
             : espace?.residence
             ? `${isSubAdmin ? `Bâtiment ${espace.batiments[0]?.nom ?? ""} · ` : ""}${espace.residence.nom} — gestion des propriétaires et logements.`
             : "Gestion des propriétaires et de leurs appartements."
@@ -597,8 +597,8 @@ function ResidentModal({
             list="free-flats"
             hint={
               freeFlats.length
-                ? `Appartements libres dans ce bâtiment : ${freeFlats.map((a) => `${a.nom} (${etageLabel(a.etage)})`).join(", ")}. Un nom nouveau crée l'appartement.`
-                : "L'appartement sera créé dans ce bâtiment à l'étage choisi."
+                ? `${tText("Appartements libres dans ce bâtiment :")} ${freeFlats.map((a) => `${a.nom} (${etageLabel(a.etage)})`).join(", ")}. ${tText("Un nom nouveau crée l'appartement.")}`
+                : tText("L'appartement sera créé dans ce bâtiment à l'étage choisi.")
             }
           />
           <datalist id="free-flats">
@@ -618,7 +618,7 @@ function ResidentModal({
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Email" name="email" type="email" required maxLength={254} autoComplete="off" />
-            <Field label="Téléphone" name="telephone" type="tel" required pattern="\+?[0-9]{8,15}" title="8 à 15 chiffres, + facultatif" placeholder="0555123456" />
+            <Field label="Téléphone" name="telephone" type="tel" required pattern="\+?[0-9]{8,15}" title={tText("8 à 15 chiffres, + facultatif")} placeholder="0555123456" />
           </div>
         </fieldset>
 
@@ -693,7 +693,7 @@ function EditResidentModal({
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required maxLength={254} />
-            <Field label="Téléphone" type="tel" value={telephone} onChange={(e) => setTelephone(e.target.value)} required pattern="\+?[0-9]{8,15}" title="8 à 15 chiffres, + facultatif" />
+            <Field label="Téléphone" type="tel" value={telephone} onChange={(e) => setTelephone(e.target.value)} required pattern="\+?[0-9]{8,15}" title={tText("8 à 15 chiffres, + facultatif")} />
           </div>
           <Field
             label="NIN (numéro d'identification nationale) — Optionnel"

@@ -307,7 +307,7 @@ export function MonEspace() {
         route: "/dashboard/finances",
         icon: Wallet,
         badge: `${myTauxRecouvrement}% ${tText("payé")}`,
-        meta: formatDZD(myEncaisse),
+        meta: formatDZD(myEncaisse, locale),
         description: "Enregistrement des paiements des résidents, suivi de qui a payé et qui est en retard.",
         color: "bg-emerald-50 text-emerald-600 border-emerald-100",
       },
@@ -500,14 +500,14 @@ export function MonEspace() {
                       <span className={`flex h-10 w-10 items-center justify-center rounded-xl border ${m.color}`}>
                         <Icon className="h-5 w-5" aria-hidden />
                       </span>
-                      <Pill tone="brand">{tText(m.badge)}</Pill>
+                      <Pill tone="brand">{m.badge}</Pill>
                     </div>
                     <h3 className="mt-3 text-base font-bold text-ink group-hover:text-brand transition">{tText(m.title)}</h3>
                     <p className="mt-1 text-xs text-stone-500 line-clamp-2 leading-relaxed">{tText(m.description)}</p>
                   </div>
 
                   <div className="mt-4 flex items-center justify-between border-t border-stone-100 pt-3 text-xs">
-                    <span className="font-semibold text-stone-600">{tText(m.meta)}</span>
+                    <span className="font-semibold text-stone-600">{m.meta}</span>
                     <span className="flex items-center gap-1 font-semibold text-brand group-hover:translate-x-0.5 transition">
                       {tText("Gérer")}
                       <ChevronRight className="h-3.5 w-3.5 rtl:rotate-180" aria-hidden />
@@ -722,8 +722,8 @@ export function MonEspace() {
       title: "Bâtiments & Sous-Admins",
       route: "/dashboard/residences",
       icon: Building2,
-      badge: `${batiments.length} bâtiments`,
-      meta: `${batimentsWithoutSubAdmin > 0 ? `${batimentsWithoutSubAdmin} sans sous-admin` : "Tous délégués"}`,
+      badge: `${batiments.length} ${tText("bâtiments")}`,
+      meta: batimentsWithoutSubAdmin > 0 ? `${batimentsWithoutSubAdmin} ${tText("sans sous-admin")}` : tText("Tous délégués"),
       description: "Gestion des blocs, étages, tantièmes et nomination des responsables de bâtiment.",
       color: "bg-orange-50 text-brand border-orange-100",
     },
@@ -731,8 +731,8 @@ export function MonEspace() {
       title: "Résidents & Logements",
       route: "/dashboard/residents",
       icon: Users,
-      badge: `${residents.length} résidents`,
-      meta: `${occupes} / ${appartements.length} occupés`,
+      badge: `${residents.length} ${tText("résidents")}`,
+      meta: `${occupes} / ${appartements.length} ${tText("occupés")}`,
       description: "Annuaire des copropriétaires, fiches logements, mots de passe temporaires et affectations.",
       color: "bg-blue-50 text-blue-600 border-blue-100",
     },
@@ -740,8 +740,8 @@ export function MonEspace() {
       title: "Finances & Règlements",
       route: "/dashboard/finances",
       icon: Wallet,
-      badge: `${tauxRecouvrement}% recouvré`,
-      meta: formatDZD(solde),
+      badge: `${tauxRecouvrement}% ${tText("recouvré")}`,
+      meta: formatDZD(solde, locale),
       description: "Journal de caisse, encaissement des charges, quittances WhatsApp et relances d'impayés.",
       color: "bg-emerald-50 text-emerald-600 border-emerald-100",
     },
@@ -749,8 +749,8 @@ export function MonEspace() {
       title: "Maintenance & Pannes",
       route: "/dashboard/maintenance",
       icon: Wrench,
-      badge: `${incidents.length} incidents`,
-      meta: `${pannes.length} pannes matérielles`,
+      badge: `${incidents.length} ${tText("incidents")}`,
+      meta: `${pannes.length} ${tText("panne(s) équipement")}`,
       description: "Suivi des pannes d'ascenseurs, interventions techniques avec photos et clôture des tickets.",
       color: "bg-amber-50 text-amber-600 border-amber-100",
     },
@@ -758,8 +758,8 @@ export function MonEspace() {
       title: "Assemblées Générales (AG)",
       route: "/dashboard/assemblees",
       icon: ScrollText,
-      badge: "AGO 2026",
-      meta: "Quorum 74.5% tantièmes",
+      badge: tText("AGO 2026"),
+      meta: tText("Quorum 74.5% tantièmes"),
       description: "Convocations, vote en ligne par tantièmes, mode projection vidéoprojecteur et PV certifié.",
       color: "bg-indigo-50 text-indigo-600 border-indigo-100",
     },
@@ -767,8 +767,8 @@ export function MonEspace() {
       title: "Personnel & Tâches",
       route: "/dashboard/personnel",
       icon: UserCog,
-      badge: `${employesEnService} / ${employes.length} en poste`,
-      meta: `${tachesEnCours.length} tâches à faire`,
+      badge: `${employesEnService} / ${employes.length} ${tText("en poste")}`,
+      meta: `${tachesEnCours.length} ${tText("tâches à faire")}`,
       description: "Planning des concierges, agents d'entretien, gardiens de nuit et affectation des tâches.",
       color: "bg-purple-50 text-purple-600 border-purple-100",
     },
@@ -776,8 +776,8 @@ export function MonEspace() {
       title: "Annonces & Alertes",
       route: "/dashboard/annonces",
       icon: Megaphone,
-      badge: `${alertes.length} alertes actives`,
-      meta: `${annoncesList.length} diffusées`,
+      badge: `${alertes.length} ${tText("alertes actives")}`,
+      meta: `${annoncesList.length} ${tText("diffusées")}`,
       description: "Diffusion d'avis aux copropriétaires et alertes d'urgence avec notification instantanée.",
       color: "bg-rose-50 text-rose-600 border-rose-100",
     },
@@ -785,8 +785,8 @@ export function MonEspace() {
       title: "Documents & Contrats",
       route: "/dashboard/documents",
       icon: FolderOpen,
-      badge: `${contrats.length} contrats`,
-      meta: `${documentsResidence.length} pièces archivées`,
+      badge: `${contrats.length} ${tText("contrats")}`,
+      meta: `${documentsResidence.length} ${tText("pièces archivées")}`,
       description: "Coffre-fort numérique, contrats d'ascenseur, assurance de copropriété et devis.",
       color: "bg-stone-100 text-stone-700 border-stone-200",
     },
@@ -794,8 +794,8 @@ export function MonEspace() {
       title: "Rapports & Exports",
       route: "/dashboard/rapports",
       icon: ChartColumn,
-      badge: "Bilan N vs N+1",
-      meta: "Formats CSV & Print",
+      badge: tText("Bilan N vs N+1"),
+      meta: tText("Formats CSV & Print"),
       description: "Génération de bilans comptables, journaux financiers et registres par période paramétrable.",
       color: "bg-teal-50 text-teal-600 border-teal-100",
     },
@@ -803,8 +803,8 @@ export function MonEspace() {
       title: "Configuration & Types",
       route: "/dashboard/configuration",
       icon: SlidersHorizontal,
-      badge: `${config?.typesCharges.length ?? 0} types charges`,
-      meta: "Barèmes & CIB",
+      badge: `${config?.typesCharges.length ?? 0} ${tText("types charges")}`,
+      meta: tText("Barèmes & CIB"),
       description: "Modes de paiement acceptés (CIB, BaridiMob), barèmes mensuels et délais SLA d'intervention.",
       color: "bg-amber-50 text-amber-700 border-amber-200",
     },
@@ -985,14 +985,14 @@ export function MonEspace() {
                     <span className={`flex h-9 w-9 items-center justify-center rounded-xl border ${m.color}`}>
                       <Icon className="h-4 w-4" aria-hidden />
                     </span>
-                    <Pill tone="brand">{tText(m.badge)}</Pill>
+                    <Pill tone="brand">{m.badge}</Pill>
                   </div>
                   <h3 className="mt-3 text-sm font-bold text-ink group-hover:text-brand transition">{tText(m.title)}</h3>
                   <p className="mt-1 text-xs text-stone-500 line-clamp-2 leading-relaxed">{tText(m.description)}</p>
                 </div>
 
                 <div className="mt-3 flex items-center justify-between border-t border-stone-100 pt-2.5 text-xs">
-                  <span className="font-semibold text-stone-600 truncate">{tText(m.meta)}</span>
+                  <span className="font-semibold text-stone-600 truncate">{m.meta}</span>
                   <ChevronRight className="h-3.5 w-3.5 text-stone-400 group-hover:text-brand shrink-0 rtl:rotate-180" aria-hidden />
                 </div>
               </Link>

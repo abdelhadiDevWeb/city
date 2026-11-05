@@ -170,8 +170,8 @@ export default function PersonnelPage() {
     <div className="space-y-6">
       <PageHeader
         icon={UserCog}
-        title="Personnel & Tâches"
-        subtitle="Équipe de la résidence, horaires et suivi des tâches assignées"
+        title={tText("Personnel & Tâches")}
+        subtitle={tText("Équipe de la résidence, horaires et suivi des tâches assignées")}
         actions={
           <div className="flex gap-2">
             <button type="button" onClick={() => setAddingEmploye(true)} className={button("secondary")}>

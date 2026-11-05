@@ -46,7 +46,7 @@ export default function ProfilePage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader icon={User} title="Mon profil" subtitle="Informations de votre compte et rôle sur la plateforme." />
+      <PageHeader icon={User} title={tText("Mon profil")} subtitle={tText("Informations de votre compte et rôle sur la plateforme.")} />
 
       <section className={`${card} p-6 sm:p-8`}>
         <div className="flex items-center gap-4 border-b border-stone-100 pb-6">
@@ -65,7 +65,7 @@ export default function ProfilePage() {
             <>
               <Field label="Nom complet" value={account.nomComplet} />
               <Field label="Email" value={account.email} />
-              <Field label="Rôle" value={ROLE_LABELS[role]} />
+              <Field label="Rôle" value={tText(ROLE_LABELS[role])} />
             </>
           ) : (
             <>
@@ -73,7 +73,7 @@ export default function ProfilePage() {
               <Field label="Nom" value={account.nom} />
               <Field label="Email" value={account.email} />
               <Field label="Téléphone" value={account.telephone} />
-              <Field label="Rôle" value={ROLE_LABELS[role]} />
+              <Field label="Rôle" value={tText(ROLE_LABELS[role])} />
               <Field label="Wilaya" value={account.wilaya} />
               <Field label="Daïra" value={account.daira} />
               <Field label="Baladia" value={account.baladia} />
@@ -145,13 +145,13 @@ function SuperAdminsSection({ currentId }: { currentId: string }) {
         <div>
           <h2 className="flex items-center gap-2 text-sm font-bold text-ink">
             <ShieldPlus className="h-4 w-4 text-brand" aria-hidden />
-            Super Admins{superAdmins ? ` (${superAdmins.length})` : ""}
+            {tText("Super Admins")}{superAdmins ? ` (${superAdmins.length})` : ""}
           </h2>
-          <p className="mt-0.5 text-xs text-stone-500">Les Super Admins ont un accès complet à la plateforme.</p>
+          <p className="mt-0.5 text-xs text-stone-500">{tText("Les Super Admins ont un accès complet à la plateforme.")}</p>
         </div>
         <button type="button" onClick={() => setCreating(true)} className={button("primary", "sm")}>
           <ShieldPlus className="h-3.5 w-3.5" aria-hidden />
-          Nouveau Super Admin
+          {tText("Nouveau Super Admin")}
         </button>
       </div>
 

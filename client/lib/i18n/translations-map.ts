@@ -1427,6 +1427,1028 @@ export const TRANSLATIONS_MAP: Record<string, TranslationEntry> = {
     ar: "مكتمل",
     en: "Full"
   },
+
+  // === EXHAUSTIVE LIVE AUDIT FIXES ===
+  "abonnements & formules": {
+    fr: "Abonnements & Formules",
+    ar: "الاشتراكات والباقات",
+    en: "Subscriptions & Plans"
+  },
+  "copropriétaires & résidents": {
+    fr: "Copropriétaires & Résidents",
+    ar: "الملاك المشتركون والمقيمون",
+    en: "Co-owners & Residents"
+  },
+  "personnel & intervenants": {
+    fr: "Personnel & Intervenants",
+    ar: "الموظفون والعمال",
+    en: "Staff & Contractors"
+  },
+  "assemblées générales (ag)": {
+    fr: "Assemblées Générales (AG)",
+    ar: "الجمعيات العامة",
+    en: "General Assemblies (GA)"
+  },
+  "statistiques & croissance": {
+    fr: "Statistiques & Croissance",
+    ar: "الإحصائيات والنمو",
+    en: "Statistics & Growth"
+  },
+  "rapports & exports saas": {
+    fr: "Rapports & Exports SaaS",
+    ar: "التقارير والتصدير SaaS",
+    en: "Reports & SaaS Exports"
+  },
+  "équipe super admin & accès": {
+    fr: "Équipe Super Admin & Accès",
+    ar: "فريق الإدارة العامة والصلاحيات",
+    en: "Super Admin Team & Access"
+  },
+  "profil super admin & sécurité": {
+    fr: "Profil Super Admin & Sécurité",
+    ar: "ملف المشرف العام والأمان",
+    en: "Super Admin Profile & Security"
+  },
+  "formules d'abonnements (1 an standard)": {
+    fr: "Formules d'abonnements (1 an standard)",
+    ar: "باقات الاشتراكات (معيار سنة واحدة)",
+    en: "Subscription Plans (1 Year Standard)"
+  },
+  "durée standard 1 an · paiement flexible": {
+    fr: "Durée standard 1 an · Paiement flexible",
+    ar: "مدة قياسية سنة واحدة · دفع مرن",
+    en: "Standard 1 year term · Flexible payment"
+  },
+  "comptabilité saas à jour": {
+    fr: "Comptabilité SaaS à jour",
+    ar: "محاسبة المنصة محينة",
+    en: "SaaS accounting up to date"
+  },
+  "bâtiments gérés": {
+    fr: "bâtiments gérés",
+    ar: "عمارات مدارة",
+    en: "managed buildings"
+  },
+  "souscriptions actives": {
+    fr: "souscriptions actives",
+    ar: "اشتراكات نشطة",
+    en: "active subscriptions"
+  },
+  "logements occupés": {
+    fr: "logements occupés",
+    ar: "شقق مشغولة",
+    en: "occupied units"
+  },
+  "+100% rétention": {
+    fr: "+100% rétention",
+    ar: "+100% نسبة الاستبقاء",
+    en: "+100% retention"
+  },
+  "session 2026": {
+    fr: "Session 2026",
+    ar: "جلسة 2026",
+    en: "2026 Session"
+  },
+  "quorum 74.5% tantièmes atteint": {
+    fr: "Quorum 74.5% tantièmes atteint",
+    ar: "تم بلوغ نصاب 74.5% من الحصص",
+    en: "74.5% share quorum reached"
+  },
+  "chiffre d'affaires & métriques saas": {
+    fr: "Chiffre d'affaires & métriques SaaS",
+    ar: "رقم الأعمال ومؤشرات المنصة",
+    en: "Revenue & SaaS metrics"
+  },
+  "exports csv & print": {
+    fr: "Exports CSV & Print",
+    ar: "تصدير CSV وطباعة",
+    en: "CSV Exports & Print"
+  },
+  "périodes personnalisables": {
+    fr: "Périodes personnalisables",
+    ar: "فترات قابلة للتخصيص",
+    en: "Customizable periods"
+  },
+  "super admin(s)": {
+    fr: "Super Admin(s)",
+    ar: "مشرفون عامون",
+    en: "Super Admin(s)"
+  },
+  "droits d'accès totaux": {
+    fr: "Droits d'accès totaux",
+    ar: "صلاحيات وصول كاملة",
+    en: "Total access rights"
+  },
+  "gérer": {
+    fr: "Gérer",
+    ar: "إدارة",
+    en: "Manage"
+  },
+  "administrateur": {
+    fr: "Administrateur",
+    ar: "المدير",
+    en: "Administrator"
+  },
+  "sous-administrateur": {
+    fr: "Sous-administrateur",
+    ar: "المسؤول المفوّض",
+    en: "Sub-administrator"
+  },
+  "mon bâtiment & lots": {
+    fr: "Mon Bâtiment & Lots",
+    ar: "عمارتي والشقق",
+    en: "My Building & Lots"
+  },
+  "mes résidents & contacts": {
+    fr: "Mes Résidents & Contacts",
+    ar: "سكاني وجهات الاتصال",
+    en: "My Residents & Contacts"
+  },
+  "paiements & cotisations": {
+    fr: "Paiements & Cotisations",
+    ar: "المدفوعات والاشتراكات",
+    en: "Payments & Fees"
+  },
+  "incidents & pannes bloc": {
+    fr: "Incidents & Pannes Bloc",
+    ar: "أعطال ومشاكل العمارة",
+    en: "Block Incidents & Breakdowns"
+  },
+  "personnel & entretien bloc": {
+    fr: "Personnel & Entretien Bloc",
+    ar: "عمال وصيانة العمارة",
+    en: "Block Staff & Maintenance"
+  },
+  "alertes & rapports bloc": {
+    fr: "Alertes & Rapports Bloc",
+    ar: "تنبيهات وتقارير العمارة",
+    en: "Block Alerts & Reports"
+  },
+  "gestion des appartements, étages et répartition des tantièmes de votre bâtiment.": {
+    fr: "Gestion des appartements, étages et répartition des tantièmes de votre bâtiment.",
+    ar: "إدارة الشقق والطوابق وتوزيع الحصص الشائعة لعمارك.",
+    en: "Manage apartments, floors, and share quotas for your building."
+  },
+  "annuaire nominatif des occupants de votre bloc, coordonnées téléphoniques et clés temporaires.": {
+    fr: "Annuaire nominatif des occupants de votre bloc, coordonnées téléphoniques et clés temporaires.",
+    ar: "دليل أسماء شاغلي عمارتك وأرقام الهواتف والمفاتيح المؤقتة.",
+    en: "Directory of your block occupants, contact numbers, and temporary keys."
+  },
+  "enregistrement des paiements des résidents, suivi de qui a payé et qui est en retard.": {
+    fr: "Enregistrement des paiements des résidents, suivi de qui a payé et qui est en retard.",
+    ar: "تسجيل مدفوعات السكان ومتابعة من سدد ومن هو متأخر.",
+    en: "Recording resident payments, tracking who has paid and who is overdue."
+  },
+  "signalement des pannes d'ascenseur, éclairage, interphone et plomberie de votre bâtiment.": {
+    fr: "Signalement des pannes d'ascenseur, éclairage, interphone et plomberie de votre bâtiment.",
+    ar: "التبليغ عن أعطال المصعد والإنارة وجهاز الاتصال الداخلي والسباكة.",
+    en: "Reporting elevator, lighting, intercom, and plumbing breakdowns for your building."
+  },
+  "suivi des agents d'entretien, techniciens et prestataires intervenant sur votre bâtiment.": {
+    fr: "Suivi des agents d'entretien, techniciens et prestataires intervenant sur votre bâtiment.",
+    ar: "متابعة عمال النظافة والفنيين والمتعاقدين المتدخلين في عمارتك.",
+    en: "Monitoring cleaners, technicians, and contractors working on your building."
+  },
+  "diffusion d'avis aux résidents de votre bloc et export du journal de caisse du bâtiment.": {
+    fr: "Diffusion d'avis aux résidents de votre bloc et export du journal de caisse du bâtiment.",
+    ar: "نشر التنبيهات لسكان عمارتك وتصدير دفتر الخزينة للعمارة.",
+    en: "Broadcasting notices to block residents and exporting the building cash journal."
+  },
+  "résidents & logements": {
+    fr: "Résidents & Logements",
+    ar: "السكان والشقق",
+    en: "Residents & Units"
+  },
+  "finances & règlements": {
+    fr: "Finances & Règlements",
+    ar: "المالية والمدفوعات",
+    en: "Finances & Payments"
+  },
+  "maintenance & pannes": {
+    fr: "Maintenance & Pannes",
+    ar: "الصيانة والأعطال",
+    en: "Maintenance & Breakdowns"
+  },
+  "personnel & tâches": {
+    fr: "Personnel & Tâches",
+    ar: "الموظفون والمهام",
+    en: "Staff & Tasks"
+  },
+  "annonces & alertes": {
+    fr: "Annonces & Alertes",
+    ar: "الإعلانات والتنبيهات",
+    en: "Announcements & Alerts"
+  },
+  "documents & contrats": {
+    fr: "Documents & Contrats",
+    ar: "الوثائق والعقود",
+    en: "Documents & Contracts"
+  },
+  "rapports & exports": {
+    fr: "Rapports & Exports",
+    ar: "التقارير والتصدير",
+    en: "Reports & Exports"
+  },
+  "configuration & types": {
+    fr: "Configuration & Types",
+    ar: "الإعدادات والأنواع",
+    en: "Configuration & Types"
+  },
+  "gestion des blocs, étages, tantièmes et nomination des responsables de bâtiment.": {
+    fr: "Gestion des blocs, étages, tantièmes et nomination des responsables de bâtiment.",
+    ar: "إدارة الكتل والطوابق والحصص وتعيين مسؤولي العمارات.",
+    en: "Manage blocks, floors, shares, and nominate building managers."
+  },
+  "annuaire des copropriétaires, fiches logements, mots de passe temporaires et affectations.": {
+    fr: "Annuaire des copropriétaires, fiches logements, mots de passe temporaires et affectations.",
+    ar: "دليل الملاك وبطاقات الشقق وكلمات المرور المؤقتة والتخصيصات.",
+    en: "Co-owners directory, unit sheets, temporary passwords, and allocations."
+  },
+  "journal de caisse, encaissement des charges, quittances whatsapp et relances d'impayés.": {
+    fr: "Journal de caisse, encaissement des charges, quittances WhatsApp et relances d'impayés.",
+    ar: "دفتر الخزينة وتحصيل الاشتراكات والوصولات عبر واتساب والتذكير بالمتأخرات.",
+    en: "Cash journal, dues collection, WhatsApp receipts, and overdue reminders."
+  },
+  "suivi des pannes d'ascenseurs, interventions techniques avec photos et clôture des tickets.": {
+    fr: "Suivi des pannes d'ascenseurs, interventions techniques avec photos et clôture des tickets.",
+    ar: "متابعة أعطال المصاعد والتدخلات التقنية مع الصور وإغلاق التذاكر.",
+    en: "Tracking elevator breakdowns, technical interventions with photos, and closing tickets."
+  },
+  "convocations, vote en ligne par tantièmes, mode projection vidéoprojecteur et pv certifié.": {
+    fr: "Convocations, vote en ligne par tantièmes, mode projection vidéoprojecteur et PV certifié.",
+    ar: "الدعوات والتصويت الإلكتروني بالحصص ووضع العرض المرئي والمحاضر المعتمدة.",
+    en: "Meeting notices, online voting by shares, projector display mode, and certified minutes."
+  },
+  "planning des concierges, agents d'entretien, gardiens de nuit et affectation des tâches.": {
+    fr: "Planning des concierges, agents d'entretien, gardiens de nuit et affectation des tâches.",
+    ar: "جدول البوابين وعمال النظافة والحراس الليليين وتوزيع المهام.",
+    en: "Schedules for concierges, cleaners, night guards, and task assignments."
+  },
+  "diffusion d'avis aux copropriétaires et alertes d'urgence avec notification instantanée.": {
+    fr: "Diffusion d'avis aux copropriétaires et alertes d'urgence avec notification instantanée.",
+    ar: "نشر إشعارات للملاك المشتركين وتنبيهات طوارئ بإشعارات فورية.",
+    en: "Broadcasting notices to co-owners and emergency alerts with instant notifications."
+  },
+  "coffre-fort numérique, contrats d'ascenseur, assurance de copropriété et devis.": {
+    fr: "Coffre-fort numérique, contrats d'ascenseur, assurance de copropriété et devis.",
+    ar: "خزينة رقمية وعقود المصاعد والتأمين وعروض الأسعار.",
+    en: "Digital vault, elevator contracts, co-ownership insurance, and quotes."
+  },
+  "génération de bilans comptables, journaux financiers et registres par période paramétrable.": {
+    fr: "Génération de bilans comptables, journaux financiers et registres par période paramétrable.",
+    ar: "إصدار الميزانيات المحاسبية والدفاتر المالية والسجلات لفترات مخصصة.",
+    en: "Generating balance sheets, financial journals, and registers by customizable period."
+  },
+  "modes de paiement acceptés (cib, baridimob), barèmes mensuels et délais sla d'intervention.": {
+    fr: "Modes de paiement acceptés (CIB, BaridiMob), barèmes mensuels et délais SLA d'intervention.",
+    ar: "طرق الدفع المقبولة (CIB، بريدي موب) والجداول الشهرية والمهل الزمنية.",
+    en: "Accepted payment methods (CIB, BaridiMob), monthly scales, and response SLAs."
+  },
+  "ago 2026": {
+    fr: "AGO 2026",
+    ar: "الجمعية العامة 2026",
+    en: "AGM 2026"
+  },
+  "quorum 74.5% tantièmes": {
+    fr: "Quorum 74.5% tantièmes",
+    ar: "نصاب 74.5% من الحصص",
+    en: "74.5% share quorum"
+  },
+  "recouvré": {
+    fr: "recouvré",
+    ar: "محصّل",
+    en: "recovered"
+  },
+  "sans sous-admin": {
+    fr: "sans sous-admin",
+    ar: "بدون مسؤول مفوّض",
+    en: "without sub-admin"
+  },
+  "tous délégués": {
+    fr: "Tous délégués",
+    ar: "الكل مفوض",
+    en: "All assigned"
+  },
+  "en poste": {
+    fr: "en poste",
+    ar: "في الخدمة",
+    en: "on duty"
+  },
+  "tâches à faire": {
+    fr: "tâches à faire",
+    ar: "مهام للإنجاز",
+    en: "tasks to do"
+  },
+  "alertes actives": {
+    fr: "alertes actives",
+    ar: "تنبيهات نشطة",
+    en: "active alerts"
+  },
+  "diffusées": {
+    fr: "diffusées",
+    ar: "منشورة",
+    en: "broadcasted"
+  },
+  "pièces archivées": {
+    fr: "pièces archivées",
+    ar: "وثائق مؤرشفة",
+    en: "archived items"
+  },
+  "bilan n vs n+1": {
+    fr: "Bilan N vs N+1",
+    ar: "مقارنة ن مقابل ن+1",
+    en: "Balance N vs N+1"
+  },
+  "formats csv & print": {
+    fr: "Formats CSV & Print",
+    ar: "تنسيق CSV وطباعة",
+    en: "CSV & Print formats"
+  },
+  "types charges": {
+    fr: "types charges",
+    ar: "أنواع أعباء",
+    en: "charge types"
+  },
+  "barèmes & cib": {
+    fr: "Barèmes & CIB",
+    ar: "التعريفات وCIB",
+    en: "Tariffs & CIB"
+  },
+  "6 modules délégués": {
+    fr: "6 modules délégués",
+    ar: "6 وحدات مفوضة",
+    en: "6 delegated modules"
+  },
+  "missions assignées": {
+    fr: "Missions assignées",
+    ar: "مهام موكلة",
+    en: "Assigned tasks"
+  },
+  "diffusions & exports": {
+    fr: "Diffusions & Exports",
+    ar: "النشرات والتصدير",
+    en: "Broadcasts & Exports"
+  },
+  "points d'attention": {
+    fr: "points d'attention",
+    ar: "نقاط تتطلب المتابعة",
+    en: "points of attention"
+  },
+  "point(s) d'attention": {
+    fr: "point(s) d'attention",
+    ar: "نقطة/نقاط تتطلب المتابعة",
+    en: "point(s) of attention"
+  },
+  "structure organisationnelle : résidence → bâtiments → gestionnaires → appartements": {
+    fr: "Structure organisationnelle : Résidence → Bâtiments → Gestionnaires → Appartements",
+    ar: "الهيكل التنظيمي : الإقامة ← العمارات ← المسيرون ← الشقق",
+    en: "Organizational structure: Residence → Buildings → Managers → Units"
+  },
+  "aucune résidence ne vous est encore attribuée. contactez le super admin.": {
+    fr: "Aucune résidence ne vous est encore attribuée. Contactez le Super Admin.",
+    ar: "لم يتم تخصيص أي إقامة لك بعد. يرجى التواصل مع المشرف العام.",
+    en: "No residence is assigned to you yet. Please contact the Super Admin."
+  },
+  "accès non autorisé": {
+    fr: "Accès non autorisé",
+    ar: "وصول غير مصرح به",
+    en: "Unauthorized Access"
+  },
+  "retour au tableau de bord": {
+    fr: "Retour au tableau de bord",
+    ar: "العودة إلى لوحة التحكم",
+    en: "Back to Dashboard"
+  },
+  "créez les résidences et leurs bâtiments, puis nommez l'admin responsable de chaque résidence et le sub admin de chaque bâtiment.": {
+    fr: "Créez les résidences et leurs bâtiments, puis nommez l'Admin responsable de chaque résidence et le Sub Admin de chaque bâtiment.",
+    ar: "أنشئ الإقامات وعماراتها، ثم عيّن المدير المسؤول عن كل إقامة والمسؤول المفوّض لكل عمارة.",
+    en: "Create residences and their buildings, then nominate the Admin for each residence and the Sub-Admin for each building."
+  },
+  "modifier résidence": {
+    fr: "Modifier Résidence",
+    ar: "تعديل الإقامة",
+    en: "Edit Residence"
+  },
+  "supprimer résidence": {
+    fr: "Supprimer Résidence",
+    ar: "حذف الإقامة",
+    en: "Delete Residence"
+  },
+  "admin responsable de la résidence": {
+    fr: "Admin responsable de la résidence",
+    ar: "المدير المسؤول عن الإقامة",
+    en: "Admin responsible for the residence"
+  },
+  "sub admin responsable": {
+    fr: "Sub Admin responsable",
+    ar: "المسؤول المفوّض",
+    en: "Responsible Sub-Admin"
+  },
+  "max bâtiments autorisés": {
+    fr: "Max bâtiments autorisés",
+    ar: "الحد الأقصى للعمارات المسموحة",
+    en: "Max authorized buildings"
+  },
+  "max résidents autorisés": {
+    fr: "Max résidents autorisés",
+    ar: "الحد الأقصى للسكان المسموح به",
+    en: "Max authorized residents"
+  },
+  "nom, localisation et quotas autorisés.": {
+    fr: "Nom, localisation et quotas autorisés.",
+    ar: "الاسم والموقع والحصص المسموحة.",
+    en: "Name, location, and authorized quotas."
+  },
+  "créer la résidence": {
+    fr: "Créer la résidence",
+    ar: "إنشاء الإقامة",
+    en: "Create residence"
+  },
+  "gestion globale des résidents et propriétaires de toutes les résidences.": {
+    fr: "Gestion globale des résidents et propriétaires de toutes les résidences.",
+    ar: "الإدارة الشاملة للمقيمين والملاك في كافة الإقامات.",
+    en: "Global management of residents and co-owners across all residences."
+  },
+  "filtrer par résidence :": {
+    fr: "Filtrer par résidence :",
+    ar: "تصفية حسب الإقامة :",
+    en: "Filter by residence:"
+  },
+  "filtrer par résidence": {
+    fr: "Filtrer par résidence",
+    ar: "تصفية حسب الإقامة",
+    en: "Filter by residence"
+  },
+  "le résident est enregistré comme propriétaire et reçoit un accès à l'application mobile.": {
+    fr: "Le résident est enregistré comme propriétaire et reçoit un accès à l'application mobile.",
+    ar: "يتم تسجيل الساكن كمالك ويحصل على حساب للوصول إلى تطبيق الهاتف.",
+    en: "The resident is registered as an owner and receives mobile app access."
+  },
+  "appartements libres dans ce bâtiment :": {
+    fr: "Appartements libres dans ce bâtiment :",
+    ar: "الشقق الشاغرة في هذه العمارة :",
+    en: "Vacant apartments in this building:"
+  },
+  "un nom nouveau crée l'appartement.": {
+    fr: "Un nom nouveau crée l'appartement.",
+    ar: "كتابة اسم جديد ينشئ الشقة تلقائياً.",
+    en: "A new name creates the apartment."
+  },
+  "l'appartement sera créé dans ce bâtiment à l'étage choisi.": {
+    fr: "L'appartement sera créé dans ce bâtiment à l'étage choisi.",
+    ar: "سيتم إنشاء الشقة في هذه العمارة في الطابق المحدد.",
+    en: "The apartment will be created in this building on the chosen floor."
+  },
+  "8 à 15 chiffres, + facultatif": {
+    fr: "8 à 15 chiffres, + facultatif",
+    ar: "من 8 إلى 15 رقماً، علامة + اختيارية",
+    en: "8 to 15 digits, + optional"
+  },
+  "encaissé :": {
+    fr: "Encaissé :",
+    ar: "المحصّل :",
+    en: "Collected:"
+  },
+  "encaissé": {
+    fr: "Encaissé",
+    ar: "المحصّل",
+    en: "Collected"
+  },
+  "appels :": {
+    fr: "Appels :",
+    ar: "المطالبات :",
+    en: "Calls:"
+  },
+  "appels": {
+    fr: "Appels",
+    ar: "المطالبات",
+    en: "Calls"
+  },
+  "solde actif": {
+    fr: "Solde actif",
+    ar: "رصيد إيجابي",
+    en: "Active balance"
+  },
+  "bon niveau": {
+    fr: "Bon niveau",
+    ar: "مستوى جيد",
+    en: "Good level"
+  },
+  "à surveiller": {
+    fr: "À surveiller",
+    ar: "يتطلب متابعة",
+    en: "To monitor"
+  },
+  "retards constatés": {
+    fr: "retards constatés",
+    ar: "متأخرات مسجلة",
+    en: "delays recorded"
+  },
+  "critiques": {
+    fr: "critiques",
+    ar: "حرجة",
+    en: "critical"
+  },
+  "factures à payer": {
+    fr: "factures à payer",
+    ar: "فواتير قيد التسديد",
+    en: "invoices to pay"
+  },
+  "aucun incident actif.": {
+    fr: "Aucun incident actif.",
+    ar: "لا توجد أي أعطال نشطة حالياً.",
+    en: "No active incidents."
+  },
+  "assemblées générales & votes en ligne": {
+    fr: "Assemblées Générales & Votes en Ligne",
+    ar: "الجمعيات العامة والتصويت الإلكتروني",
+    en: "General Assemblies & Online Voting"
+  },
+  "convocations des copropriétaires, calcul du quorum en tantièmes, vote des résolutions et pv certifié": {
+    fr: "Convocations des copropriétaires, calcul du quorum en tantièmes, vote des résolutions et PV certifié",
+    ar: "استدعاء الملاك وحساب نصاب الحصص الشائعة والتصويت على القرارات والمحاضر المعتمدة.",
+    en: "Co-owner notices, quorum calculation in shares, resolution votes, and certified minutes."
+  },
+  "tantièmes": {
+    fr: "Tantièmes",
+    ar: "حصص شائعة",
+    en: "Shares"
+  },
+  "quorum réuni": {
+    fr: "Quorum Réuni",
+    ar: "النصاب مكتمل",
+    en: "Quorum Met"
+  },
+  "quorum non atteint": {
+    fr: "Quorum Non Atteint",
+    ar: "النصاب غير مكتمل",
+    en: "Quorum Not Met"
+  },
+  "quorum légal réuni (art. 24)": {
+    fr: "Quorum légal réuni (Art. 24)",
+    ar: "اكتمل النصاب القانوني (المادة 24)",
+    en: "Legal quorum reached (Art. 24)"
+  },
+  "quorum insuffisant (2e convocation)": {
+    fr: "Quorum insuffisant (2e convocation)",
+    ar: "نصاب غير كافٍ (دعوة ثانية)",
+    en: "Insufficient quorum (2nd notice)"
+  },
+  "36 copropriétaires": {
+    fr: "36 Copropriétaires",
+    ar: "36 مالكاً مشتركاً",
+    en: "36 Co-owners"
+  },
+  "présents en séance ou avec procuration": {
+    fr: "Présents en séance ou avec procuration",
+    ar: "حاضرون في الجلسة أو بوكالة",
+    en: "Present in session or by proxy"
+  },
+  "résolution(s) en cours de délibération": {
+    fr: "résolution(s) en cours de délibération",
+    ar: "قرارات قيد التداول",
+    en: "resolutions under deliberation"
+  },
+  "city syndic projection": {
+    fr: "CITY SYNDIC PROJECTION",
+    ar: "نظام العرض المرئي - سيتي سنديك",
+    en: "CITY SYNDIC PROJECTION"
+  },
+  "séance en direct": {
+    fr: "SÉANCE EN DIRECT",
+    ar: "جلسة مباشرة",
+    en: "LIVE SESSION"
+  },
+  "quorum constaté": {
+    fr: "Quorum Constaté",
+    ar: "النصاب المسجل",
+    en: "Observed Quorum"
+  },
+  "quitter (échap)": {
+    fr: "Quitter (Échap)",
+    ar: "خروج (Esc)",
+    en: "Exit (Esc)"
+  },
+  "votes pour": {
+    fr: "VOTES POUR",
+    ar: "الأصوات المؤيدة",
+    en: "VOTES IN FAVOR"
+  },
+  "votes contre": {
+    fr: "VOTES CONTRE",
+    ar: "الأصوات المعارضة",
+    en: "VOTES AGAINST"
+  },
+  "abstention": {
+    fr: "ABSTENTION",
+    ar: "امتناع",
+    en: "ABSTENTION"
+  },
+  "copropriétaire(s)": {
+    fr: "copropriétaire(s)",
+    ar: "مالك(ون)",
+    en: "co-owner(s)"
+  },
+  "résolution précédente": {
+    fr: "Résolution Précédente",
+    ar: "القرار السابق",
+    en: "Previous Resolution"
+  },
+  "résolution suivante": {
+    fr: "Résolution Suivante",
+    ar: "القرار التالي",
+    en: "Next Resolution"
+  },
+  "+ pour": {
+    fr: "+ POUR",
+    ar: "+ نعم (موافق)",
+    en: "+ FOR"
+  },
+  "+ contre": {
+    fr: "+ CONTRE",
+    ar: "+ لا (معارض)",
+    en: "+ AGAINST"
+  },
+  "+ abstention": {
+    fr: "+ ABSTENTION",
+    ar: "+ ممتنع",
+    en: "+ ABSTAIN"
+  },
+  "comptabiliser un vote en direct (+25 tantièmes) :": {
+    fr: "Comptabiliser un vote en direct (+25 tantièmes) :",
+    ar: "تسجيل تصويت مباشر (+25 حصة) :",
+    en: "Record live vote (+25 shares):"
+  },
+  "résolution": {
+    fr: "Résolution",
+    ar: "القرار",
+    en: "Resolution"
+  },
+  "sur": {
+    fr: "sur",
+    ar: "من",
+    en: "of"
+  },
+  "équipe de la résidence, horaires et suivi des tâches assignées": {
+    fr: "Équipe de la résidence, horaires et suivi des tâches assignées",
+    ar: "فريق الإقامة والمواعيد ومتابعة المهام الموكلة.",
+    en: "Residence team, schedules, and assigned tasks tracking."
+  },
+  "nouvel employé": {
+    fr: "Nouvel Employé",
+    ar: "موظف جديد",
+    en: "New Employee"
+  },
+  "nouvelle tâche": {
+    fr: "Nouvelle Tâche",
+    ar: "مهمة جديدة",
+    en: "New Task"
+  },
+  "période des interventions": {
+    fr: "Période des interventions",
+    ar: "فترة التدخلات",
+    en: "Interventions Period"
+  },
+  "tâches": {
+    fr: "Tâches",
+    ar: "مهام",
+    en: "Tasks"
+  },
+  "personnel": {
+    fr: "Personnel",
+    ar: "الموظفون",
+    en: "Staff"
+  },
+  "lieu": {
+    fr: "Lieu",
+    ar: "المكان",
+    en: "Location"
+  },
+  "aucune tâche en cours.": {
+    fr: "Aucune tâche en cours.",
+    ar: "لا توجد أي مهام جارية حالياً.",
+    en: "No ongoing tasks."
+  },
+  "contrats prestataires en vigueur": {
+    fr: "Contrats prestataires en vigueur",
+    ar: "عقود المتعاقدين السارية",
+    en: "Contractor contracts in effect"
+  },
+  "engagements contractuels annuels": {
+    fr: "Engagements contractuels annuels",
+    ar: "الالتزامات التعاقدية السنوية",
+    en: "Annual contractual commitments"
+  },
+  "contrat(s) expirant sous 60 jours ou échus": {
+    fr: "Contrat(s) expirant sous 60 jours ou échus",
+    ar: "عقود تنتهي خلال 60 يوماً أو منتهية",
+    en: "Contract(s) expiring within 60 days or expired"
+  },
+  "actifs": {
+    fr: "Actifs",
+    ar: "نشطة",
+    en: "Active"
+  },
+  "règlements": {
+    fr: "Règlements",
+    ar: "اللوائح",
+    en: "Regulations"
+  },
+  "abonnement en cours": {
+    fr: "Abonnement en cours",
+    ar: "الاشتراك الحالي",
+    en: "Current subscription"
+  },
+  "paiement": {
+    fr: "Paiement",
+    ar: "الدفع",
+    en: "Payment"
+  },
+  "cible": {
+    fr: "Cible",
+    ar: "المستهدف",
+    en: "Target"
+  },
+  "durée": {
+    fr: "Durée",
+    ar: "المدة",
+    en: "Duration"
+  },
+  "1 an": {
+    fr: "1 an",
+    ar: "سنة واحدة",
+    en: "1 year"
+  },
+  "modifier la formule": {
+    fr: "Modifier la formule",
+    ar: "تعديل الباقة",
+    en: "Edit plan"
+  },
+  "supprimer la formule": {
+    fr: "Supprimer la formule",
+    ar: "حذف الباقة",
+    en: "Delete plan"
+  },
+  "non attribuée": {
+    fr: "Non attribuée",
+    ar: "غير مخصصة",
+    en: "Not assigned"
+  },
+  "statistiques": {
+    fr: "Statistiques",
+    ar: "الإحصائيات",
+    en: "Statistics"
+  },
+  "vue d'ensemble de la plateforme, calculée en temps réel depuis la base de données.": {
+    fr: "Vue d'ensemble de la plateforme, calculée en temps réel depuis la base de données.",
+    ar: "نظرة شاملة على المنصة، محسوبة آنياً من قاعدة البيانات.",
+    en: "Platform overview, computed in real time from the database."
+  },
+  "croissance de la plateforme (12 derniers mois, cumul)": {
+    fr: "Croissance de la plateforme (12 derniers mois, cumul)",
+    ar: "نمو المنصة (آخر 12 شهراً، تراكمي)",
+    en: "Platform growth (last 12 months, cumulative)"
+  },
+  "revenus des abonnements payés, par mois de début (dzd)": {
+    fr: "Revenus des abonnements payés, par mois de début (DZD)",
+    ar: "مداخيل الاشتراكات المسددة شهرياً (د.ج)",
+    en: "Paid subscription revenues by start month (DZD)"
+  },
+  "abonnements par mois de début": {
+    fr: "Abonnements par mois de début",
+    ar: "الاشتراكات حسب شهر البدء",
+    en: "Subscriptions by start month"
+  },
+  "statut de paiement des abonnements": {
+    fr: "Statut de paiement des abonnements",
+    ar: "حالة سداد الاشتراكات",
+    en: "Subscription payment status"
+  },
+  "comptes par rôle": {
+    fr: "Comptes par rôle",
+    ar: "الحسابات حسب الرتبة",
+    en: "Accounts by role"
+  },
+  "occupation des appartements": {
+    fr: "Occupation des appartements",
+    ar: "إشغال الشقق",
+    en: "Apartment occupancy"
+  },
+  "bâtiments par résidence": {
+    fr: "Bâtiments par résidence",
+    ar: "العمارات لكل إقامة",
+    en: "Buildings per residence"
+  },
+  "abonnements par formule": {
+    fr: "Abonnements par formule",
+    ar: "الاشتراكات حسب الباقة",
+    en: "Subscriptions by plan"
+  },
+  "utilisateurs": {
+    fr: "Utilisateurs",
+    ar: "المستخدمون",
+    en: "Users"
+  },
+  "abonnements actifs": {
+    fr: "Abonnements actifs",
+    ar: "الاشتراكات النشطة",
+    en: "Active subscriptions"
+  },
+  "en attente de paiement": {
+    fr: "En attente de paiement",
+    ar: "في انتظار الدفع",
+    en: "Pending payment"
+  },
+  "0 abonnement(s) non payé(s)": {
+    fr: "0 abonnement(s) non payé(s)",
+    ar: "0 اشتراكات غير مسددة",
+    en: "0 unpaid subscription(s)"
+  },
+  "abonnement(s) non payé(s)": {
+    fr: "abonnement(s) non payé(s)",
+    ar: "اشتراك(ات) غير مسددة",
+    en: "unpaid subscription(s)"
+  },
+  "payés": {
+    fr: "Payés",
+    ar: "مسددة",
+    en: "Paid"
+  },
+  "non payés": {
+    fr: "Non payés",
+    ar: "غير مسددة",
+    en: "Unpaid"
+  },
+  "admins": {
+    fr: "Admins",
+    ar: "المديرون",
+    en: "Admins"
+  },
+  "admins & sub admins": {
+    fr: "Admins & Sub Admins",
+    ar: "المديرون والمديرون المفوضون",
+    en: "Admins & Sub-Admins"
+  },
+  "générez les états consolidés de l'ensemble de la plateforme saas en pdf ou excel.": {
+    fr: "Générez les états consolidés de l'ensemble de la plateforme SaaS en PDF ou Excel.",
+    ar: "إصدار التقارير الموحدة لكامل المنصة بصيغة PDF أو Excel.",
+    en: "Generate consolidated platform reports in PDF or Excel."
+  },
+  "générez les rapports d'activité, charges et recouvrement de votre bâtiment.": {
+    fr: "Générez les rapports d'activité, charges et recouvrement de votre bâtiment.",
+    ar: "إصدار تقارير النشاط والأعباء والتحصيل لعمارتك.",
+    en: "Generate activity, fees, and collection reports for your building."
+  },
+  "générez les états financiers, administratifs et opérationnels de votre résidence.": {
+    fr: "Générez les états financiers, administratifs et opérationnels de votre résidence.",
+    ar: "إصدار التقارير المالية والإدارية والتشغيلية لإقامتك.",
+    en: "Generate financial, administrative, and operational reports for your residence."
+  },
+  "rapports disponibles": {
+    fr: "Rapports disponibles",
+    ar: "التقارير المتاحة",
+    en: "Available reports"
+  },
+  "exports récents": {
+    fr: "Exports récents",
+    ar: "التصديرات الأخيرة",
+    en: "Recent exports"
+  },
+  "plateforme": {
+    fr: "Plateforme",
+    ar: "المنصة",
+    en: "Platform"
+  },
+  "finances saas": {
+    fr: "Finances SaaS",
+    ar: "مالية المنصة",
+    en: "SaaS Finances"
+  },
+  "résidents": {
+    fr: "Résidents",
+    ar: "المقيمون",
+    en: "Residents"
+  },
+  "sous-admins": {
+    fr: "Sous-Admins",
+    ar: "المديرون المفوضون",
+    en: "Sub-Admins"
+  },
+  "audit global des résidences & quotas": {
+    fr: "Audit Global des Résidences & Quotas",
+    ar: "التدقيق الشامل للإقامات والحصص",
+    en: "Global Residence & Quota Audit"
+  },
+  "inventaire national consolidé de toutes les résidences, quotas bâtiments et admins affectés.": {
+    fr: "Inventaire national consolidé de toutes les résidences, quotas bâtiments et admins affectés.",
+    ar: "الجرد الوطني الموحد لكافة الإقامات وحصص العمارات والمديرين المعينين.",
+    en: "National consolidated inventory of all residences, building quotas, and assigned admins."
+  },
+  "trésorerie & abonnements plateforme": {
+    fr: "Trésorerie & Abonnements Plateforme",
+    ar: "السيولة واشتراكات المنصة",
+    en: "Platform Treasury & Subscriptions"
+  },
+  "bilan global des souscriptions actives, impayées et revenus encaissés par formule saas.": {
+    fr: "Bilan global des souscriptions actives, impayées et revenus encaissés par formule SaaS.",
+    ar: "الحصيلة الشاملة للاشتراكات النشطة والمتأخرة والإيرادات المحصلة حسب الباقة.",
+    en: "Global balance sheet of active/unpaid subscriptions and collected revenues by SaaS plan."
+  },
+  "suivi des licences sous-admins & blocs": {
+    fr: "Suivi des Licences Sous-Admins & Blocs",
+    ar: "متابعة تراخيص مسؤولي العمارات",
+    en: "Sub-Admin & Block License Tracking"
+  },
+  "tous les sous-admins par bâtiment et statut de validation de leur abonnement de gestion.": {
+    fr: "Tous les sous-admins par bâtiment et statut de validation de leur abonnement de gestion.",
+    ar: "كافة مسؤولي العمارات وحالة اعتماد اشتراك التسيير الخاص بهم.",
+    en: "All sub-admins by building and validation status of their management subscription."
+  },
+  "recouvrement de la résidence": {
+    fr: "Recouvrement de la Résidence",
+    ar: "تحصيل الإقامة",
+    en: "Residence Recovery"
+  },
+  "charges attendues, encaissées et impayées ventilées par bâtiment.": {
+    fr: "Charges attendues, encaissées et impayées ventilées par bâtiment.",
+    ar: "الأعباء المتوقعة والمحصلة والمتأخرة مفصلة حسب العمارة.",
+    en: "Expected, collected, and unpaid fees broken down by building."
+  },
+  "état des impayés résidence": {
+    fr: "État des impayés Résidence",
+    ar: "كشف متأخرات الإقامة",
+    en: "Residence Overdue Dues Status"
+  },
+  "liste des logements en retard de cotisation avec ancienneté de la dette.": {
+    fr: "Liste des logements en retard de cotisation avec ancienneté de la dette.",
+    ar: "قائمة الشقق المتأخرة عن سداد الاشتراكات مع أقدمية الدين.",
+    en: "List of units with overdue fees along with debt aging."
+  },
+  "journal des dépenses & factures": {
+    fr: "Journal des dépenses & factures",
+    ar: "دفتر النفقات والفواتير",
+    en: "Expenses & Invoices Journal"
+  },
+  "toutes les dépenses de la copropriété par catégorie et par prestataire.": {
+    fr: "Toutes les dépenses de la copropriété par catégorie et par prestataire.",
+    ar: "كافة نفقات الملكية المشتركة حسب الفئة ومقدم الخدمة.",
+    en: "All co-ownership expenses categorized by type and contractor."
+  },
+  "mon profil": {
+    fr: "Mon profil",
+    ar: "ملفي الشخصي",
+    en: "My profile"
+  },
+  "informations de votre compte et rôle sur la plateforme.": {
+    fr: "Informations de votre compte et rôle sur la plateforme.",
+    ar: "معلومات حسابك ورتبتك على المنصة.",
+    en: "Account information and platform role."
+  },
+  "membre depuis": {
+    fr: "Membre depuis",
+    ar: "عضو منذ",
+    en: "Member since"
+  },
+  "les super admins ont un accès complet à la plateforme.": {
+    fr: "Les Super Admins ont un accès complet à la plateforme.",
+    ar: "يمتلك المشرفون العامون صلاحيات وصول كاملة للمنصة.",
+    en: "Super Admins have full access to the platform."
+  },
+  "vous": {
+    fr: "Vous",
+    ar: "أنت",
+    en: "You"
+  },
+  "types de charges": {
+    fr: "Types de charges",
+    ar: "أنواع الأعباء",
+    en: "Charge Types"
+  },
+  "types d'incidents": {
+    fr: "Types d'incidents",
+    ar: "أنواع الأعطال",
+    en: "Incident Types"
+  },
+  "type de charge": {
+    fr: "Type de charge",
+    ar: "نوع العبء",
+    en: "Charge Type"
+  },
+  "appliqué à": {
+    fr: "Appliqué à",
+    ar: "مطبق على",
+    en: "Applied to"
+  },
+  "aucun type de charge configuré.": {
+    fr: "Aucun type de charge configuré.",
+    ar: "لم يتم ضبط أي نوع من الأعباء بعد.",
+    en: "No charge type configured."
+  },
+  "aucun type d'incident configuré.": {
+    fr: "Aucun type d'incident configuré.",
+    ar: "لم يتم ضبط أي نوع من الأعطال بعد.",
+    en: "No incident type configured."
+  },
 };
 
 // Fast lookup helper

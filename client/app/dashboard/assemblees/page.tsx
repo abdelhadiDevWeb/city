@@ -386,7 +386,7 @@ export default function AssembleesPage() {
               </span>
             </div>
             <span className="text-[10px] text-stone-400">
-              {pct >= 50 ? "Quorum légal réuni (Art. 24)" : "Quorum insuffisant (2e convocation)"}
+              {pct >= 50 ? tText("Quorum légal réuni (Art. 24)") : tText("Quorum insuffisant (2e convocation)")}
             </span>
           </div>
         );
@@ -483,8 +483,8 @@ export default function AssembleesPage() {
     <div className="space-y-6">
       <PageHeader
         icon={ScrollText}
-        title="Assemblées Générales & Votes en Ligne"
-        subtitle="Convocations des copropriétaires, calcul du quorum en tantièmes, vote des résolutions et PV certifié"
+        title={tText("Assemblées Générales & Votes en Ligne")}
+        subtitle={tText("Convocations des copropriétaires, calcul du quorum en tantièmes, vote des résolutions et PV certifié")}
         actions={
           <>
             <button
@@ -868,10 +868,10 @@ export default function AssembleesPage() {
               <div>
                 <div className="flex items-center gap-2">
                   <span className="font-mono text-xs uppercase tracking-widest text-brand font-black">
-                    CITY SYNDIC PROJECTION
+                    {tText("CITY SYNDIC PROJECTION")}
                   </span>
                   <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-400">
-                    SÉANCE EN DIRECT
+                    {tText("SÉANCE EN DIRECT")}
                   </span>
                 </div>
                 <h1 className="text-xl sm:text-2xl font-black text-white">{activeSession?.titre}</h1>
@@ -881,10 +881,10 @@ export default function AssembleesPage() {
             <div className="flex items-center gap-3">
               <div className="rounded-xl border border-stone-800 bg-stone-900/90 px-4 py-2 text-end">
                 <span className="block text-[10px] font-mono uppercase tracking-wider text-stone-400">
-                  Quorum Constaté
+                  {tText("Quorum Constaté")}
                 </span>
                 <span className="font-mono text-lg font-black text-emerald-400">
-                  {activeSession?.quorumTantiemes} / {activeSession?.quorumTotal} Tantièmes ({quorumPct}%)
+                  {activeSession?.quorumTantiemes} / {activeSession?.quorumTotal} {tText("Tantièmes")} ({quorumPct}%)
                 </span>
               </div>
               <button
@@ -893,7 +893,7 @@ export default function AssembleesPage() {
                 className="flex items-center gap-2 rounded-xl border border-stone-800 bg-stone-900 px-4 py-2.5 text-xs font-bold text-stone-300 hover:bg-stone-800 hover:text-white transition"
               >
                 <Minimize2 className="h-4 w-4" />
-                <span>Quitter (Échap)</span>
+                <span>{tText("Quitter (Échap)")}</span>
               </button>
             </div>
           </div>
@@ -913,7 +913,7 @@ export default function AssembleesPage() {
                       {currentRes.numero}
                     </span>
                     <span className="text-sm font-mono text-stone-400 uppercase tracking-widest">
-                      Résolution {currentResIndex + 1} sur {resolutions.length}
+                      {tText("Résolution")} {currentResIndex + 1} {tText("sur")} {resolutions.length}
                     </span>
                   </div>
                   <span className="rounded-lg border border-stone-700 bg-stone-900 px-3 py-1 text-xs font-mono font-bold text-brand">
@@ -935,32 +935,32 @@ export default function AssembleesPage() {
                   <div className="grid gap-4 sm:grid-cols-3 text-center">
                     <div className="rounded-xl border border-emerald-500/30 bg-emerald-950/40 p-4">
                       <span className="block text-xs font-bold uppercase tracking-wider text-emerald-400">
-                        VOTES POUR
+                        {tText("VOTES POUR")}
                       </span>
                       <span className="mt-1 block font-mono text-3xl sm:text-4xl font-black text-emerald-400">
                         {currentRes.pourTantiemes} <span className="text-lg">({pctPour}%)</span>
                       </span>
-                      <span className="text-xs text-stone-400">{currentRes.pourVotes} copropriétaire(s)</span>
+                      <span className="text-xs text-stone-400">{currentRes.pourVotes} {tText("copropriétaire(s)")}</span>
                     </div>
 
                     <div className="rounded-xl border border-red-500/30 bg-red-950/40 p-4">
                       <span className="block text-xs font-bold uppercase tracking-wider text-red-400">
-                        VOTES CONTRE
+                        {tText("VOTES CONTRE")}
                       </span>
                       <span className="mt-1 block font-mono text-3xl sm:text-4xl font-black text-red-400">
                         {currentRes.contreTantiemes} <span className="text-lg">({pctContre}%)</span>
                       </span>
-                      <span className="text-xs text-stone-400">{currentRes.contreVotes} copropriétaire(s)</span>
+                      <span className="text-xs text-stone-400">{currentRes.contreVotes} {tText("copropriétaire(s)")}</span>
                     </div>
 
                     <div className="rounded-xl border border-stone-700 bg-stone-900 p-4">
                       <span className="block text-xs font-bold uppercase tracking-wider text-stone-400">
-                        ABSTENTION
+                        {tText("ABSTENTION")}
                       </span>
                       <span className="mt-1 block font-mono text-3xl sm:text-4xl font-black text-stone-300">
                         {currentRes.abstentionTantiemes}
                       </span>
-                      <span className="text-xs text-stone-400">{currentRes.abstentionVotes} copropriétaire(s)</span>
+                      <span className="text-xs text-stone-400">{currentRes.abstentionVotes} {tText("copropriétaire(s)")}</span>
                     </div>
                   </div>
 
@@ -973,7 +973,7 @@ export default function AssembleesPage() {
                   {/* Direct Voting Buttons for the Presiding Bureau */}
                   <div className="flex flex-wrap items-center justify-between gap-3 border-t border-stone-800 pt-4">
                     <span className="text-xs text-stone-400 font-mono">
-                      Comptabiliser un vote en direct (+25 tantièmes) :
+                      {tText("Comptabiliser un vote en direct (+25 tantièmes) :")}
                     </span>
                     <div className="flex items-center gap-2">
                       <button
@@ -982,7 +982,7 @@ export default function AssembleesPage() {
                         className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-700 transition"
                       >
                         <ThumbsUp className="h-4 w-4" />
-                        + POUR
+                        {tText("+ POUR")}
                       </button>
                       <button
                         type="button"
@@ -990,7 +990,7 @@ export default function AssembleesPage() {
                         className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2 text-xs font-bold text-white hover:bg-red-700 transition"
                       >
                         <ThumbsDown className="h-4 w-4" />
-                        + CONTRE
+                        {tText("+ CONTRE")}
                       </button>
                       <button
                         type="button"
@@ -998,7 +998,7 @@ export default function AssembleesPage() {
                         className="inline-flex items-center gap-2 rounded-xl bg-stone-700 px-4 py-2 text-xs font-bold text-white hover:bg-stone-600 transition"
                       >
                         <Hourglass className="h-4 w-4" />
-                        + ABSTENTION
+                        {tText("+ ABSTENTION")}
                       </button>
                     </div>
                   </div>
@@ -1013,7 +1013,7 @@ export default function AssembleesPage() {
                     className="inline-flex items-center gap-2 rounded-xl border border-stone-800 bg-stone-900 px-4 py-2.5 text-xs font-bold text-stone-300 hover:bg-stone-800 disabled:opacity-40 transition"
                   >
                     <ChevronLeft className="h-4 w-4" />
-                    <span>Résolution Précédente</span>
+                    <span>{tText("Résolution Précédente")}</span>
                   </button>
 
                   <div className="flex items-center gap-1.5">
@@ -1036,7 +1036,7 @@ export default function AssembleesPage() {
                     onClick={() => setCurrentResIndex((prev) => Math.min(resolutions.length - 1, prev + 1))}
                     className="inline-flex items-center gap-2 rounded-xl border border-stone-800 bg-stone-900 px-4 py-2.5 text-xs font-bold text-stone-300 hover:bg-stone-800 disabled:opacity-40 transition"
                   >
-                    <span>Résolution Suivante</span>
+                    <span>{tText("Résolution Suivante")}</span>
                     <ChevronRight className="h-4 w-4 rtl:rotate-180" />
                   </button>
                 </div>
