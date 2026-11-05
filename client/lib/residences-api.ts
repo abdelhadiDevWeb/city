@@ -142,6 +142,19 @@ export type NewResidentInput = {
 };
 
 export function etageLabel(etage: number): string {
+  if (typeof window !== "undefined") {
+    try {
+      const loc = localStorage.getItem("city_locale");
+      if (loc === "ar") {
+        return etage === 0 ? "الطابق الأرضي" : etage === 1 ? "الطابق الأول" : `الطابق ${etage}`;
+      }
+      if (loc === "en") {
+        return etage === 0 ? "Ground floor" : etage === 1 ? "1st floor" : etage === 2 ? "2nd floor" : etage === 3 ? "3rd floor" : `${etage}th floor`;
+      }
+    } catch {
+      // ignore
+    }
+  }
   return etage === 0 ? "rez-de-chaussée" : etage === 1 ? "1er étage" : `${etage}e étage`;
 }
 

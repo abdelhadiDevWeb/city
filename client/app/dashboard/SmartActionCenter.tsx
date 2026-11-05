@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/lib/i18n";
 import {
   AlertTriangle,
   ArrowRight,
@@ -49,6 +50,7 @@ export function SmartActionCenter({
   agDate?: string;
   agQuorumPct?: number;
 }) {
+  const { tText, locale, formatCurrency } = useI18n();
   const [collapsed, setCollapsed] = useState(false);
   const [dismissed, setDismissed] = useState(false);
 
@@ -60,9 +62,17 @@ export function SmartActionCenter({
     alerts.push({
       id: "alert-impayes",
       type: "danger",
-      title: `${impayesCount} retard(s) de charges en souffrance (${formatDZD(totalImpayes)})`,
-      description: "Des mises en demeure officielles (sommation 15 jours) et relances WhatsApp peuvent être générées immédiatement.",
-      actionLabel: "Lancer le recouvrement",
+      title: locale === "ar"
+        ? `${impayesCount} متأخرات اشتراكات معلقة (${formatCurrency(totalImpayes)})`
+        : locale === "en"
+        ? `${impayesCount} overdue charge(s) pending (${formatCurrency(totalImpayes)})`
+        : `${impayesCount} retard(s) de charges en souffrance (${formatCurrency(totalImpayes)})`,
+      description: locale === "ar"
+        ? "يمكنك الآن إصدار إعذارات رسمية (15 يوماً) وإرسال تذكيرات عبر واتساب فوراً."
+        : locale === "en"
+        ? "Official formal notices (15 days) and WhatsApp reminders can be generated immediately."
+        : "Des mises en demeure officielles (sommation 15 jours) et relances WhatsApp peuvent être générées immédiatement.",
+      actionLabel: locale === "ar" ? "بدء التحصيل" : locale === "en" ? "Start recovery" : "Lancer le recouvrement",
       actionHref: "/dashboard/finances",
       icon: ShieldAlert,
       count: impayesCount,
@@ -73,9 +83,15 @@ export function SmartActionCenter({
     alerts.push({
       id: "alert-pannes",
       type: "warning",
-      title: `${pannesCount} panne(s) d'équipement critique active(s)`,
-      description: pannesSummary ? `Équipements concernés : ${pannesSummary}. Prestataires à relancer.` : "Intervention prioritaire requise pour rétablir les équipements communs.",
-      actionLabel: "Gérer la maintenance",
+      title: locale === "ar"
+        ? `${pannesCount} عطل في التجهيزات قيد المتابعة`
+        : locale === "en"
+        ? `${pannesCount} active critical equipment failure(s)`
+        : `${pannesCount} panne(s) d'équipement critique active(s)`,
+      description: pannesSummary
+        ? `${locale === "ar" ? "التجهيزات المعنية :" : locale === "en" ? "Equipments concerned:" : "Équipements concernés :"} ${pannesSummary}.`
+        : locale === "ar" ? "تدخل عاجل مطلوب لإصلاح التجهيزات المشتركة." : locale === "en" ? "Priority maintenance required to restore common facilities." : "Intervention prioritaire requise pour rétablir les équipements communs.",
+      actionLabel: locale === "ar" ? "إدارة الصيانة" : locale === "en" ? "Manage maintenance" : "Gérer la maintenance",
       actionHref: "/dashboard/maintenance",
       icon: Siren,
       count: pannesCount,
@@ -86,9 +102,17 @@ export function SmartActionCenter({
     alerts.push({
       id: "alert-contrats",
       type: "warning",
-      title: `${contratsExpirantCount} contrat(s) prestataire arrivant à échéance`,
-      description: "Renouvellement à négocier pour éviter toute interruption de service (ascenseur, nettoyage ou bâche).",
-      actionLabel: "Voir les contrats",
+      title: locale === "ar"
+        ? `${contratsExpirantCount} عقود صيانة تشارف على الانتهاء`
+        : locale === "en"
+        ? `${contratsExpirantCount} contractor contract(s) expiring soon`
+        : `${contratsExpirantCount} contrat(s) prestataire arrivant à échéance`,
+      description: locale === "ar"
+        ? "تجديد العقود لتفادي أي انقطاع في الخدمات المشتركة (المصاعد، النظافة، خزان المياه)."
+        : locale === "en"
+        ? "Renewal required to avoid service disruption (elevators, cleaning, water tanks)."
+        : "Renouvellement à négocier pour éviter toute interruption de service (ascenseur, nettoyage ou bâche).",
+      actionLabel: locale === "ar" ? "عرض العقود" : locale === "en" ? "View contracts" : "Voir les contrats",
       actionHref: "/dashboard/documents",
       icon: FileSignature,
       count: contratsExpirantCount,
@@ -99,9 +123,17 @@ export function SmartActionCenter({
   alerts.push({
     id: "alert-ag",
     type: "info",
-    title: `Prochaine Assemblée Générale (AG) planifiée le ${agDate}`,
-    description: `Quorum des tantièmes réuni à ${agQuorumPct}% (745/1000 tantièmes). Les résolutions sont prêtes pour le vote.`,
-    actionLabel: "Accéder à l'AG & Votes",
+    title: locale === "ar"
+      ? `الجمعية العامة القادمة مبرمجة بتاريخ ${agDate}`
+      : locale === "en"
+      ? `Next General Assembly (GA) scheduled for ${agDate}`
+      : `Prochaine Assemblée Générale (AG) planifiée le ${agDate}`,
+    description: locale === "ar"
+      ? `اكتمل نصاب الحصص بنسبة ${agQuorumPct}% (745/1000 حصة). القرارات جاهزة للتصويت.`
+      : locale === "en"
+      ? `Quorum reached at ${agQuorumPct}% (745/1000 shares). Resolutions are ready for voting.`
+      : `Quorum des tantièmes réuni à ${agQuorumPct}% (745/1000 tantièmes). Les résolutions sont prêtes pour le vote.`,
+    actionLabel: locale === "ar" ? "الانتقال إلى الجمعية العامة والتصويت" : locale === "en" ? "Access GA & Votes" : "Accéder à l'AG & Votes",
     actionHref: "/dashboard/assemblees",
     icon: ScrollText,
   });
@@ -138,10 +170,10 @@ export function SmartActionCenter({
             <Sparkles className="h-3.5 w-3.5" />
           </span>
           <span className="font-extrabold uppercase tracking-wide text-ink">
-            Ruban d&apos;Alertes Intelligentes du Syndic
+            {tText("RUBAN D'ALERTES INTELLIGENTES DU SYNDIC")}
           </span>
           <span className="rounded-full bg-brand/10 px-2 py-0.5 text-[10px] font-bold text-brand">
-            {alerts.length} point(s) d&apos;attention
+            {alerts.length} {tText("point(s) d'attention")}
           </span>
         </div>
 
@@ -150,16 +182,16 @@ export function SmartActionCenter({
             type="button"
             onClick={() => setCollapsed(!collapsed)}
             className="flex items-center gap-1 rounded-lg px-2 py-1 text-stone-500 hover:bg-stone-200/50 hover:text-ink font-medium"
-            title={collapsed ? "Déplier le ruban" : "Replier le ruban"}
+            title={collapsed ? tText("Déplier") : tText("Replier")}
           >
-            <span>{collapsed ? "Déplier" : "Replier"}</span>
+            <span>{collapsed ? tText("Déplier") : tText("Replier")}</span>
             {collapsed ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronUp className="h-3.5 w-3.5" />}
           </button>
           <button
             type="button"
             onClick={() => setDismissed(true)}
             className="rounded-lg p-1 text-stone-400 hover:bg-stone-200/50 hover:text-ink"
-            title="Masquer le ruban pour cette session"
+            title={tText("Masquer le ruban pour cette session")}
           >
             <X className="h-4 w-4" />
           </button>
@@ -194,7 +226,7 @@ export function SmartActionCenter({
                     href={alert.actionHref}
                     className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold shadow-2xs transition ${style.button}`}
                   >
-                    <span>{alert.actionLabel}</span>
+                    <span>{tText(alert.actionLabel)}</span>
                     <ArrowRight className="h-3 w-3 rtl:rotate-180" />
                   </Link>
                 </div>

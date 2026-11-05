@@ -46,7 +46,7 @@ type TabId = "incidents" | "pannes" | "historique";
 const PRIORITE_TONE: Record<Priorite, Tone> = { Haute: "danger", Moyenne: "warning", Basse: "neutral" };
 
 export default function MaintenancePage() {
-  const { t, locale, isRTL } = useI18n();
+  const { t, tText, locale, isRTL, formatCurrency } = useI18n();
   const notify = useToast();
   const [data, setData] = useState<MaintenanceData | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -170,16 +170,16 @@ export default function MaintenancePage() {
           )}
           <div>
             <span className="block font-semibold text-ink">{i.titre}</span>
-            <span className="block text-xs text-stone-500">Signalé par {i.signalePar}</span>
+            <span className="block text-xs text-stone-500">{tText("Signalé par ")}{i.signalePar}</span>
           </div>
         </div>
       ),
     },
     { header: "Localisation", cell: (i) => i.lieu },
     { header: "Signalé le", cell: (i) => <span className="text-stone-500">{i.signaleLe}</span> },
-    { header: "Priorité", cell: (i) => <Pill tone={PRIORITE_TONE[i.priorite]}>{i.priorite}</Pill> },
+    { header: "Priorité", cell: (i) => <Pill tone={PRIORITE_TONE[i.priorite]}>{tText(i.priorite)}</Pill> },
     { header: "Prestataire / Assigné", cell: (i) => i.prestataire },
-    { header: "Statut", cell: (i) => <Pill tone={i.statut === "En cours" ? "warning" : "brand"}>{i.statut}</Pill> },
+    { header: "Statut", cell: (i) => <Pill tone={i.statut === "En cours" ? "warning" : "brand"}>{tText(i.statut)}</Pill> },
     {
       header: "Action",
       align: "right",
@@ -189,10 +189,10 @@ export default function MaintenancePage() {
             type="button"
             onClick={() => setAssigningIncident(i)}
             className="inline-flex items-center gap-1.5 rounded-lg border border-brand/30 bg-orange-50 px-2.5 py-1 text-xs font-semibold text-brand hover:bg-orange-100"
-            title="Créer une tâche d'intervention et l'assigner au personnel"
+            title={tText("Créer une tâche d'intervention et l'assigner au personnel")}
           >
             <Wrench className="h-3.5 w-3.5" aria-hidden />
-            Assigner Tâche
+            {tText("Assigner Tâche")}
           </button>
           {i.statut === "Nouveau" ? (
             <button
@@ -200,7 +200,7 @@ export default function MaintenancePage() {
               onClick={() => void handlePrendreEnCharge(i)}
               className={button("secondary", "sm")}
             >
-              Prendre en charge
+              {tText("Prendre en charge")}
             </button>
           ) : (
             <button
@@ -208,7 +208,7 @@ export default function MaintenancePage() {
               onClick={() => setCloturantIncident({ id: i.id, titre: i.titre, prestataire: i.prestataire })}
               className={button("primary", "sm")}
             >
-              Clôturer
+              {tText("Clôturer")}
             </button>
           )}
           <ActionGroup
@@ -366,7 +366,7 @@ export default function MaintenancePage() {
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {stats.map((stat) => (
           <div key={stat.label} className={`${card} p-4`}>
-            <p className="text-xs font-semibold text-stone-500">{stat.label}</p>
+            <p className="text-xs font-semibold text-stone-500">{tText(stat.label)}</p>
             <p className="mt-1 text-xl font-bold text-ink">{stat.value}</p>
           </div>
         ))}

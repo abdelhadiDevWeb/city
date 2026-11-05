@@ -48,7 +48,7 @@ import { FormError, Mono, Panel, Pill, ProgressBar, button, card, describeError 
 
 export function SuperAdminOverview() {
   const { account } = useSession();
-  const { t, locale, isRTL } = useI18n();
+  const { t, tText, locale, isRTL, formatCurrency } = useI18n();
   const [residences, setResidences] = useState<ResidenceSummary[] | null>(null);
   const [stats, setStats] = useState<Stats | null>(null);
   const [formules, setFormules] = useState<Formule[] | null>(null);
@@ -281,7 +281,9 @@ export function SuperAdminOverview() {
             <h2 className="text-lg font-bold text-ink">{t.dashboard.modulesHubTitle}</h2>
             <p className="text-xs text-stone-500">{t.dashboard.modulesHubSubtitle}</p>
           </div>
-          <span className="text-xs font-semibold text-stone-400">8 pages actives</span>
+          <span className="text-xs font-semibold text-stone-400">
+            {locale === "ar" ? "8 صفحات نشطة" : locale === "en" ? "8 active pages" : "8 pages actives"}
+          </span>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -298,16 +300,16 @@ export function SuperAdminOverview() {
                     <span className={`flex h-10 w-10 items-center justify-center rounded-xl border ${m.color}`}>
                       <Icon className="h-5 w-5" aria-hidden />
                     </span>
-                    <Pill tone="brand">{m.badge}</Pill>
+                    <Pill tone="brand">{tText(m.badge)}</Pill>
                   </div>
-                  <h3 className="mt-3 text-base font-bold text-ink group-hover:text-brand transition">{m.title}</h3>
-                  <p className="mt-1 text-xs text-stone-500 line-clamp-2 leading-relaxed">{m.description}</p>
+                  <h3 className="mt-3 text-base font-bold text-ink group-hover:text-brand transition">{tText(m.title)}</h3>
+                  <p className="mt-1 text-xs text-stone-500 line-clamp-2 leading-relaxed">{tText(m.description)}</p>
                 </div>
 
                 <div className="mt-4 flex items-center justify-between border-t border-stone-100 pt-3 text-xs">
-                  <span className="font-semibold text-stone-600">{m.meta}</span>
+                  <span className="font-semibold text-stone-600">{tText(m.meta)}</span>
                   <span className="flex items-center gap-1 font-semibold text-brand group-hover:translate-x-0.5 transition">
-                    Ouvrir
+                    {tText("Ouvrir")}
                     <ChevronRight className="h-3.5 w-3.5 rtl:rotate-180" aria-hidden />
                   </span>
                 </div>

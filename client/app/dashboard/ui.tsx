@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/lib/i18n";
 import { Calendar, Check, ChevronRight, CircleAlert, Copy, Download, FileSpreadsheet, Info, KeyRound, MessageCircle, Pencil, Printer, Receipt, RefreshCw, Send, ShieldAlert, Trash2, TriangleAlert, X, type LucideIcon } from "lucide-react";
 import { formatDZD } from "@/lib/format";
 import {
@@ -45,15 +46,18 @@ const PILL_TONES: Record<Tone, string> = {
 };
 
 export function Pill({ tone = "neutral", children }: { tone?: Tone; children: ReactNode }) {
+  const { tText } = useI18n();
+  const content = typeof children === "string" ? tText(children) : children;
   return (
     <span className={`inline-flex items-center gap-1 whitespace-nowrap rounded-md border px-2 py-0.5 text-[11px] font-semibold ${PILL_TONES[tone]}`}>
-      {children}
+      {content}
     </span>
   );
 }
 
 export function AccountStatusPill({ actif }: { actif: boolean }) {
-  return <Pill tone={actif ? "success" : "danger"}>{actif ? "Compte actif" : "Compte inactif"}</Pill>;
+  const { tText } = useI18n();
+  return <Pill tone={actif ? "success" : "danger"}>{actif ? tText("Compte actif") : tText("Compte inactif")}</Pill>;
 }
 
 export function PageHeader({
@@ -67,14 +71,15 @@ export function PageHeader({
   subtitle: string;
   actions?: ReactNode;
 }) {
+  const { tText } = useI18n();
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
       <div className="min-w-0">
         <h1 className="flex items-center gap-2.5 text-2xl font-bold tracking-tight text-ink">
           <Icon className="h-6 w-6 shrink-0 text-brand" strokeWidth={2.2} aria-hidden />
-          {title}
+          {typeof title === "string" ? tText(title) : title}
         </h1>
-        <p className="mt-1 text-sm text-stone-500">{subtitle}</p>
+        <p className="mt-1 text-sm text-stone-500">{typeof subtitle === "string" ? tText(subtitle) : subtitle}</p>
       </div>
       {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
     </div>
@@ -92,6 +97,7 @@ export function Tabs<T extends string>({
   active: T;
   onChange: (id: T) => void;
 }) {
+  const { tText } = useI18n();
   return (
     <div role="tablist" className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
       {tabs.map(({ id, label, icon: Icon, count }) => {
@@ -108,7 +114,7 @@ export function Tabs<T extends string>({
             }`}
           >
             <Icon className={`h-4 w-4 ${selected ? "text-brand" : ""}`} aria-hidden />
-            {label}
+            {tText(label)}
             {count !== undefined && <span className={selected ? "text-white/70" : "text-stone-400"}>({count})</span>}
           </button>
         );
@@ -128,10 +134,11 @@ export function Panel({
   children: ReactNode;
   className?: string;
 }) {
+  const { tText } = useI18n();
   return (
     <section className={`${card} p-5 ${className}`}>
       <div className="mb-4 flex items-center justify-between gap-3">
-        <h2 className="text-sm font-bold text-ink">{title}</h2>
+        <h2 className="text-sm font-bold text-ink">{typeof title === "string" ? tText(title) : title}</h2>
         {badge}
       </div>
       {children}
@@ -140,9 +147,10 @@ export function Panel({
 }
 
 export function StatLine({ label, value, strong = false }: { label: string; value: ReactNode; strong?: boolean }) {
+  const { tText } = useI18n();
   return (
     <div className="flex items-center justify-between gap-4 py-1.5 text-sm">
-      <span className="text-stone-500">{label}</span>
+      <span className="text-stone-500">{typeof label === "string" ? tText(label) : label}</span>
       <span className={`text-right ${strong ? "font-mono text-base font-bold text-ink" : "font-semibold text-ink"}`}>{value}</span>
     </div>
   );
@@ -177,6 +185,7 @@ export function DataTable<T>({
   empty?: ReactNode;
   toolbar?: ReactNode;
 }) {
+  const { tText } = useI18n();
   return (
     <div className={`${card} overflow-hidden`}>
       {toolbar && <div className="border-b border-stone-200 bg-stone-50/50 p-3 sm:p-3.5 overflow-x-auto">{toolbar}</div>}
@@ -190,7 +199,7 @@ export function DataTable<T>({
                   scope="col"
                   className={`px-4 sm:px-5 py-3 text-[11px] font-bold uppercase tracking-wide text-stone-500 ${col.align === "right" ? "text-end" : "text-start"}`}
                 >
-                  {col.header}
+                  {tText(col.header)}
                 </th>
               ))}
             </tr>
@@ -199,7 +208,7 @@ export function DataTable<T>({
             {rows.length === 0 ? (
               <tr>
                 <td colSpan={columns.length} className="px-5 py-10 text-center text-sm text-stone-500">
-                  {empty}
+                  {typeof empty === "string" ? tText(empty) : empty}
                 </td>
               </tr>
             ) : (
@@ -232,6 +241,7 @@ export function FacetFilter<T extends string>({
   value: T;
   onChange: (id: T) => void;
 }) {
+  const { tText } = useI18n();
   return (
     <div className="inline-flex flex-wrap items-center gap-1 rounded-xl border border-stone-200 bg-stone-100/70 p-1">
       {options.map((opt) => {
@@ -247,7 +257,7 @@ export function FacetFilter<T extends string>({
                 : "text-stone-600 hover:bg-white/60 hover:text-ink"
             }`}
           >
-            <span>{opt.label}</span>
+            <span>{tText(opt.label)}</span>
             {opt.count !== undefined && (
               <span
                 className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
@@ -316,6 +326,7 @@ export function PasswordGeneratorInput({
   onChange: (val: string) => void;
   hint?: string;
 }) {
+  const { tText } = useI18n();
   const [copied, setCopied] = useState(false);
 
   const generatePassword = () => {
@@ -338,13 +349,13 @@ export function PasswordGeneratorInput({
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between">
-        <label className="block text-xs font-semibold text-stone-700">{label}</label>
+        <label className="block text-xs font-semibold text-stone-700">{tText(label)}</label>
         <button
           type="button"
           onClick={generatePassword}
           className="inline-flex items-center gap-1 text-[11px] font-semibold text-brand hover:underline"
         >
-          <RefreshCw className="h-3 w-3" /> Générer automatiquement
+          <RefreshCw className="h-3 w-3" /> {tText("Générer automatiquement")}
         </button>
       </div>
       <div className="relative">
@@ -352,7 +363,7 @@ export function PasswordGeneratorInput({
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          placeholder="Entrez ou générez un mot de passe"
+          placeholder={tText("Entrez ou générez un mot de passe")}
           className={`${inputClass} pe-24 font-mono text-xs`}
         />
         <button
@@ -363,16 +374,16 @@ export function PasswordGeneratorInput({
         >
           {copied ? (
             <>
-              <Check className="h-3 w-3 text-emerald-600" /> <span className="text-emerald-700">Copié !</span>
+              <Check className="h-3 w-3 text-emerald-600" /> <span className="text-emerald-700">{tText("Copié !")}</span>
             </>
           ) : (
             <>
-              <Copy className="h-3 w-3" /> <span>Copier</span>
+              <Copy className="h-3 w-3" /> <span>{tText("Copier")}</span>
             </>
           )}
         </button>
       </div>
-      {hint && <p className="text-[11px] text-stone-500">{hint}</p>}
+      {hint && <p className="text-[11px] text-stone-500">{tText(hint)}</p>}
     </div>
   );
 }
@@ -382,10 +393,12 @@ export function Breadcrumbs({
 }: {
   items: { label: string; onClick?: () => void }[];
 }) {
+  const { tText } = useI18n();
   return (
     <nav aria-label="Fil d'Ariane" className="mb-2 flex items-center gap-1.5 text-xs text-stone-500">
       {items.map((item, idx) => {
         const isLast = idx === items.length - 1;
+        const translatedLabel = tText(item.label);
         return (
           <div key={item.label} className="flex items-center gap-1.5">
             {idx > 0 && <ChevronRight className="h-3.5 w-3.5 text-stone-400 rtl:rotate-180" />}
@@ -395,12 +408,12 @@ export function Breadcrumbs({
                 onClick={item.onClick}
                 className="font-medium text-stone-600 hover:text-ink hover:underline"
               >
-                {item.label}
+                {translatedLabel}
               </button>
             ) : isLast ? (
-              <span className="font-bold text-ink">{item.label}</span>
+              <span className="font-bold text-ink">{translatedLabel}</span>
             ) : (
-              <span className="font-medium text-stone-600">{item.label}</span>
+              <span className="font-medium text-stone-600">{translatedLabel}</span>
             )}
           </div>
         );
@@ -420,13 +433,14 @@ export function EmptyState({
   description: string;
   action?: ReactNode;
 }) {
+  const { tText } = useI18n();
   return (
     <div className="flex flex-col items-center justify-center p-8 text-center sm:p-12">
       <div className="mb-3.5 flex h-14 w-14 items-center justify-center rounded-2xl bg-stone-100 text-stone-500 shadow-inner">
         <Icon className="h-7 w-7 text-stone-600" />
       </div>
-      <h3 className="text-base font-bold text-ink">{title}</h3>
-      <p className="mt-1 max-w-sm text-xs text-stone-500">{description}</p>
+      <h3 className="text-base font-bold text-ink">{tText(title)}</h3>
+      <p className="mt-1 max-w-sm text-xs text-stone-500">{tText(description)}</p>
       {action && <div className="mt-4">{action}</div>}
     </div>
   );
@@ -565,6 +579,7 @@ export function Modal({
   onClose: () => void;
   children: ReactNode;
 }) {
+  const { tText } = useI18n();
   const titleId = useId();
 
   useEffect(() => {
@@ -577,18 +592,18 @@ export function Modal({
 
   return (
     <div role="dialog" aria-modal="true" aria-labelledby={titleId} className="fixed inset-0 z-50 flex items-end justify-center p-0 sm:items-center sm:p-4">
-      <button type="button" aria-label="Fermer" onClick={onClose} className="absolute inset-0 h-full w-full cursor-default bg-ink/40" />
+      <button type="button" aria-label={tText("Fermer")} onClick={onClose} className="absolute inset-0 h-full w-full cursor-default bg-ink/40" />
       <div className="relative max-h-[90vh] sm:max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-t-2xl sm:rounded-2xl bg-white p-5 sm:p-6 shadow-2xl transition-all">
         {/* Mobile handle indicator */}
         <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-stone-300 sm:hidden" />
         <div className="flex items-start justify-between gap-4">
           <div>
             <h2 id={titleId} className="text-lg font-bold text-ink">
-              {title}
+              {typeof title === "string" ? tText(title) : title}
             </h2>
-            {description && <p className="mt-1 text-sm text-stone-500">{description}</p>}
+            {description && <p className="mt-1 text-sm text-stone-500">{typeof description === "string" ? tText(description) : description}</p>}
           </div>
-          <button type="button" onClick={onClose} aria-label="Fermer" className="rounded-lg p-1.5 text-stone-400 hover:bg-stone-100 hover:text-ink">
+          <button type="button" onClick={onClose} aria-label={tText("Fermer")} className="rounded-lg p-1.5 text-stone-400 hover:bg-stone-100 hover:text-ink">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -602,14 +617,20 @@ export const inputClass =
   "block w-full rounded-xl border border-stone-300 bg-white px-3.5 py-2.5 text-sm text-ink placeholder:text-stone-400 transition focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20 disabled:bg-stone-50";
 
 export function Field({ label, hint, className = "", ...inputProps }: { label: string; hint?: string } & InputHTMLAttributes<HTMLInputElement>) {
+  const { tText } = useI18n();
   const id = useId();
   return (
     <div className="space-y-1.5">
       <label htmlFor={id} className="block text-xs font-semibold text-stone-700">
-        {label}
+        {tText(label)}
       </label>
-      <input id={id} className={`${inputClass} ${className}`} {...inputProps} />
-      {hint && <p className="text-[11px] text-stone-500">{hint}</p>}
+      <input
+        id={id}
+        className={`${inputClass} ${className}`}
+        {...inputProps}
+        placeholder={inputProps.placeholder ? tText(inputProps.placeholder) : undefined}
+      />
+      {hint && <p className="text-[11px] text-stone-500">{tText(hint)}</p>}
     </div>
   );
 }
@@ -663,6 +684,7 @@ export function ConfirmModal({
   open?: boolean;
   isOpen?: boolean;
 }) {
+  const { tText } = useI18n();
   const isVisible = open && isOpen;
   if (!isVisible) return null;
 
@@ -670,10 +692,10 @@ export function ConfirmModal({
   const desc = description || message || "Cette action est irréversible.";
 
   return (
-    <Modal title={title} description={desc} onClose={handleClose}>
+    <Modal title={typeof title === "string" ? tText(title) : title} description={typeof desc === "string" ? tText(desc) : desc} onClose={handleClose}>
       <div className="flex items-center justify-end gap-3 pt-4">
         <button type="button" onClick={handleClose} disabled={loading} className={button("secondary")}>
-          Annuler
+          {tText("Annuler")}
         </button>
         <button
           type="button"
@@ -681,19 +703,19 @@ export function ConfirmModal({
           disabled={loading}
           className={button("danger")}
         >
-          {loading ? "Suppression..." : confirmLabel}
+          {loading ? tText("Suppression...") : tText(confirmLabel)}
         </button>
       </div>
     </Modal>
   );
 }
 
-
 export function ActionGroup({
   onEdit,
   onDelete,
   editLabel = "Modifier",
   deleteLabel = "Supprimer",
+  compact = false,
 }: {
   onEdit?: () => void;
   onDelete?: () => void;
@@ -701,14 +723,15 @@ export function ActionGroup({
   deleteLabel?: string;
   compact?: boolean;
 }) {
+  const { tText } = useI18n();
   return (
     <div className="flex items-center gap-1.5">
       {onEdit && (
         <button
           type="button"
           onClick={onEdit}
-          title={editLabel}
-          aria-label={editLabel}
+          title={tText(editLabel)}
+          aria-label={tText(editLabel)}
           className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-stone-200 bg-white text-stone-600 shadow-xs transition hover:border-stone-300 hover:bg-stone-50 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
         >
           <Pencil className="h-3.5 w-3.5" aria-hidden />
@@ -718,8 +741,8 @@ export function ActionGroup({
         <button
           type="button"
           onClick={onDelete}
-          title={deleteLabel}
-          aria-label={deleteLabel}
+          title={tText(deleteLabel)}
+          aria-label={tText(deleteLabel)}
           className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-red-200 bg-red-50/70 text-red-600 shadow-xs transition hover:border-red-300 hover:bg-red-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
         >
           <Trash2 className="h-3.5 w-3.5" aria-hidden />
@@ -788,6 +811,8 @@ export function ExportPeriodToolbar({
   endDate: string;
   onPeriodChange: (start: string, end: string) => void;
 }) {
+  const { tText } = useI18n();
+
   function setPreset(type: "month" | "quarter" | "year" | "all") {
     const now = new Date();
     const pad = (n: number) => String(n).padStart(2, "0");
@@ -815,12 +840,14 @@ export function ExportPeriodToolbar({
     }
   }
 
+  const cleanTitle = (title || "Exporter les données").replace(/[\s:]+$/, "");
+
   return (
     <div className={`${card} flex flex-col gap-3 p-4 text-xs sm:flex-row sm:items-center sm:justify-between`}>
       <div className="flex flex-wrap items-center gap-2">
         <span className="flex items-center gap-1.5 font-bold text-ink">
           <Calendar className="h-4 w-4 text-brand" aria-hidden />
-          {title} :
+          {tText(cleanTitle)} :
         </span>
         <div className="flex items-center gap-1.5">
           <input
@@ -843,28 +870,28 @@ export function ExportPeriodToolbar({
             onClick={() => setPreset("month")}
             className="rounded-md border border-stone-200 bg-stone-50 px-2 py-1 font-medium text-stone-600 hover:bg-stone-100"
           >
-            Ce mois
+            {tText("Ce mois")}
           </button>
           <button
             type="button"
             onClick={() => setPreset("quarter")}
             className="rounded-md border border-stone-200 bg-stone-50 px-2 py-1 font-medium text-stone-600 hover:bg-stone-100"
           >
-            Trimestre
+            {tText("Trimestre")}
           </button>
           <button
             type="button"
             onClick={() => setPreset("year")}
             className="rounded-md border border-stone-200 bg-stone-50 px-2 py-1 font-medium text-stone-600 hover:bg-stone-100"
           >
-            Année
+            {tText("Année")}
           </button>
           <button
             type="button"
             onClick={() => setPreset("all")}
             className="rounded-md border border-stone-200 bg-stone-50 px-2 py-1 font-medium text-stone-600 hover:bg-stone-100"
           >
-            Tout
+            {tText("Tout")}
           </button>
         </div>
       </div>
@@ -877,7 +904,7 @@ export function ExportPeriodToolbar({
             className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-1.5 font-semibold text-emerald-800 hover:bg-emerald-100"
           >
             <FileSpreadsheet className="h-3.5 w-3.5 text-emerald-600" aria-hidden />
-            Excel / CSV
+            {tText("Excel / CSV")}
           </button>
         )}
         {onPrint && (
@@ -887,7 +914,7 @@ export function ExportPeriodToolbar({
             className="inline-flex items-center gap-1.5 rounded-lg border border-stone-300 bg-white px-3 py-1.5 font-semibold text-stone-700 shadow-xs hover:bg-stone-50 hover:text-ink"
           >
             <Printer className="h-3.5 w-3.5 text-stone-500" aria-hidden />
-            Imprimer / PDF
+            {tText("Imprimer / PDF")}
           </button>
         )}
       </div>
@@ -929,10 +956,11 @@ export function QuittanceModal({
   residenceNom?: string;
   onClose: () => void;
 }) {
-  const whatsappMsg = `Bonjour ${paiement.resident}, voici votre quittance de règlement des charges de copropriété pour le logement ${paiement.logement} : Montant ${formatDZD(paiement.montant)}, date ${paiement.date}, réf ${paiement.reference}. Document officiel délivré par le Syndic ${residenceNom}. Merci pour votre contribution !`;
+  const { tText, formatCurrency } = useI18n();
+  const whatsappMsg = `Bonjour ${paiement.resident}, voici votre quittance de règlement des charges de copropriété pour le logement ${paiement.logement} : Montant ${formatCurrency(paiement.montant)}, date ${paiement.date}, réf ${paiement.reference}. Document officiel délivré par le Syndic ${residenceNom}. Merci pour votre contribution !`;
 
   return (
-    <Modal title="Quittance de Cotisation & Charges" description="Reçu d'encaissement officiel pour le copropriétaire ou locataire." onClose={onClose}>
+    <Modal title={tText("Quittance de Cotisation & Charges")} description={tText("Reçu d'encaissement officiel pour le copropriétaire ou locataire.")} onClose={onClose}>
       <div id="quittance-print" className="space-y-6 rounded-2xl border border-stone-200 bg-stone-50/50 p-6 text-sm">
         <div className="flex items-start justify-between border-b border-stone-200 pb-4">
           <div>
@@ -944,54 +972,54 @@ export function QuittanceModal({
           </div>
           <div className="text-right">
             <span className="rounded-md border border-emerald-300 bg-emerald-50 px-2 py-0.5 text-[11px] font-bold text-emerald-800">
-              ACQUITTÉ
+              {tText("ACQUITTÉ")}
             </span>
-            <p className="mt-1 font-mono text-xs text-stone-500">Réf : {paiement.reference}</p>
+            <p className="mt-1 font-mono text-xs text-stone-500">{tText("Réf :")} {paiement.reference}</p>
           </div>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-wide text-stone-400">Copropriétaire / Résident</p>
+            <p className="text-[11px] font-bold uppercase tracking-wide text-stone-400">{tText("Copropriétaire / Résident")}</p>
             <p className="mt-0.5 text-sm font-bold text-ink">{paiement.resident}</p>
             {paiement.telephone && <p className="font-mono text-xs text-stone-500">{paiement.telephone}</p>}
           </div>
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-wide text-stone-400">Logement Assigné</p>
+            <p className="text-[11px] font-bold uppercase tracking-wide text-stone-400">{tText("Logement Assigné")}</p>
             <p className="mt-0.5 text-sm font-bold text-ink">{paiement.logement}</p>
-            <p className="text-xs text-stone-500">Charges communes & entretien</p>
+            <p className="text-xs text-stone-500">{tText("Charges communes & entretien")}</p>
           </div>
         </div>
 
         <div className="rounded-xl border border-stone-200 bg-white p-4">
           <div className="flex items-center justify-between border-b border-stone-100 pb-2 text-xs text-stone-500">
-            <span>Désignation</span>
-            <span>Date d&apos;encaissement</span>
-            <span>Montant Réglé</span>
+            <span>{tText("Désignation")}</span>
+            <span>{tText("Date d'encaissement")}</span>
+            <span>{tText("Montant Réglé")}</span>
           </div>
           <div className="flex items-center justify-between pt-3">
             <div>
-              <p className="font-bold text-ink">Charges de Copropriété</p>
-              <p className="text-xs text-stone-500">Règlement par {paiement.mode}</p>
+              <p className="font-bold text-ink">{tText("Charges de Copropriété")}</p>
+              <p className="text-xs text-stone-500">{tText("Règlement par")} {paiement.mode}</p>
             </div>
             <span className="text-xs text-stone-600">{paiement.date}</span>
-            <span className="font-mono text-lg font-bold text-emerald-600">+{formatDZD(paiement.montant)}</span>
+            <span className="font-mono text-lg font-bold text-emerald-600">+{formatCurrency(paiement.montant)}</span>
           </div>
         </div>
 
         <div className="flex items-center justify-between text-xs text-stone-500">
           <div>
-            <span className="font-medium text-stone-400">Encaissé par : </span>
-            <span className="font-semibold text-ink">{paiement.encaissePar || "Administration du Syndic"}</span>
+            <span className="font-medium text-stone-400">{tText("Encaissé par :")} </span>
+            <span className="font-semibold text-ink">{paiement.encaissePar || tText("Administration du Syndic")}</span>
           </div>
           <div className="text-right italic">
-            Document officiel tenant lieu de reçu de paiement.
+            {tText("Document officiel tenant lieu de reçu de paiement.")}
           </div>
         </div>
 
         <div className="mt-6 flex flex-wrap justify-end gap-2 border-t border-stone-200 pt-4 print:hidden">
           <button type="button" onClick={onClose} className={button("secondary")}>
-            Fermer
+            {tText("Fermer")}
           </button>
           <button
             type="button"
@@ -999,7 +1027,7 @@ export function QuittanceModal({
             className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-300 bg-emerald-50 px-4 py-2.5 text-sm font-semibold text-emerald-800 hover:bg-emerald-100"
           >
             <MessageCircle className="h-4 w-4 text-emerald-600" aria-hidden />
-            Partager WhatsApp
+            {tText("Partager WhatsApp")}
           </button>
           <button
             type="button"
@@ -1007,7 +1035,7 @@ export function QuittanceModal({
             className={button("primary")}
           >
             <Printer className="h-4 w-4" aria-hidden />
-            Imprimer la Quittance
+            {tText("Imprimer la Quittance")}
           </button>
         </div>
       </div>
@@ -1033,6 +1061,7 @@ export function RelanceMiseEnDemeureModal({
   residenceNom?: string;
   onClose: () => void;
 }) {
+  const { tText, formatCurrency } = useI18n();
   const [level, setLevel] = useState<RelanceLevel>("amiable");
   const today = new Date().toLocaleDateString("fr-FR");
 
@@ -1046,7 +1075,7 @@ export function RelanceMiseEnDemeureModal({
       intro: `Sauf erreur ou omission de notre part, nous constatons à ce jour que votre compte de charges de copropriété présente un solde débiteur.`,
       actionText: `Nous vous invitons courtoisement à bien vouloir régulariser cette situation sous un délai de huit (8) jours, soit par virement, versement bancaire/CCP ou directement auprès du bureau du syndic.`,
       legalNotice: `En cas de paiement déjà effectué entre-temps, nous vous prions de ne pas tenir compte de cette présente correspondance.`,
-      whatsappIntro: `Bonjour ${impaye.resident}, nous constatons un retard de cotisation de ${formatDZD(impaye.totalDu)} (${impaye.moisImpayes} mois) pour votre logement ${impaye.logement}. Merci de bien vouloir régulariser auprès du Syndic sous 8 jours. Bien cordialement.`,
+      whatsappIntro: `Bonjour ${impaye.resident}, nous constatons un retard de cotisation de ${formatCurrency(impaye.totalDu)} (${impaye.moisImpayes} mois) pour votre logement ${impaye.logement}. Merci de bien vouloir régulariser auprès du Syndic sous 8 jours. Bien cordialement.`,
     },
     avertissement: {
       badge: "Niveau 2 · Avertissement Formel",
@@ -1054,10 +1083,10 @@ export function RelanceMiseEnDemeureModal({
       title: "AVERTISSEMENT FORMEL POUR RETARD DE COTISATION",
       delai: "8 jours",
       objet: `Dernier avis avant mise en demeure - Logement ${impaye.logement}`,
-      intro: `Malgré notre précédent rappel resté sans suite favorable, votre compte présente toujours un arriéré important de ${impaye.moisImpayes} mois d'impayés pour un montant total de ${formatDZD(impaye.totalDu)}.`,
+      intro: `Malgré notre précédent rappel resté sans suite favorable, votre compte présente toujours un arriéré important de ${impaye.moisImpayes} mois d'impayés pour un montant total de ${formatCurrency(impaye.totalDu)}.`,
       actionText: `Le bon fonctionnement des services communs (électricité Sonelgaz, sécurité, ascenseurs, hygiène) dépend de la contribution rigoureuse de chaque copropriétaire. Nous vous demandons impérativement de solder ce montant sous huitaine.`,
       legalNotice: `À défaut de régularisation intégrale dans ce délai, une procédure officielle de mise en demeure avec majorations et frais de recouvrement sera engagée à votre charge.`,
-      whatsappIntro: `AVIS FORMEL : M./Mme ${impaye.resident}, malgré nos relances, vos charges de copropriété (${impaye.logement}) demeurent impayées pour un total de ${formatDZD(impaye.totalDu)}. Merci de régulariser d'urgence sous 8 jours afin d'éviter l'ouverture d'un contentieux.`,
+      whatsappIntro: `AVIS FORMEL : M./Mme ${impaye.resident}, malgré nos relances, vos charges de copropriété (${impaye.logement}) demeurent impayées pour un total de ${formatCurrency(impaye.totalDu)}. Merci de régulariser d'urgence sous 8 jours afin d'éviter l'ouverture d'un contentieux.`,
     },
     mise_en_demeure: {
       badge: "Niveau 3 · Mise en Demeure Officielle",
@@ -1065,10 +1094,10 @@ export function RelanceMiseEnDemeureModal({
       title: "MISE EN DEMEURE OFFICIELLE (SOMMATION DE PAYER SOUS 15 JOURS)",
       delai: "15 jours francs",
       objet: `SOMMATION DE PAYER AVANT ACTION CONTENTIEUSE ET SAISIE - Logement ${impaye.logement}`,
-      intro: `Par la présente, en notre qualité de Syndic légalement mandaté de la copropriété ${residenceNom}, nous vous METTONS EN DEMEURE FORMELLE de procéder au règlement immédiat de votre dette s'élevant à ${formatDZD(impaye.totalDu)}.`,
+      intro: `Par la présente, en notre qualité de Syndic légalement mandaté de la copropriété ${residenceNom}, nous vous METTONS EN DEMEURE FORMELLE de procéder au règlement immédiat de votre dette s'élevant à ${formatCurrency(impaye.totalDu)}.`,
       actionText: `Vous disposez d'un délai impératif de QUINZE (15) JOURS FRANCS à compter de la date de notification de la présente pour solder l'intégralité de cette créance liquide et exigible.`,
       legalNotice: `Vu les dispositions légales régissant la copropriété des immeubles bâtis (Ordonnance n° 76-80 et décrets d'application), à défaut de paiement intégral dans le délai imparti de 15 jours, le dossier sera transmis à notre conseil juridique pour saisine de la juridiction compétente en référé-provision, inscription de privilège immobilier et recouvrement forcé par voie d'huissier de justice, tous frais de justice et intérêts de retard restant intégralement à votre charge exclusive.`,
-      whatsappIntro: `MISE EN DEMEURE OFFICIELLE : M./Mme ${impaye.resident} (Logement ${impaye.logement}). Vous êtes mis en demeure de payer la somme de ${formatDZD(impaye.totalDu)} sous 15 jours francs. Passé ce délai, le dossier sera transmis à l'huissier de justice pour poursuite judiciaire. Syndic ${residenceNom}.`,
+      whatsappIntro: `MISE EN DEMEURE OFFICIELLE : M./Mme ${impaye.resident} (Logement ${impaye.logement}). Vous êtes mis en demeure de payer la somme de ${formatCurrency(impaye.totalDu)} sous 15 jours francs. Passé ce délai, le dossier sera transmis à l'huissier de justice pour poursuite judiciaire. Syndic ${residenceNom}.`,
     },
   };
 
@@ -1076,8 +1105,8 @@ export function RelanceMiseEnDemeureModal({
 
   return (
     <Modal
-      title="Recouvrement & Relance Officielle"
-      description="Génération de relance amiable, avertissement ou mise en demeure officielle avec sommation de payer."
+      title={tText("Recouvrement & Relance Officielle")}
+      description={tText("Génération de relance amiable, avertissement ou mise en demeure officielle avec sommation de payer.")}
       onClose={onClose}
     >
       <div className="space-y-6 text-sm">
@@ -1090,7 +1119,7 @@ export function RelanceMiseEnDemeureModal({
               level === "amiable" ? "bg-amber-100 text-amber-900 shadow-xs" : "text-stone-600 hover:bg-stone-200/50"
             }`}
           >
-            1. Rappel Amiable
+            {tText("1. Rappel Amiable")}
           </button>
           <button
             type="button"
@@ -1099,7 +1128,7 @@ export function RelanceMiseEnDemeureModal({
               level === "avertissement" ? "bg-red-100 text-red-900 shadow-xs" : "text-stone-600 hover:bg-stone-200/50"
             }`}
           >
-            2. Avertissement
+            {tText("2. Avertissement")}
           </button>
           <button
             type="button"
@@ -1108,7 +1137,7 @@ export function RelanceMiseEnDemeureModal({
               level === "mise_en_demeure" ? "bg-stone-900 text-white shadow-xs" : "text-stone-600 hover:bg-stone-200/50"
             }`}
           >
-            3. Mise en Demeure (15j)
+            {tText("3. Mise en Demeure (15j)")}
           </button>
         </div>
 
@@ -1121,23 +1150,23 @@ export function RelanceMiseEnDemeureModal({
               <p className="text-xs text-stone-500">Bureau de gestion immobilière</p>
             </div>
             <div className="text-right">
-              <Pill tone={current.badgeTone}>{current.badge}</Pill>
+              <Pill tone={current.badgeTone}>{tText(current.badge)}</Pill>
               <p className="mt-1 text-xs text-stone-500">Date : {today}</p>
             </div>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2 rounded-xl bg-stone-50 p-4 border border-stone-200">
             <div>
-              <p className="text-[11px] font-bold uppercase tracking-wider text-stone-400">Destinataire (Copropriétaire)</p>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-stone-400">{tText("Destinataire (Copropriétaire)")}</p>
               <p className="text-sm font-bold text-ink mt-0.5">{impaye.resident}</p>
-              <p className="text-xs text-stone-600">Lot assigné : {impaye.logement}</p>
+              <p className="text-xs text-stone-600">{tText("Logement")} : {impaye.logement}</p>
               {impaye.telephone && <p className="font-mono text-xs text-stone-500">{impaye.telephone}</p>}
             </div>
             <div className="sm:text-right">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-stone-400">Situation Comptable</p>
-              <p className="font-mono text-base font-black text-red-600 mt-0.5">{formatDZD(impaye.totalDu)}</p>
-              <p className="text-xs text-stone-500">{impaye.moisImpayes} mois d&apos;arriérés constatés</p>
-              <p className="text-xs text-stone-400">Dernier règlement : {impaye.dernierReglement || "Néant"}</p>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-stone-400">{tText("Situation Comptable")}</p>
+              <p className="font-mono text-base font-black text-red-600 mt-0.5">{formatCurrency(impaye.totalDu)}</p>
+              <p className="text-xs text-stone-500">{impaye.moisImpayes} {tText("mois impayés")}</p>
+              <p className="text-xs text-stone-400">{tText("Dernier règlement")} : {impaye.dernierReglement || "Néant"}</p>
             </div>
           </div>
 
@@ -1168,7 +1197,7 @@ export function RelanceMiseEnDemeureModal({
         {/* Modal Actions */}
         <div className="flex flex-wrap items-center justify-end gap-2 border-t border-stone-200 pt-4 print:hidden">
           <button type="button" onClick={onClose} className={button("secondary")}>
-            Fermer
+            {tText("Fermer")}
           </button>
           <button
             type="button"
@@ -1176,7 +1205,7 @@ export function RelanceMiseEnDemeureModal({
             className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-300 bg-emerald-50 px-4 py-2.5 text-sm font-semibold text-emerald-800 hover:bg-emerald-100"
           >
             <MessageCircle className="h-4 w-4 text-emerald-600" aria-hidden />
-            Envoyer via WhatsApp
+            {tText("Envoyer via WhatsApp")}
           </button>
           <button
             type="button"
@@ -1184,7 +1213,7 @@ export function RelanceMiseEnDemeureModal({
             className={button("primary")}
           >
             <Printer className="h-4 w-4" aria-hidden />
-            Imprimer Lettre Recommandée / PDF
+            {tText("Imprimer / PDF")}
           </button>
         </div>
       </div>

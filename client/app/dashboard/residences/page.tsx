@@ -92,7 +92,7 @@ const fullName = (p: { prenom: string; nom: string }) => `${p.prenom} ${p.nom}`;
 const formatDate = (iso: string) => new Date(iso).toLocaleDateString("fr-FR", { timeZone: "UTC" });
 
 export default function ResidencesPage() {
-  const { t, locale, isRTL } = useI18n();
+  const { t, tText, locale, isRTL, formatCurrency } = useI18n();
   const notify = useToast();
   const { account } = useSession();
   const isAdmin = (account.type === "Admin" && account.role === "admin") || account.roles?.includes("admin");
@@ -219,8 +219,8 @@ export default function ResidencesPage() {
             {b.nom.slice(0, 2).toUpperCase()}
           </span>
           <div>
-            <span className="block text-sm font-bold text-ink">Bâtiment {b.nom}</span>
-            <span className="block text-xs font-normal text-stone-500">{b.etages} étages ({etageLabel(b.etages)})</span>
+            <span className="block text-sm font-bold text-ink">{tText("Bâtiment")} {b.nom}</span>
+            <span className="block text-xs font-normal text-stone-500">{b.etages} {tText("étages")} ({etageLabel(b.etages)})</span>
           </div>
         </span>
       ),
@@ -233,7 +233,7 @@ export default function ResidencesPage() {
         return (
           <div>
             <span className="font-semibold text-ink">{nbAppart}</span>
-            <span className="text-xs text-stone-400"> / {max} max</span>
+            <span className="text-xs text-stone-400"> / {max} {tText("max")}</span>
           </div>
         );
       },
@@ -247,7 +247,7 @@ export default function ResidencesPage() {
         return (
           <div className="min-w-[130px]">
             <div className="flex items-center justify-between text-xs mb-1">
-              <span className="font-medium text-stone-600">{nbOccupes} occupés</span>
+              <span className="font-medium text-stone-600">{nbOccupes} {tText("occupés")}</span>
               <span className="font-bold text-ink">{taux}%</span>
             </div>
             <ProgressBar value={taux} label={`Occupation Bâtiment ${b.nom}`} />
@@ -268,7 +268,7 @@ export default function ResidencesPage() {
           </div>
         ) : (
           <div className="flex items-center gap-2">
-            <span className="text-xs text-stone-400 italic">Non assigné</span>
+            <span className="text-xs text-stone-400 italic">{tText("Non assigné")}</span>
             {isAdmin && (
               <button
                 type="button"
@@ -276,7 +276,7 @@ export default function ResidencesPage() {
                 className={button("secondary", "sm")}
               >
                 <UserPlus className="h-3.5 w-3.5" aria-hidden />
-                Nommer
+                {tText("Nommer")}
               </button>
             )}
           </div>

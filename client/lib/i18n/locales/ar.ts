@@ -194,3 +194,4 @@ export const ar: Translations = {
     delaiIntervention: "المهل المعيارية لمعالجة الأعطال",
   },
 };
+

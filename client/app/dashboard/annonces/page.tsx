@@ -44,7 +44,7 @@ import { SkeletonGenericPage } from "../skeletons";
 type TabId = "annonces" | "alertes";
 
 export default function AnnoncesPage() {
-  const { t, locale, isRTL } = useI18n();
+  const { t, tText, locale, isRTL } = useI18n();
   const notify = useToast();
   const [data, setData] = useState<AnnoncesData | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -188,7 +188,7 @@ export default function AnnoncesPage() {
       cell: (a) => (
         <span className="flex items-center gap-1.5 text-xs font-medium text-stone-700">
           <UsersRound className="h-3.5 w-3.5 text-stone-400" aria-hidden />
-          {a.audience}
+          {tText(a.audience)}
         </span>
       ),
     },
@@ -197,7 +197,7 @@ export default function AnnoncesPage() {
       cell: (a) => (
         <span className="flex flex-wrap gap-1">
           {a.canaux.map((c) => (
-            <Pill key={c}>{c}</Pill>
+            <Pill key={c}>{tText(c)}</Pill>
           ))}
         </span>
       ),
@@ -211,10 +211,10 @@ export default function AnnoncesPage() {
             type="button"
             onClick={() => void handleRenvoyer(a)}
             className={button("secondary", "sm")}
-            title="Renvoyer une notification aux résidents"
+            title={tText("Renvoyer une notification aux résidents")}
           >
             <Send className="h-3.5 w-3.5" aria-hidden />
-            Renvoyer
+            {tText("Renvoyer")}
           </button>
           <ActionGroup
             editLabel="Modifier l'annonce"

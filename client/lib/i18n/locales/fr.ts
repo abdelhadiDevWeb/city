@@ -194,3 +194,4 @@ export const fr: Translations = {
     delaiIntervention: "Délais d'Intervention Standards (SLA)",
   },
 };
+

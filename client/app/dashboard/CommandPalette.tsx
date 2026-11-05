@@ -33,6 +33,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useSession } from "./session";
 import { primaryRole } from "@/lib/roles";
+import { useI18n } from "@/lib/i18n";
 
 type CommandItem = {
   id: string;
@@ -57,6 +58,7 @@ export function CommandPalette({
 }) {
   const router = useRouter();
   const { account } = useSession();
+  const { t, tText } = useI18n();
   const role = primaryRole(account);
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -343,7 +345,7 @@ export function CommandPalette({
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Rechercher une page, un résident, un appartement ou une action..."
+            placeholder={tText("Rechercher une page, un résident, un appartement ou une action...")}
             className="w-full bg-transparent text-sm text-ink placeholder:text-stone-400 focus:outline-none"
           />
           {query && (
@@ -356,7 +358,7 @@ export function CommandPalette({
             </button>
           )}
           <kbd className="hidden rounded bg-stone-100 px-1.5 py-0.5 text-[10px] font-semibold text-stone-500 sm:inline-block border border-stone-200">
-            Échap
+            {tText("Échap")}
           </kbd>
         </div>
 
@@ -365,8 +367,8 @@ export function CommandPalette({
           {filteredItems.length === 0 ? (
             <div className="py-12 text-center text-xs text-stone-500">
               <Search className="mx-auto h-7 w-7 text-stone-300 mb-2" />
-              <p className="font-semibold text-ink">Aucun résultat trouvé</p>
-              <p className="mt-1 text-stone-400">Essayez avec un autre mot-clé (ex: « finances », « ascenseur », « amrani »...)</p>
+              <p className="font-semibold text-ink">{tText("Aucun résultat trouvé")}</p>
+              <p className="mt-1 text-stone-400">{tText("Essayez avec un autre mot-clé (ex: « finances », « ascenseur », « amrani »...)")}</p>
             </div>
           ) : (
             <div className="space-y-1">
@@ -404,19 +406,19 @@ export function CommandPalette({
                       </span>
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="font-bold text-ink truncate">{item.title}</span>
+                          <span className="font-bold text-ink truncate">{tText(item.title)}</span>
                           {item.badge && (
                             <span className="rounded bg-brand/10 px-1.5 py-0.2 text-[9px] font-extrabold text-brand uppercase">
-                              {item.badge}
+                              {tText(item.badge)}
                             </span>
                           )}
                         </div>
-                        <p className="text-[11px] text-stone-400 truncate">{item.subtitle}</p>
+                        <p className="text-[11px] text-stone-400 truncate">{tText(item.subtitle)}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       <span className="hidden text-[10px] font-medium text-stone-400 sm:inline">
-                        {item.category}
+                        {tText(item.category)}
                       </span>
                       {isSelected && <ArrowRight className="h-3.5 w-3.5 text-brand rtl:rotate-180" />}
                     </div>
@@ -432,10 +434,10 @@ export function CommandPalette({
           <div className="flex items-center gap-3">
             <span>
               <kbd className="rounded border border-stone-200 bg-white px-1 py-0.5 text-[9px] font-bold">↑</kbd>{" "}
-              <kbd className="rounded border border-stone-200 bg-white px-1 py-0.5 text-[9px] font-bold">↓</kbd> Naviguer
+              <kbd className="rounded border border-stone-200 bg-white px-1 py-0.5 text-[9px] font-bold">↓</kbd> {tText("Naviguer")}
             </span>
             <span>
-              <kbd className="rounded border border-stone-200 bg-white px-1 py-0.5 text-[9px] font-bold">↵</kbd> Ouvrir
+              <kbd className="rounded border border-stone-200 bg-white px-1 py-0.5 text-[9px] font-bold">↵</kbd> {tText("Ouvrir")}
             </span>
           </div>
           <span className="font-mono text-[10px] text-stone-400">City Syndic Spotlight</span>

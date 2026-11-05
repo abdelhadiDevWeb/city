@@ -3,12 +3,14 @@
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { ApiError, login } from "@/lib/api";
+import { useI18n } from "@/lib/i18n";
+import { LanguageSwitcher } from "@/app/dashboard/LanguageSwitcher";
 
-function errorMessage(err: unknown): string {
-  if (!(err instanceof ApiError)) return "Could not reach the server. Please try again.";
-  if (err.status === 400) return "Please enter a valid email and password.";
-  if (err.status === 429) return "Too many attempts. Please wait a minute and try again.";
-  return err.message;
+function errorMessage(err: unknown, tText: (s: string) => string): string {
+  if (!(err instanceof ApiError)) return tText("Could not reach the server. Please try again.");
+  if (err.status === 400) return tText("Please enter a valid email and password.");
+  if (err.status === 429) return tText("Too many attempts. Please wait a minute and try again.");
+  return tText(err.message);
 }
 
 function Logo({ className = "" }: { className?: string }) {
@@ -61,6 +63,7 @@ function Skyline() {
 
 export default function LoginPage() {
   const router = useRouter();
+  const { t, tText, isRTL } = useI18n();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -75,7 +78,7 @@ export default function LoginPage() {
       await login(email.trim(), password);
       router.replace("/dashboard");
     } catch (err) {
-      setError(errorMessage(err));
+      setError(errorMessage(err, tText));
       setSubmitting(false);
     }
   }
@@ -91,10 +94,10 @@ export default function LoginPage() {
           <Logo />
           <div className="mt-auto mb-10 max-w-md">
             <h2 className="text-4xl font-bold leading-tight tracking-tight xl:text-5xl">
-              Build a better city, together.
+              {tText("Build a better city, together.")}
             </h2>
             <p className="mt-4 text-base font-medium text-ink/75">
-              One secure place to manage everything that keeps the city moving.
+              {tText("One secure place to manage everything that keeps the city moving.")}
             </p>
           </div>
         </div>
@@ -103,18 +106,23 @@ export default function LoginPage() {
         </div>
       </aside>
 
-      <section className="flex flex-col px-6 py-10 sm:px-12">
-        <Logo className="text-ink lg:hidden" />
+      <section className="relative flex flex-col px-6 py-8 sm:px-12">
+        <div className="flex items-center justify-between">
+          <Logo className="text-ink lg:hidden" />
+          <div className="ms-auto">
+            <LanguageSwitcher />
+          </div>
+        </div>
 
-        <div className="flex flex-1 items-center justify-center py-12">
+        <div className="flex flex-1 items-center justify-center py-10">
           <div className="w-full max-w-sm">
-            <h1 className="text-3xl font-bold tracking-tight text-ink">Sign in</h1>
-            <p className="mt-2 text-sm text-stone-500">Enter your details to access your account.</p>
+            <h1 className="text-3xl font-bold tracking-tight text-ink">{tText("Sign in")}</h1>
+            <p className="mt-2 text-sm text-stone-500">{tText("Enter your details to access your account.")}</p>
 
-            <form onSubmit={handleSubmit} className="mt-10 space-y-6">
+            <form onSubmit={handleSubmit} className="mt-8 space-y-6">
               <div className="space-y-2">
                 <label htmlFor="email" className="block text-sm font-medium text-stone-700">
-                  Email address
+                  {tText("Email address")}
                 </label>
                 <input
                   id="email"
@@ -131,7 +139,7 @@ export default function LoginPage() {
 
               <div className="space-y-2">
                 <label htmlFor="password" className="block text-sm font-medium text-stone-700">
-                  Password
+                  {tText("Password")}
                 </label>
                 <div className="relative">
                   <input
@@ -140,17 +148,17 @@ export default function LoginPage() {
                     autoComplete="current-password"
                     required
                     maxLength={128}
-                    placeholder="Enter your password"
+                    placeholder={tText("Enter your password")}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className={`${inputClass} pr-12`}
+                    className={`${inputClass} ${isRTL ? "pl-12 pr-4" : "pr-12 pl-4"}`}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword((v) => !v)}
-                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    aria-label={showPassword ? tText("Fermer") : tText("Détails")}
                     aria-pressed={showPassword}
-                    className="absolute inset-y-0 right-0 flex items-center px-4 text-stone-400 transition hover:text-brand focus-visible:text-brand focus-visible:outline-none"
+                    className={`absolute inset-y-0 ${isRTL ? "left-0" : "right-0"} flex items-center px-4 text-stone-400 transition hover:text-brand focus-visible:text-brand focus-visible:outline-none`}
                   >
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5" aria-hidden>
                       <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" />
@@ -178,12 +186,12 @@ export default function LoginPage() {
                 {submitting ? (
                   <>
                     <span aria-hidden className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                    Signing in...
+                    {tText("Signing in...")}
                   </>
                 ) : (
                   <>
-                    Sign in
-                    <span aria-hidden className="text-brand transition group-hover:translate-x-0.5">→</span>
+                    {tText("Sign in")}
+                    <span aria-hidden className="text-brand transition group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5 rtl:rotate-180">→</span>
                   </>
                 )}
               </button>
@@ -191,7 +199,7 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <p className="text-center text-xs text-stone-400 lg:text-left">© {new Date().getFullYear()} City. All rights reserved.</p>
+        <p className="text-center text-xs text-stone-400 lg:text-left">© {new Date().getFullYear()} City. {tText("All rights reserved.")}</p>
       </section>
     </main>
   );

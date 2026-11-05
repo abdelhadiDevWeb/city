@@ -3,6 +3,7 @@
 import { KeyRound } from "lucide-react";
 import { useId, useState, type ReactNode, type SelectHTMLAttributes } from "react";
 import { Field, button, describeError, inputClass } from "./ui";
+import { useI18n } from "@/lib/i18n";
 
 export type FormErrorState = { message: string; details: string[] } | null;
 
@@ -27,14 +28,15 @@ export function useSubmit() {
 }
 
 export function ModalActions({ submitting, label, onCancel }: { submitting: boolean; label: string; onCancel: () => void }) {
+  const { tText } = useI18n();
   return (
     <div className="flex justify-end gap-2 pt-2">
       <button type="button" onClick={onCancel} className={button("secondary")}>
-        Annuler
+        {tText("Annuler")}
       </button>
       <button type="submit" disabled={submitting} className={button("primary")}>
         {submitting && <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" aria-hidden />}
-        {submitting ? "Enregistrement..." : label}
+        {submitting ? tText("Enregistrement...") : tText(label)}
       </button>
     </div>
   );
@@ -60,12 +62,13 @@ export function PasswordField({
   hint?: string;
   required?: boolean;
 }) {
+  const { tText } = useI18n();
   return (
     <div className="space-y-1.5">
       <div className="flex items-end gap-2">
         <div className="flex-1">
           <Field
-            label={label}
+            label={tText(label)}
             name="password"
             type="text"
             required={required}
@@ -80,21 +83,21 @@ export function PasswordField({
         </div>
         <button type="button" onClick={() => onChange(generatePassword())} className={`${button("secondary")} shrink-0`}>
           <KeyRound className="h-4 w-4" aria-hidden />
-          Générer
+          {tText("Générer")}
         </button>
       </div>
-      {hint && <p className="text-[11px] text-stone-500">{hint}</p>}
+      {hint && <p className="text-[11px] text-stone-500">{tText(hint)}</p>}
     </div>
   );
 }
 
-
 export function SelectField({ label, children, ...props }: { label: string; children: ReactNode } & SelectHTMLAttributes<HTMLSelectElement>) {
+  const { tText } = useI18n();
   const id = useId();
   return (
     <div className="space-y-1.5">
       <label htmlFor={id} className="block text-xs font-semibold text-stone-700">
-        {label}
+        {tText(label)}
       </label>
       <select id={id} className={inputClass} {...props}>
         {children}

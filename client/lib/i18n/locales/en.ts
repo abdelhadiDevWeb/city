@@ -194,3 +194,4 @@ export const en: Translations = {
     delaiIntervention: "Standard SLA Resolution Times",
   },
 };
+

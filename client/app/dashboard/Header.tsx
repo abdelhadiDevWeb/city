@@ -45,7 +45,7 @@ const MANAGER_ACTIONS: QuickAction[] = [
 
 export function Header({ onOpenMenu, onOpenCommand }: { onOpenMenu: () => void; onOpenCommand?: () => void }) {
   const { account, logout } = useSession();
-  const { t, isRTL } = useI18n();
+  const { t, isRTL, tText } = useI18n();
   const notify = useToast();
   const [signingOut, setSigningOut] = useState(false);
   const [alertes, setAlertes] = useState<Alerte[]>([]);
@@ -154,7 +154,7 @@ export function Header({ onOpenMenu, onOpenCommand }: { onOpenMenu: () => void; 
               (role === "super_admin" ? SUPER_ADMIN_ACTIONS : MANAGER_ACTIONS).map(({ href, label, icon: Icon }) => (
                 <Link key={href + label} href={href} role="menuitem" onClick={close} className={menuItem}>
                   <Icon className="h-4 w-4 text-brand shrink-0" aria-hidden />
-                  {label}
+                  {tText(label)}
                 </Link>
               ))
             }
@@ -210,7 +210,7 @@ export function Header({ onOpenMenu, onOpenCommand }: { onOpenMenu: () => void; 
                 </span>
                 <span className="flex flex-col items-start leading-tight">
                   <span className="hidden max-w-[140px] truncate text-sm font-semibold text-ink md:block">{displayName(account)}</span>
-                  <span className={`mt-0.5 rounded-full px-2 py-0.5 text-[10px] font-bold ${ROLE_BADGE[role]}`}>{ROLE_LABELS[role]}</span>
+                  <span className={`mt-0.5 rounded-full px-2 py-0.5 text-[10px] font-bold ${ROLE_BADGE[role]}`}>{t.roles?.[role] || tText(ROLE_LABELS[role])}</span>
                 </span>
                 <ChevronDown className="hidden h-4 w-4 text-stone-400 md:block" aria-hidden />
               </>
@@ -221,7 +221,7 @@ export function Header({ onOpenMenu, onOpenCommand }: { onOpenMenu: () => void; 
                 <div className="border-b border-stone-100 px-3 pb-3 pt-2">
                   <p className="truncate text-sm font-semibold text-ink">{displayName(account)}</p>
                   <p className="truncate text-xs text-stone-500">{account.email}</p>
-                  <span className={`mt-2 inline-block rounded-full px-2.5 py-0.5 text-[11px] font-bold ${ROLE_BADGE[role]}`}>{ROLE_LABELS[role]}</span>
+                  <span className={`mt-2 inline-block rounded-full px-2.5 py-0.5 text-[11px] font-bold ${ROLE_BADGE[role]}`}>{t.roles?.[role] || tText(ROLE_LABELS[role])}</span>
                 </div>
                 <div className="pt-1.5">
                   <Link href="/dashboard/profil" role="menuitem" onClick={close} className={menuItem}>

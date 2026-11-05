@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/lib/i18n";
 import {
   AlertTriangle,
   Building2,
@@ -99,6 +100,7 @@ export function EmergencyWidget({
   isOpenExternal?: boolean;
   onCloseExternal?: () => void;
 }) {
+  const { tText, locale } = useI18n();
   const notify = useToast();
   const [internalOpen, setInternalOpen] = useState(false);
   const [copiedNumber, setCopiedNumber] = useState<string | null>(null);
@@ -112,26 +114,26 @@ export function EmergencyWidget({
   function copyToClipboard(numero: string, nom: string) {
     void navigator.clipboard.writeText(numero);
     setCopiedNumber(numero);
-    notify(`Numéro de ${nom} (${numero}) copié dans le presse-papiers.`);
+    notify(`${tText("Numéro copié")} : ${nom} (${numero})`);
     setTimeout(() => setCopiedNumber(null), 2500);
   }
 
   return (
-    <aside aria-label="Numéros d'urgence" className="fixed bottom-5 end-5 rtl:left-5 rtl:right-auto z-40 max-w-[calc(100vw-2rem)]">
+    <aside aria-label={tText("Numéros d'urgence & astreinte 24h/24")} className="fixed bottom-5 end-5 z-40 max-w-[calc(100vw-2rem)]">
       {/* Floating Action Button */}
       {!isOpen && (
         <button
           type="button"
           onClick={() => setIsOpen(true)}
           className="group flex items-center gap-2 rounded-full border border-red-300 bg-red-600 px-4 py-2.5 text-xs font-bold text-white shadow-xl shadow-red-600/30 transition hover:bg-red-700 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-          title="Numéros d'urgence & astreinte 24h/24"
+          title={tText("Numéros d'urgence & astreinte 24h/24")}
         >
           <span className="relative flex h-2.5 w-2.5">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75" />
             <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-white" />
           </span>
           <Siren className="h-4 w-4" aria-hidden />
-          <span className="tracking-wide">Urgences 24/7</span>
+          <span className="tracking-wide">{tText("Urgences 24/7")}</span>
         </button>
       )}
 
@@ -140,7 +142,7 @@ export function EmergencyWidget({
         <div
           role="dialog"
           aria-modal="true"
-          aria-label="Numéros d'urgence et astreinte 24/7"
+          aria-label={tText("Numéros d'urgence & astreinte 24h/24")}
           className="w-[320px] sm:w-[380px] max-w-[calc(100vw-2.5rem)] overflow-hidden rounded-2xl border border-stone-300 bg-white shadow-2xl animate-in zoom-in-95 duration-150"
         >
           {/* Header */}
@@ -150,8 +152,8 @@ export function EmergencyWidget({
                 <Siren className="h-4 w-4 text-white" />
               </span>
               <div>
-                <h2 className="text-xs font-black uppercase tracking-wide">Numéros d&apos;Urgence 24/7</h2>
-                <p className="text-[10px] text-white/80">Secours d&apos;urgence & astreinte résidence</p>
+                <h2 className="text-xs font-black uppercase tracking-wide">{tText("Urgences 24/7")}</h2>
+                <p className="text-[10px] text-white/80">{locale === "ar" ? "أرقام النجدة والمداومة للإقامة" : locale === "en" ? "Emergency & residence on-call numbers" : "Secours d'urgence & astreinte résidence"}</p>
               </div>
             </div>
             <button
@@ -176,15 +178,15 @@ export function EmergencyWidget({
                     </span>
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5">
-                        <span className="font-bold text-ink text-xs truncate">{item.nom}</span>
+                        <span className="font-bold text-ink text-xs truncate">{tText(item.nom)}</span>
                         {item.isNational && (
                           <span className="rounded bg-red-100 px-1 py-0.2 text-[9px] font-bold text-red-700">
-                            National
+                            {locale === "ar" ? "وطني" : locale === "en" ? "National" : "National"}
                           </span>
                         )}
                       </div>
-                      <p className="text-[10px] text-stone-400 truncate">{item.service}</p>
-                      <p className="text-[10px] font-semibold text-emerald-700">{item.disponible}</p>
+                      <p className="text-[10px] text-stone-400 truncate">{tText(item.service)}</p>
+                      <p className="text-[10px] font-semibold text-emerald-700">{tText(item.disponible)}</p>
                     </div>
                   </div>
 
@@ -193,14 +195,14 @@ export function EmergencyWidget({
                       type="button"
                       onClick={() => copyToClipboard(item.numero, item.nom)}
                       className="rounded-lg border border-stone-200 bg-white p-1.5 text-stone-500 hover:bg-stone-100 hover:text-ink transition"
-                      title="Copier le numéro"
+                      title={tText("Copier")}
                     >
                       {isCopied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
                     </button>
                     <a
                       href={`tel:${item.numero}`}
                       className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-2.5 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-emerald-700 transition"
-                      title={`Appeler ${item.nom}`}
+                      title={`${tText("Appeler")} ${item.nom}`}
                     >
                       <Phone className="h-3 w-3" />
                       <span>{item.numero}</span>
@@ -213,7 +215,13 @@ export function EmergencyWidget({
 
           {/* Footer banner */}
           <div className="border-t border-stone-200 bg-stone-50 p-3 text-center text-[10px] text-stone-500">
-            En cas de danger immédiat, composez en priorité le <strong className="text-red-700">14 (Protection Civile)</strong> ou le <strong className="text-amber-700">3303 (Gaz)</strong>.
+            {locale === "ar" ? (
+              <>في حالات الخطر المباشر، اتصل فوراً بـ <strong className="text-red-700">14 (الحماية المدنية)</strong> أو <strong className="text-amber-700">3303 (الغاز والكهرباء)</strong>.</>
+            ) : locale === "en" ? (
+              <>In case of immediate danger, call <strong className="text-red-700">14 (Civil Protection)</strong> or <strong className="text-amber-700">3303 (Gas & Electricity)</strong> first.</>
+            ) : (
+              <>En cas de danger immédiat, composez en priorité le <strong className="text-red-700">14 (Protection Civile)</strong> ou le <strong className="text-amber-700">3303 (Gaz)</strong>.</>
+            )}
           </div>
         </div>
       )}

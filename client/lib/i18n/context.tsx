@@ -5,6 +5,7 @@ import { Locale, Translations } from "./types";
 import { fr } from "./locales/fr";
 import { ar } from "./locales/ar";
 import { en } from "./locales/en";
+import { translateText } from "./translations-map";
 
 const dictionaries: Record<Locale, Translations> = {
   fr,
@@ -18,6 +19,7 @@ interface I18nContextValue {
   isRTL: boolean;
   setLocale: (locale: Locale) => void;
   t: Translations;
+  tText: (str: string) => string;
   formatCurrency: (amount: number) => string;
   formatDate: (date: string | number | Date, options?: Intl.DateTimeFormatOptions) => string;
   formatNumber: (n: number) => string;
@@ -104,6 +106,10 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     };
   }, [locale]);
 
+  const tText = useMemo(() => {
+    return (str: string) => translateText(str, locale);
+  }, [locale]);
+
   const value = useMemo(
     () => ({
       locale,
@@ -111,11 +117,12 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
       isRTL,
       setLocale,
       t,
+      tText,
       formatCurrency,
       formatDate,
       formatNumber,
     }),
-    [locale, dir, isRTL, t, formatCurrency, formatDate, formatNumber]
+    [locale, dir, isRTL, t, tText, formatCurrency, formatDate, formatNumber]
   );
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
@@ -131,6 +138,7 @@ export function useI18n(): I18nContextValue {
       isRTL: false,
       setLocale: () => {},
       t: fr,
+      tText: (str: string) => translateText(str, "fr"),
       formatCurrency: (amount: number) => `${new Intl.NumberFormat("fr-FR").format(amount || 0)} DZD`,
       formatDate: (date: string | number | Date) => String(date),
       formatNumber: (n: number) => String(n),
@@ -138,3 +146,8 @@ export function useI18n(): I18nContextValue {
   }
   return context;
 }
+
+export function translateStatic(str: string, locale: Locale = "fr"): string {
+  return translateText(str, locale);
+}
+

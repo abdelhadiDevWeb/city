@@ -49,7 +49,7 @@ import { SkeletonResidentsPage } from "../skeletons";
 const fullName = (p: { prenom: string; nom: string }) => `${p.prenom} ${p.nom}`;
 
 export default function ResidentsPage() {
-  const { t, locale, isRTL } = useI18n();
+  const { t, tText, locale, isRTL, formatCurrency } = useI18n();
   const notify = useToast();
   const { account } = useSession();
   const isSuperAdmin = account.type === "SuperAdmin";
@@ -188,39 +188,39 @@ export default function ResidentsPage() {
         const impaye = impayesMap.get(r.telephone) ?? impayesMap.get(fullName(r).trim().toLowerCase());
         const isBusy = busyId === r.id;
         if (!impaye) {
-          return <Pill tone="success">À jour (Payé)</Pill>;
+          return <Pill tone="success">{tText("À jour (Payé)")}</Pill>;
         }
         return (
           <div className="flex flex-wrap items-center gap-1.5">
-            <Pill tone="danger">Impayé ({formatDZD(impaye.totalDu)})</Pill>
+            <Pill tone="danger">{tText("Impayé")} ({formatCurrency(impaye.totalDu)})</Pill>
             <button
               type="button"
               disabled={isBusy}
               onClick={() => handleValiderPaiement(r, impaye)}
               className={button("primary", "sm")}
-              title="Valider la réception de la cotisation et débloquer l'accès"
+              title={tText("Valider la réception de la cotisation et débloquer l'accès")}
             >
               <CheckCircle2 className="h-3.5 w-3.5" aria-hidden />
-              {isBusy ? "..." : "Valider"}
+              {isBusy ? "..." : tText("Valider")}
             </button>
           </div>
         );
       },
     },
-    { header: "Statut", cell: () => <Pill tone="dark">Propriétaire</Pill> },
-    { header: "Ajouté le", cell: (r) => <span className="text-stone-500">{new Date(r.createdAt).toLocaleDateString("fr-FR")}</span> },
+    { header: "Statut", cell: () => <Pill tone="dark">{tText("Propriétaire")}</Pill> },
+    { header: "Ajouté le", cell: (r) => <span className="text-stone-500">{new Date(r.createdAt).toLocaleDateString(locale === "ar" ? "ar-DZ" : locale === "en" ? "en-US" : "fr-FR")}</span> },
     {
       header: "Actions",
       align: "right",
       cell: (r) => (
         <div className="flex items-center justify-end gap-1.5">
-          <a href={`tel:${r.telephone}`} title={`Appeler ${fullName(r)}`} className={button("secondary", "sm")}>
+          <a href={`tel:${r.telephone}`} title={`${tText("Appeler")} ${fullName(r)}`} className={button("secondary", "sm")}>
             <Phone className="h-3.5 w-3.5" aria-hidden />
-            Appeler
+            {tText("Appeler")}
           </a>
-          <a href={`mailto:${r.email}`} title={`Envoyer un email à ${fullName(r)}`} className={button("secondary", "sm")}>
+          <a href={`mailto:${r.email}`} title={`${tText("Email")} ${fullName(r)}`} className={button("secondary", "sm")}>
             <Mail className="h-3.5 w-3.5" aria-hidden />
-            Email
+            {tText("Email")}
           </a>
           <ActionGroup
             editLabel="Modifier résident"
@@ -289,13 +289,13 @@ export default function ResidentsPage() {
           {isSuperAdmin && (
             <div className={`${card} flex flex-wrap items-center justify-between gap-3 p-4`}>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-bold uppercase tracking-wide text-stone-500">Filtrer par résidence :</span>
+                <span className="text-xs font-bold uppercase tracking-wide text-stone-500">{tText("Filtrer par résidence :")}</span>
                 <select
                   value={selectedResidenceId}
                   onChange={(e) => setSelectedResidenceId(e.target.value)}
                   className="rounded-xl border border-stone-200 bg-white px-3 py-1.5 text-sm font-semibold text-ink shadow-xs"
                 >
-                  <option value="all">Toutes les résidences ({residents.length} résidents)</option>
+                  <option value="all">{tText("Toutes les résidences")} ({residents.length})</option>
                   {residencesList.map((r) => (
                     <option key={r.id} value={r.id}>
                       {r.nom} ({r.localisation})
@@ -304,17 +304,17 @@ export default function ResidentsPage() {
                 </select>
               </div>
               <span className="text-xs text-stone-500">
-                {rows.length} résident{rows.length > 1 ? "s" : ""} affiché{rows.length > 1 ? "s" : ""}
+                {rows.length} {locale === "ar" ? "ساكن معروض" : locale === "en" ? "resident(s) displayed" : `résident${rows.length > 1 ? "s" : ""} affiché${rows.length > 1 ? "s" : ""}`}
               </span>
             </div>
           )}
           <label className={`${card} flex items-center gap-3 px-4 py-3`}>
             <Search className="h-4 w-4 text-stone-400" aria-hidden />
-            <span className="sr-only">Rechercher</span>
+            <span className="sr-only">{tText("Rechercher")}</span>
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Rechercher par nom, email, téléphone, bâtiment ou appartement…"
+              placeholder={tText("Rechercher...")}
               className="w-full bg-transparent text-sm text-ink placeholder:text-stone-400 focus:outline-none"
             />
           </label>
@@ -363,7 +363,7 @@ export default function ResidentsPage() {
                   ]}
                 />
                 <span className="text-xs font-semibold text-stone-500">
-                  {rows.length} résident{rows.length > 1 ? "s" : ""} affiché{rows.length > 1 ? "s" : ""}
+                  {rows.length} {locale === "ar" ? "ساكن معروض" : locale === "en" ? "resident(s) displayed" : `résident${rows.length > 1 ? "s" : ""} affiché${rows.length > 1 ? "s" : ""}`}
                 </span>
               </div>
             }

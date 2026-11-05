@@ -81,7 +81,7 @@ function monthsTone(months: number): Tone {
 const sum = (values: number[]) => values.reduce((total, v) => total + v, 0);
 
 export default function FinancesPage() {
-  const { t, locale, isRTL } = useI18n();
+  const { t, tText, locale, isRTL, formatCurrency } = useI18n();
   const notify = useToast();
   const [data, setData] = useState<FinancesData | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -175,11 +175,11 @@ export default function FinancesPage() {
   });
 
   const tabs: TabItem<TabId>[] = [
-    { id: "impayes", label: "Impayés & Recouvrement", icon: TriangleAlert, count: impayes.length },
-    { id: "journal", label: "Journal des Paiements", icon: NotebookText, count: paiements.length },
-    { id: "depenses", label: "Dépenses Résidence", icon: ArrowDownRight, count: depenses.length },
-    { id: "factures", label: "Factures Services & Sonelgaz", icon: FileText, count: factures.length },
-    { id: "budget", label: "Budget & Bilan Annuel", icon: Scale },
+    { id: "impayes", label: t.finances?.tabs?.impayes || "Impayés & Recouvrement", icon: TriangleAlert, count: impayes.length },
+    { id: "journal", label: t.finances?.tabs?.journal || "Journal des Paiements", icon: NotebookText, count: paiements.length },
+    { id: "depenses", label: t.finances?.tabs?.depenses || "Dépenses Résidence", icon: ArrowDownRight, count: depenses.length },
+    { id: "factures", label: t.finances?.tabs?.factures || "Factures Services & Sonelgaz", icon: FileText, count: factures.length },
+    { id: "budget", label: t.finances?.tabs?.budget || "Budget & Bilan Annuel", icon: Scale },
   ];
 
   async function handleEncaisser(charge: Impaye, modePaiement: string) {
@@ -518,19 +518,19 @@ export default function FinancesPage() {
     <div className="space-y-6">
       <PageHeader
         icon={Wallet}
-        title="Gestion Financière & Recouvrement"
-        subtitle="Suivi des charges communes, encaissements Edahabia/CCP, impayés et dépenses de la résidence"
+        title={t.finances?.title || "Gestion Financière & Recouvrement"}
+        subtitle={t.finances?.subtitle || "Suivi des charges communes, encaissements Edahabia/CCP, impayés et dépenses de la résidence"}
         actions={
           <>
             {tab === "depenses" ? (
               <button type="button" onClick={() => setAddingDepense(true)} className={button("primary")}>
                 <Plus className="h-4 w-4" aria-hidden />
-                Nouvelle Dépense
+                {tText("Nouvelle Dépense")}
               </button>
             ) : tab === "factures" ? (
               <button type="button" onClick={() => setAddingFacture(true)} className={button("primary")}>
                 <Plus className="h-4 w-4" aria-hidden />
-                Nouvelle Facture
+                {tText("Nouvelle Facture")}
               </button>
             ) : (
               <>
@@ -541,11 +541,11 @@ export default function FinancesPage() {
                   className={button("secondary")}
                 >
                   <CalendarDays className="h-4 w-4" aria-hidden />
-                  {generating ? "Génération en cours..." : "{t.finances.genererCharges}"}
+                  {generating ? (t.common?.loading || "Génération en cours...") : (t.finances?.genererCharges || "Générer les Appels de Charges")}
                 </button>
                 <button type="button" onClick={() => setAddingPaiement(true)} className={button("primary")}>
                   <Plus className="h-4 w-4" aria-hidden />
-                  Enregistrer Paiement
+                  {t.finances?.encaisserPaiement || tText("Enregistrer Paiement")}
                 </button>
               </>
             )}
@@ -565,59 +565,59 @@ export default function FinancesPage() {
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <div className={`${card} p-5`}>
               <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wide text-stone-500">
-                <span>Trésorerie Disponible</span>
+                <span>{tText("Trésorerie Disponible")}</span>
                 <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
                   <Wallet className="h-3.5 w-3.5" />
                 </span>
               </div>
-              <p className="mt-2 font-mono text-2xl font-bold tracking-tight text-ink">{formatDZD(soldeTresorerie)}</p>
+              <p className="mt-2 font-mono text-2xl font-bold tracking-tight text-ink">{formatCurrency(soldeTresorerie)}</p>
               <div className="mt-2 flex items-center justify-between text-xs text-stone-500 border-t border-stone-100 pt-2">
-                <span>Encaissé : {formatDZD(totalEncaisse)}</span>
-                <span className="font-semibold text-emerald-600">Solde actif</span>
+                <span>{tText("Encaissé :")} {formatCurrency(totalEncaisse)}</span>
+                <span className="font-semibold text-emerald-600">{tText("Solde actif")}</span>
               </div>
             </div>
 
             <div className={`${card} p-5`}>
               <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wide text-stone-500">
-                <span>Taux de Recouvrement</span>
+                <span>{tText("Taux de Recouvrement")}</span>
                 <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-orange-50 text-brand">
                   <Receipt className="h-3.5 w-3.5" />
                 </span>
               </div>
               <p className="mt-2 font-mono text-2xl font-bold tracking-tight text-ink">{tauxRecouvrement}%</p>
               <div className="mt-2 flex items-center justify-between text-xs text-stone-500 border-t border-stone-100 pt-2">
-                <span>Appels : {formatDZD(totalChargesAppelees)}</span>
+                <span>{tText("Appels :")} {formatCurrency(totalChargesAppelees)}</span>
                 <span className={tauxRecouvrement >= 80 ? "text-emerald-600 font-semibold" : "text-amber-600 font-semibold"}>
-                  {tauxRecouvrement >= 80 ? "Bon niveau" : "À surveiller"}
+                  {tauxRecouvrement >= 80 ? tText("Bon niveau") : tText("À surveiller")}
                 </span>
               </div>
             </div>
 
             <div className={`${card} p-5`}>
               <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wide text-stone-500">
-                <span>Total Créances & Impayés</span>
+                <span>{tText("Total Créances & Impayés")}</span>
                 <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-red-50 text-red-600">
                   <TriangleAlert className="h-3.5 w-3.5" />
                 </span>
               </div>
-              <p className="mt-2 font-mono text-2xl font-bold tracking-tight text-red-700">{formatDZD(totalImpayes)}</p>
+              <p className="mt-2 font-mono text-2xl font-bold tracking-tight text-red-700">{formatCurrency(totalImpayes)}</p>
               <div className="mt-2 flex items-center justify-between text-xs text-stone-500 border-t border-stone-100 pt-2">
-                <span>{impayes.length} retards constatés</span>
-                <span className="font-semibold text-red-600">{impayesCritiquesCount} critiques</span>
+                <span>{impayes.length} {tText("retards constatés")}</span>
+                <span className="font-semibold text-red-600">{impayesCritiquesCount} {tText("critiques")}</span>
               </div>
             </div>
 
             <div className={`${card} p-5`}>
               <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wide text-stone-500">
-                <span>Dépenses Résidence</span>
+                <span>{tText("Dépenses Résidence")}</span>
                 <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-stone-100 text-stone-700">
                   <FileText className="h-3.5 w-3.5" />
                 </span>
               </div>
-              <p className="mt-2 font-mono text-2xl font-bold tracking-tight text-ink">{formatDZD(totalDepenses)}</p>
+              <p className="mt-2 font-mono text-2xl font-bold tracking-tight text-ink">{formatCurrency(totalDepenses)}</p>
               <div className="mt-2 flex items-center justify-between text-xs text-stone-500 border-t border-stone-100 pt-2">
-                <span>{facturesAttenteCount} factures à payer</span>
-                <span className="font-mono text-stone-700">{formatDZD(totalFacturesReste)}</span>
+                <span>{facturesAttenteCount} {tText("factures à payer")}</span>
+                <span className="font-mono text-stone-700">{formatCurrency(totalFacturesReste)}</span>
               </div>
             </div>
           </div>
@@ -659,7 +659,7 @@ export default function FinancesPage() {
                         type="text"
                         value={queryImpayes}
                         onChange={(e) => setQueryImpayes(e.target.value)}
-                        placeholder="Rechercher résident, logement..."
+                        placeholder={tText("Rechercher...")}
                         className="w-full rounded-xl border border-stone-200 bg-white py-1.5 pl-9 pr-3 text-xs text-ink placeholder:text-stone-400 focus:outline-none focus:ring-1 focus:ring-brand"
                       />
                     </div>
@@ -693,7 +693,7 @@ export default function FinancesPage() {
                         type="text"
                         value={queryPaiements}
                         onChange={(e) => setQueryPaiements(e.target.value)}
-                        placeholder="Rechercher paiement, référence..."
+                        placeholder={tText("Rechercher...")}
                         className="w-full rounded-xl border border-stone-200 bg-white py-1.5 pl-9 pr-3 text-xs text-ink placeholder:text-stone-400 focus:outline-none focus:ring-1 focus:ring-brand"
                       />
                     </div>

@@ -86,7 +86,7 @@ const CONTRAT_TONE: Record<Contrat["statut"], Tone> = {
 
 export function MonEspace() {
   const { account } = useSession();
-  const { t, locale, isRTL } = useI18n();
+  const { t, tText, locale, isRTL, formatCurrency } = useI18n();
   const role = primaryRole(account);
 
   const [loading, setLoading] = useState(true);
@@ -964,10 +964,12 @@ export function MonEspace() {
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-bold text-ink">Hub des 10 Modules de Gestion Résidence</h2>
-            <p className="text-xs text-stone-500">Supervision globale et accès direct à l&apos;ensemble des pages du Syndic</p>
+            <h2 className="text-lg font-bold text-ink">{tText("Hub des 10 Modules de Gestion Résidence")}</h2>
+            <p className="text-xs text-stone-500">{tText("Supervision globale et accès direct à l'ensemble des pages du Syndic")}</p>
           </div>
-          <span className="text-xs font-semibold text-stone-400">10 pages opérationnelles</span>
+          <span className="text-xs font-semibold text-stone-400">
+            {locale === "ar" ? "10 صفحات تشغيلية" : locale === "en" ? "10 operational pages" : "10 pages opérationnelles"}
+          </span>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
@@ -984,14 +986,14 @@ export function MonEspace() {
                     <span className={`flex h-9 w-9 items-center justify-center rounded-xl border ${m.color}`}>
                       <Icon className="h-4 w-4" aria-hidden />
                     </span>
-                    <Pill tone="brand">{m.badge}</Pill>
+                    <Pill tone="brand">{tText(m.badge)}</Pill>
                   </div>
-                  <h3 className="mt-3 text-sm font-bold text-ink group-hover:text-brand transition">{m.title}</h3>
-                  <p className="mt-1 text-xs text-stone-500 line-clamp-2 leading-relaxed">{m.description}</p>
+                  <h3 className="mt-3 text-sm font-bold text-ink group-hover:text-brand transition">{tText(m.title)}</h3>
+                  <p className="mt-1 text-xs text-stone-500 line-clamp-2 leading-relaxed">{tText(m.description)}</p>
                 </div>
 
                 <div className="mt-3 flex items-center justify-between border-t border-stone-100 pt-2.5 text-xs">
-                  <span className="font-semibold text-stone-600 truncate">{m.meta}</span>
+                  <span className="font-semibold text-stone-600 truncate">{tText(m.meta)}</span>
                   <ChevronRight className="h-3.5 w-3.5 text-stone-400 group-hover:text-brand shrink-0 rtl:rotate-180" aria-hidden />
                 </div>
               </Link>
