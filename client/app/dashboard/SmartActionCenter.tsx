@@ -120,14 +120,15 @@ export function SmartActionCenter({
   }
 
   // AG banner
+  const displayAgDate = locale === "ar" ? "20 نوفمبر 2026" : locale === "en" ? "November 20, 2026" : agDate;
   alerts.push({
     id: "alert-ag",
     type: "info",
     title: locale === "ar"
-      ? `الجمعية العامة القادمة مبرمجة بتاريخ ${agDate}`
+      ? `الجمعية العامة القادمة مبرمجة بتاريخ ${displayAgDate}`
       : locale === "en"
-      ? `Next General Assembly (GA) scheduled for ${agDate}`
-      : `Prochaine Assemblée Générale (AG) planifiée le ${agDate}`,
+      ? `Next General Assembly (GA) scheduled for ${displayAgDate}`
+      : `Prochaine Assemblée Générale (AG) planifiée le ${displayAgDate}`,
     description: locale === "ar"
       ? `اكتمل نصاب الحصص بنسبة ${agQuorumPct}% (745/1000 حصة). القرارات جاهزة للتصويت.`
       : locale === "en"

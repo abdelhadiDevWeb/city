@@ -2943,6 +2943,48 @@ export const TRANSLATIONS_MAP: Record<string, TranslationEntry> = {
     ar: "ش.ذ.م.م ترصيص سريع",
     en: "Plumbing Express LLC"
   },
+
+  // === HERO & TOP BAR KEYS FIXES ===
+  "appartements au total": {
+    fr: "appartements au total",
+    ar: "شقة إجمالاً",
+    en: "apartments in total"
+  },
+  "responsable connecté :": {
+    fr: "Responsable connecté :",
+    ar: "المسؤول المتصل :",
+    en: "Logged in manager:"
+  },
+  "nouveau résident": {
+    fr: "Nouveau Résident",
+    ar: "ساكن جديد",
+    en: "New Resident"
+  },
+  "impayés :": {
+    fr: "Impayés :",
+    ar: "المتأخرات :",
+    en: "Unpaid dues:"
+  },
+  "occupation": {
+    fr: "Occupation",
+    ar: "نسبة الإشغال",
+    en: "Occupancy"
+  },
+  "contrats": {
+    fr: "contrats",
+    ar: "عقود",
+    en: "contracts"
+  },
+  "contrat": {
+    fr: "contrat",
+    ar: "عقد",
+    en: "contract"
+  },
+  "1 an standard · payé": {
+    fr: "1 an standard · Payé",
+    ar: "سنة واحدة قياسي · مدفوع",
+    en: "1 year standard · Paid"
+  },
 };
 
 // Fast lookup helper
