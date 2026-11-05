@@ -1073,6 +1073,7 @@ function EditAccountModal({
   onClose: () => void;
   onUpdated: (nom: string) => void;
 }) {
+  const { tText } = useI18n();
   const { submitting, error, run } = useSubmit();
   const [prenom, setPrenom] = useState(account.prenom);
   const [nom, setNom] = useState(account.nom);
@@ -1097,8 +1098,8 @@ function EditAccountModal({
 
   return (
     <Modal
-      title={`Modifier ${account.role === "admin" ? "l'Admin" : "le Sub Admin"}`}
-      description={`Compte : ${account.email}. Laissez le mot de passe vide si vous ne souhaitez pas le changer.`}
+      title={account.role === "admin" ? tText("Modifier l'Admin") : tText("Modifier le Sub Admin")}
+      description={`${tText("Compte :")} ${account.email}. ${tText("Laissez le mot de passe vide si vous ne souhaitez pas le changer.")}`}
       onClose={onClose}
     >
       <form onSubmit={onSubmit} className="space-y-4">

@@ -633,6 +633,7 @@ function PaiementToggle({ s, busy, onToggle }: { s: Souscription; busy: boolean;
 }
 
 function FormuleModal({ onClose, onCreated }: { onClose: () => void; onCreated: (nom: string) => void }) {
+  const { tText } = useI18n();
   const { submitting, error, run } = useSubmit();
   const [cible, setCible] = useState<"admin" | "sub_admin">("admin");
 
@@ -683,6 +684,7 @@ function AttribuerModal({
   onCreateFormule: () => void;
   onCreated: () => void;
 }) {
+  const { tText } = useI18n();
   const { submitting, error, run } = useSubmit();
   const [formuleId, setFormuleId] = useState(formules[0]?.id ?? "");
   const [debut, setDebut] = useState(() => new Date().toLocaleDateString("en-CA"));
@@ -718,11 +720,11 @@ function AttribuerModal({
     <Modal title="Attribuer un abonnement" description={`À ${target.nom}${target.detail ? ` (${target.detail})` : ""}.`} onClose={onClose}>
       {formules.length === 0 ? (
         <div className="space-y-4 text-sm text-stone-600">
-          <p>Aucune formule n&apos;existe encore. Créez-en une avant d&apos;attribuer un abonnement.</p>
+          <p>{tText("Aucune formule n'existe encore. Créez-en une avant d'attribuer un abonnement.")}</p>
           <div className="flex justify-end">
             <button type="button" onClick={onCreateFormule} className={button("primary")}>
               <Plus className="h-4 w-4" aria-hidden />
-              Nouvelle formule
+              {tText("Nouvelle formule")}
             </button>
           </div>
         </div>
@@ -738,7 +740,7 @@ function AttribuerModal({
           <Field label="Date de début" type="date" required min="2000-01-01" max="2099-12-31" value={debut} onChange={(e) => setDebut(e.target.value)} />
           {formule && debut && (
             <div className="flex items-center justify-between rounded-xl border border-stone-200 bg-stone-50/70 px-4 py-2.5 text-sm">
-              <span className="text-stone-500">Date de fin (calculée)</span>
+              <span className="text-stone-500">{tText("Date de fin (calculée)")}</span>
               <span className="font-semibold text-ink">{addMonths(debut, formule.duree).toLocaleDateString("fr-FR", { timeZone: "UTC" })}</span>
             </div>
           )}
@@ -771,8 +773,8 @@ function AttribuerModal({
           <label className="flex items-center gap-3 rounded-xl border border-stone-200 px-4 py-3 text-sm font-medium text-ink cursor-pointer">
             <input type="checkbox" checked={paye} onChange={(e) => setPaye(e.target.checked)} className="h-4 w-4 accent-brand" />
             <div>
-              <span className="block font-semibold">Paiement validé (Accès immédiat au dashboard)</span>
-              <span className="block text-xs text-stone-500">Si décoché, le compte reste bloqué jusqu'à confirmation du règlement.</span>
+              <span className="block font-semibold">{tText("Paiement validé (Accès immédiat au dashboard)")}</span>
+              <span className="block text-xs text-stone-500">{tText("Si décoché, le compte reste bloqué jusqu'à confirmation du règlement.")}</span>
             </div>
           </label>
           <FormError error={error} />
@@ -796,10 +798,11 @@ function HistoriqueModal({
   onClose: () => void;
   onDeleteSouscription: (s: Souscription) => void;
 }) {
+  const { tText } = useI18n();
   return (
     <Modal title="Historique des abonnements" description={`${target.nom} · ${target.email}`} onClose={onClose}>
       {target.souscriptions.length === 0 ? (
-        <p className="text-sm text-stone-500">Aucun abonnement enregistré pour ce compte.</p>
+        <p className="text-sm text-stone-500">{tText("Aucun abonnement enregistré pour ce compte.")}</p>
       ) : (
         <ul className="space-y-3">
           {target.souscriptions.map((s) => (
@@ -817,8 +820,8 @@ function HistoriqueModal({
                 <button
                   type="button"
                   onClick={() => onDeleteSouscription(s)}
-                  title="Supprimer cette souscription"
-                  aria-label="Supprimer cette souscription"
+                  title={tText("Supprimer cette souscription")}
+                  aria-label={tText("Supprimer cette souscription")}
                   className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-red-200 bg-red-50/70 text-red-600 shadow-xs transition hover:border-red-300 hover:bg-red-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                 >
                   <Trash2 className="h-3.5 w-3.5" aria-hidden />
@@ -841,6 +844,7 @@ function EditFormuleModal({
   onClose: () => void;
   onUpdated: (nom: string) => void;
 }) {
+  const { tText } = useI18n();
   const { submitting, error, run } = useSubmit();
   const [nom, setNom] = useState(formule.nom);
   const [prix, setPrix] = useState(formule.prix);

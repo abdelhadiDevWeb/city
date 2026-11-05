@@ -647,14 +647,15 @@ export function describeError(err: unknown): { message: string; details: string[
 }
 
 export function FormError({ error }: { error: { message: string; details: string[] } | null }) {
+  const { tText } = useI18n();
   if (!error) return null;
   return (
     <div role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-      <p className="font-semibold">{error.message}</p>
+      <p className="font-semibold">{tText(error.message)}</p>
       {error.details.length > 0 && (
         <ul className="mt-1 list-disc pl-5 text-xs">
           {error.details.map((d) => (
-            <li key={d}>{d}</li>
+            <li key={d}>{tText(d)}</li>
           ))}
         </ul>
       )}

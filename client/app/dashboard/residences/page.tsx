@@ -796,23 +796,23 @@ export default function ResidencesPage() {
                       ]}
                     />
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium text-stone-500">Bâtiment :</span>
+                      <span className="text-xs font-medium text-stone-500">{tText("Bâtiment :")}</span>
                       <select
                         value={buildingFilter}
                         onChange={(e) => setBuildingFilter(e.target.value)}
                         className="rounded-xl border border-stone-200 bg-white px-3 py-1.5 text-xs font-semibold text-ink"
                       >
-                        <option value="all">Tous les bâtiments ({allAppartements.length})</option>
+                        <option value="all">{tText("Tous les bâtiments")} ({allAppartements.length})</option>
                         {batiments.map((b) => (
                           <option key={b.id} value={b.nom}>
-                            Bâtiment {b.nom} ({b.appartements.length})
+                            {tText("Bâtiment")} {b.nom} ({b.appartements.length})
                           </option>
                         ))}
                       </select>
                     </div>
                   </div>
                 }
-                empty="Aucun appartement ne correspond aux critères sélectionnés."
+                empty={tText("Aucun appartement ne correspond aux critères sélectionnés.")}
               />
             </div>
           )}
@@ -1209,7 +1209,7 @@ function SubAdminModal({
     >
       <form onSubmit={onSubmit} className="space-y-4">
         {batiments.length === 0 ? (
-          <p className="text-sm text-stone-500">Aucun bâtiment disponible. Créez d&apos;abord un bâtiment dans la résidence.</p>
+          <p className="text-sm text-stone-500">{tText("Aucun bâtiment disponible. Créez d'abord un bâtiment dans la résidence.")}</p>
         ) : (
           <div className="space-y-2">
             <SelectField
@@ -1285,6 +1285,7 @@ function AttribuerPlanModal({
   onClose: () => void;
   onAssigned: () => void;
 }) {
+  const { tText } = useI18n();
   const { submitting, error, run } = useSubmit();
   const [formuleId, setFormuleId] = useState(formules[0]?.id ?? "");
   const [debut, setDebut] = useState(new Date().toISOString().split("T")[0]);
@@ -1311,12 +1312,12 @@ function AttribuerPlanModal({
     >
       <form onSubmit={onSubmit} className="space-y-4">
         {formules.length === 0 ? (
-          <p className="text-sm text-stone-500">Aucune formule disponible pour le moment. Contactez le Super Admin.</p>
+          <p className="text-sm text-stone-500">{tText("Aucune formule disponible pour le moment. Contactez le Super Admin.")}</p>
         ) : (
           <SelectField label="Formule" value={formuleId} onChange={(e) => setFormuleId(e.target.value)}>
             {formules.map((f) => (
               <option key={f.id} value={f.id}>
-                {f.nom} — {formatDZD(f.prix)} ({f.duree} mois)
+                {f.nom} — {formatDZD(f.prix)} ({f.duree} {tText("mois")})
               </option>
             ))}
           </SelectField>
@@ -1324,7 +1325,7 @@ function AttribuerPlanModal({
         <Field label="Date de début" type="date" value={debut} onChange={(e) => setDebut(e.target.value)} required />
         <label className="flex items-center gap-2 text-sm text-ink cursor-pointer pt-1">
           <input type="checkbox" checked={paye} onChange={(e) => setPaye(e.target.checked)} className="rounded text-brand" />
-          <span>Marquer comme payé immédiatement</span>
+          <span>{tText("Marquer comme payé immédiatement")}</span>
         </label>
         <FormError error={error} />
         <ModalActions submitting={submitting} label="Valider l'abonnement" onCancel={onClose} />

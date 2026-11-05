@@ -674,28 +674,28 @@ export default function AssembleesPage() {
             {/* Signatures zone */}
             <div className="grid gap-4 sm:grid-cols-3 border-t border-stone-200 pt-4 text-xs text-stone-600">
               <div>
-                <p className="font-bold text-ink">Le Président de Séance</p>
+                <p className="font-bold text-ink">{tText("Le Président de Séance")}</p>
                 <div className="mt-2 h-14 w-full rounded border border-dashed border-stone-300 flex items-center justify-center text-[10px] text-stone-400 italic">
-                  Signature
+                  {tText("Signature")}
                 </div>
               </div>
               <div>
-                <p className="font-bold text-ink">Les Scrutateurs</p>
+                <p className="font-bold text-ink">{tText("Les Scrutateurs")}</p>
                 <div className="mt-2 h-14 w-full rounded border border-dashed border-stone-300 flex items-center justify-center text-[10px] text-stone-400 italic">
-                  Signatures
+                  {tText("Signature")}s
                 </div>
               </div>
               <div>
-                <p className="font-bold text-ink">Le Secrétaire (Syndic)</p>
+                <p className="font-bold text-ink">{tText("Le Secrétaire (Syndic)")}</p>
                 <div className="mt-2 h-14 w-full rounded border border-dashed border-stone-300 flex items-center justify-center text-[10px] text-stone-400 italic">
-                  Cachet & Signature
+                  {tText("Cachet & Signature")}
                 </div>
               </div>
             </div>
 
             <div className="flex justify-end gap-2 border-t border-stone-200 pt-4 print:hidden">
               <button type="button" onClick={() => setSelectedSessionForPv(null)} className={button("secondary")}>
-                Fermer
+                {tText("Fermer")}
               </button>
               <button
                 type="button"
@@ -703,7 +703,7 @@ export default function AssembleesPage() {
                 className={button("primary")}
               >
                 <Printer className="h-4 w-4" aria-hidden />
-                Imprimer le PV Officiel (PDF)
+                {tText("Imprimer le PV Officiel (PDF)")}
               </button>
             </div>
           </div>

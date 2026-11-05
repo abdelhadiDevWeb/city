@@ -1109,12 +1109,13 @@ function EncaisserModal({
   onClose: () => void;
   onConfirm: (mode: string) => void;
 }) {
+  const { tText } = useI18n();
   const [mode, setMode] = useState("Espèces");
 
   return (
     <Modal
-      title={`Encaisser ${formatDZD(charge.totalDu)}`}
-      description={`Règlement des charges pour ${charge.logement} (${charge.resident})`}
+      title={`${tText("Encaisser")} ${formatDZD(charge.totalDu)}`}
+      description={`${tText("Règlement des charges pour")} ${charge.logement} (${charge.resident})`}
       onClose={onClose}
     >
       <div className="space-y-4">
@@ -1127,10 +1128,10 @@ function EncaisserModal({
         </SelectField>
         <div className="flex justify-end gap-2 pt-2">
           <button type="button" onClick={onClose} className={button("secondary")}>
-            Annuler
+            {tText("Annuler")}
           </button>
           <button type="button" onClick={() => onConfirm(mode)} className={button("primary")}>
-            Valider l&apos;encaissement
+            {tText("Valider l'encaissement")}
           </button>
         </div>
       </div>

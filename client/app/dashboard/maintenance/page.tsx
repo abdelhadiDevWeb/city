@@ -510,7 +510,7 @@ export default function MaintenancePage() {
             <div className="flex items-center justify-between text-xs text-stone-500">
               <span className="truncate max-w-sm">{previewPhoto.url}</span>
               <button type="button" onClick={() => setPreviewPhoto(null)} className={button("secondary")}>
-                Fermer
+                {tText("Fermer")}
               </button>
             </div>
           </div>

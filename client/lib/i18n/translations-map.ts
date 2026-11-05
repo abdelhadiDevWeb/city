@@ -4739,6 +4739,426 @@ export const TRANSLATIONS_MAP: Record<string, TranslationEntry> = {
     ar: "مثال : 12، A-04...",
     en: "e.g.: 12, A-04..."
   },
+  "espèces au bureau syndic": {
+    fr: "Espèces au bureau syndic",
+    ar: "نقداً في مكتب السنديك",
+    en: "Cash at syndic office"
+  },
+  "carte edahabia": {
+    fr: "Carte Edahabia",
+    ar: "بطاقة الذهبية",
+    en: "Edahabia card"
+  },
+  "carte cib": {
+    fr: "Carte CIB",
+    ar: "بطاقة بنكية CIB",
+    en: "CIB card"
+  },
+  "virement ccp / bancaire": {
+    fr: "Virement CCP / Bancaire",
+    ar: "تحويل بريدي / بنكي",
+    en: "CCP / Bank transfer"
+  },
+  "chèque bancaire": {
+    fr: "Chèque bancaire",
+    ar: "شيك بنكي",
+    en: "Bank cheque"
+  },
+  "virement ccp": {
+    fr: "Virement CCP",
+    ar: "تحويل بريدي CCP",
+    en: "CCP transfer"
+  },
+  "à payer": {
+    fr: "À payer",
+    ar: "قيد السداد",
+    en: "To pay"
+  },
+  "en retard": {
+    fr: "En retard",
+    ar: "متأخر",
+    en: "Overdue"
+  },
+  "entretien & réparations": {
+    fr: "Entretien & Réparations",
+    ar: "صيانة وإصلاحات",
+    en: "Maintenance & Repairs"
+  },
+  "nettoyage & hygiène": {
+    fr: "Nettoyage & Hygiène",
+    ar: "نظافة وصحة عامة",
+    en: "Cleaning & Hygiene"
+  },
+  "sécurité & gardiennage": {
+    fr: "Sécurité & Gardiennage",
+    ar: "أمن وحراسة",
+    en: "Security & Guarding"
+  },
+  "maintenance ascenseur": {
+    fr: "Maintenance Ascenseur",
+    ar: "صيانة المصعد",
+    en: "Elevator maintenance"
+  },
+  "espaces verts": {
+    fr: "Espaces Verts",
+    ar: "مساحات خضراء",
+    en: "Green spaces"
+  },
+  "fournitures & petit matériel": {
+    fr: "Fournitures & Petit matériel",
+    ar: "لوازم ومعدات صغيرة",
+    en: "Supplies & Small equipment"
+  },
+  "payée (décaissée)": {
+    fr: "Payée (Décaissée)",
+    ar: "مسددة (مصروفة)",
+    en: "Paid (Disbursed)"
+  },
+  "en attente de devis/facture": {
+    fr: "En attente de devis/facture",
+    ar: "في انتظار المقايسة / الفاتورة",
+    en: "Awaiting quote / invoice"
+  },
+  "sonelgaz (électricité & gaz)": {
+    fr: "Sonelgaz (Électricité & Gaz)",
+    ar: "سونلغاز (كهرباء وغاز)",
+    en: "Sonelgaz (Electricity & Gas)"
+  },
+  "seaal / ade (eau)": {
+    fr: "SEAAL / ADE (Eau)",
+    ar: "سيال / الجزائرية للمياه (ماء)",
+    en: "SEAAL / ADE (Water)"
+  },
+  "maintenance ascenseur (contrat)": {
+    fr: "Maintenance Ascenseur (Contrat)",
+    ar: "عقد صيانة المصعد",
+    en: "Elevator maintenance contract"
+  },
+  "algérie télécom (fibre/internet)": {
+    fr: "Algérie Télécom (Fibre/Internet)",
+    ar: "اتصالات الجزائر (ألياف / إنترنت)",
+    en: "Algerie Telecom (Fiber/Internet)"
+  },
+  "autre service": {
+    fr: "Autre Service",
+    ar: "خدمة أخرى",
+    en: "Other service"
+  },
+  "payée (acquittée)": {
+    fr: "Payée (Acquittée)",
+    ar: "مسددة (مستوفاة)",
+    en: "Paid (Cleared)"
+  },
+  "haute (urgent)": {
+    fr: "Haute (Urgent)",
+    ar: "عالية (عاجل)",
+    en: "High (Urgent)"
+  },
+  "ascenseur bloc a": {
+    fr: "Ascenseur Bloc A",
+    ar: "مصعد العمارة A",
+    en: "Elevator Block A"
+  },
+  "ascenseur bloc b": {
+    fr: "Ascenseur Bloc B",
+    ar: "مصعد العمارة B",
+    en: "Elevator Block B"
+  },
+  "bâche à eau & pompe de relevage": {
+    fr: "Bâche à eau & Pompe de relevage",
+    ar: "خزان مياه ومضخة رفع",
+    en: "Water tank & lift pump"
+  },
+  "groupe électrogène de secours": {
+    fr: "Groupe électrogène de secours",
+    ar: "مولد كهربائي احتياطي",
+    en: "Emergency generator"
+  },
+  "barrière automatique de parking": {
+    fr: "Barrière automatique de parking",
+    ar: "حاجز آلي للموقف",
+    en: "Automatic parking barrier"
+  },
+  "interphone & digicode entrée": {
+    fr: "Interphone & Digicode entrée",
+    ar: "انترفون ورمز الدخول",
+    en: "Intercom & Digicode entrance"
+  },
+  "autre équipement...": {
+    fr: "Autre équipement...",
+    ar: "معدات أخرى...",
+    en: "Other equipment..."
+  },
+  "haute (bloquant / intervention sous 2h)": {
+    fr: "Haute (Bloquant / Intervention sous 2h)",
+    ar: "عالية (حرجة / تدخل خلال ساعتين)",
+    en: "High (Blocking / Intervention within 2h)"
+  },
+  "moyenne (sous 24h)": {
+    fr: "Moyenne (Sous 24h)",
+    ar: "متوسطة (خلال 24 ساعة)",
+    en: "Medium (Within 24h)"
+  },
+  "résolu": {
+    fr: "Résolu",
+    ar: "تم الحل",
+    en: "Resolved"
+  },
+  "planifié": {
+    fr: "Planifié",
+    ar: "مجدول",
+    en: "Scheduled"
+  },
+  "intervention urgente / priorité absolue": {
+    fr: "Intervention urgente / Priorité absolue",
+    ar: "تدخل عاجل / أولوية قصوى",
+    en: "Urgent intervention / Top priority"
+  },
+  "repos": {
+    fr: "Repos",
+    ar: "راحة",
+    en: "Off duty"
+  },
+  "congé": {
+    fr: "Congé",
+    ar: "إجازة / عطلة",
+    en: "On leave"
+  },
+  "terminée": {
+    fr: "Terminée",
+    ar: "مكتملة",
+    en: "Completed"
+  },
+  "contenu de l&apos;annonce": {
+    fr: "Contenu de l'annonce",
+    ar: "محتوى الإعلان",
+    en: "Announcement content"
+  },
+  "niveau d&apos;urgence": {
+    fr: "Niveau d'urgence",
+    ar: "مستوى الاستعجال",
+    en: "Urgency level"
+  },
+  "city syndic": {
+    fr: "CITY SYNDIC",
+    ar: "سيتي سنديك",
+    en: "CITY SYNDIC"
+  },
+  "bureau de séance élu": {
+    fr: "Bureau de Séance Élu",
+    ar: "مكتب الجلسة المنتخب",
+    en: "Elected Meeting Bureau"
+  },
+  "constat de la représentation & quorum": {
+    fr: "Constat de la Représentation & Quorum",
+    ar: "معاينة التمثيل والنصاب القانوني",
+    en: "Representation & Quorum verification"
+  },
+  "sélectionnez votre vote en tant que copropriétaire :": {
+    fr: "Sélectionnez votre vote en tant que copropriétaire :",
+    ar: "اختر تصويتك بصفتك مالكاً مشتركاً :",
+    en: "Select your vote as a co-owner:"
+  },
+  "voter pour": {
+    fr: "Voter POUR",
+    ar: "التصويت بـ نعم (موافق)",
+    en: "Vote FOR"
+  },
+  "+25 tantièmes": {
+    fr: "+25 tantièmes",
+    ar: "+25 سهماً (أجزاء)",
+    en: "+25 shares"
+  },
+  "voter contre": {
+    fr: "Voter CONTRE",
+    ar: "التصويت بـ لا (معارض)",
+    en: "Vote AGAINST"
+  },
+  "s'abstenir": {
+    fr: "S'ABSTENIR",
+    ar: "الامتناع عن التصويت",
+    en: "ABSTAIN"
+  },
+  "s&apos;abstenir": {
+    fr: "S'ABSTENIR",
+    ar: "الامتناع عن التصويت",
+    en: "ABSTAIN"
+  },
+  "procès-verbal ag": {
+    fr: "Procès-Verbal AG",
+    ar: "محضر الجمعية العامة",
+    en: "General Assembly Minutes"
+  },
+  "diagnostic technique": {
+    fr: "Diagnostic Technique",
+    ar: "الفحص التقني",
+    en: "Technical diagnostic"
+  },
+  "assurance immeuble": {
+    fr: "Assurance Immeuble",
+    ar: "تأمين العمارة",
+    en: "Building insurance"
+  },
+  "bilan comptable & audit": {
+    fr: "Bilan Comptable & Audit",
+    ar: "التقرير المالي والتدقيق المحاسبي",
+    en: "Accounting balance & Audit"
+  },
+  "plans d'architecture": {
+    fr: "Plans d'architecture",
+    ar: "مخططات معمارية",
+    en: "Architectural blueprints"
+  },
+  "autre": {
+    fr: "Autre",
+    ar: "أخرى",
+    en: "Other"
+  },
+  "document word (.docx)": {
+    fr: "Document Word (.docx)",
+    ar: "مستند وورد (.docx)",
+    en: "Word document (.docx)"
+  },
+  "tableur excel (.xlsx)": {
+    fr: "Tableur Excel (.xlsx)",
+    ar: "جدول إكسل (.xlsx)",
+    en: "Excel spreadsheet (.xlsx)"
+  },
+  "scan / image (.jpg, .png)": {
+    fr: "Scan / Image (.jpg, .png)",
+    ar: "صورة / مسح ضوئي (.jpg, .png)",
+    en: "Scan / Image (.jpg, .png)"
+  },
+  "pdf": {
+    fr: "PDF",
+    ar: "PDF",
+    en: "PDF"
+  },
+  "docx": {
+    fr: "DOCX",
+    ar: "DOCX",
+    en: "DOCX"
+  },
+  "xlsx": {
+    fr: "XLSX",
+    ar: "XLSX",
+    en: "XLSX"
+  },
+  "jpg/png": {
+    fr: "JPG/PNG",
+    ar: "JPG/PNG",
+    en: "JPG/PNG"
+  },
+  "urgent (2h)": {
+    fr: "Urgent (2h)",
+    ar: "عاجل (خلال ساعتين)",
+    en: "Urgent (2h)"
+  },
+  "moyen (24h)": {
+    fr: "Moyen (24h)",
+    ar: "متوسط (خلال 24 ساعة)",
+    en: "Medium (24h)"
+  },
+  "standard (48h)": {
+    fr: "Standard (48h)",
+    ar: "عادي (خلال 48 ساعة)",
+    en: "Standard (48h)"
+  },
+  "planifié (7j)": {
+    fr: "Planifié (7j)",
+    ar: "مجدول (7 أيام)",
+    en: "Scheduled (7d)"
+  },
+  "baridimob (algérie poste)": {
+    fr: "BaridiMob (Algérie Poste)",
+    ar: "بريدي موب (بريد الجزائر)",
+    en: "BaridiMob (Algeria Post)"
+  },
+  "autre mode personnalisé...": {
+    fr: "Autre mode personnalisé...",
+    ar: "طريقة أخرى مخصصة...",
+    en: "Other custom method..."
+  },
+  "virement bancaire": {
+    fr: "Virement bancaire",
+    ar: "تحويل بنكي",
+    en: "Bank transfer"
+  },
+  "espèces (reçu direct)": {
+    fr: "Espèces (Reçu direct)",
+    ar: "نقداً (وصل استلام مباشر)",
+    en: "Cash (Direct receipt)"
+  },
+  "paiement échelonné": {
+    fr: "Paiement échelonné",
+    ar: "دفع بالتقسيط",
+    en: "Installment payment"
+  },
+  "logement vacant": {
+    fr: "Logement vacant",
+    ar: "سكن شاغر",
+    en: "Vacant unit"
+  },
+  "le président de séance": {
+    fr: "Le Président de Séance",
+    ar: "رئيس الجلسة",
+    en: "Meeting President"
+  },
+  "les scrutateurs": {
+    fr: "Les Scrutateurs",
+    ar: "لجنة الفرز والمراقبة",
+    en: "Vote Scrutineers"
+  },
+  "le secrétaire (syndic)": {
+    fr: "Le Secrétaire (Syndic)",
+    ar: "أمين الجلسة (السنديك)",
+    en: "Meeting Secretary (Syndic)"
+  },
+  "cachet & signature": {
+    fr: "Cachet & Signature",
+    ar: "الختم والتوقيع",
+    en: "Stamp & Signature"
+  },
+  "imprimer le pv officiel (pdf)": {
+    fr: "Imprimer le PV Officiel (PDF)",
+    ar: "طباعة المحضر الرسمي (PDF)",
+    en: "Print Official Minutes (PDF)"
+  },
+  "marquer comme payé immédiatement": {
+    fr: "Marquer comme payé immédiatement",
+    ar: "تحديد كمدفوع فوراً",
+    en: "Mark as paid immediately"
+  },
+  "valider l'encaissement": {
+    fr: "Valider l'encaissement",
+    ar: "تأكيد التحصيل",
+    en: "Confirm collection"
+  },
+  "règlement des charges pour": {
+    fr: "Règlement des charges pour",
+    ar: "سداد الأعباء لـ",
+    en: "Payment of charges for"
+  },
+  "compte :": {
+    fr: "Compte :",
+    ar: "الحساب :",
+    en: "Account:"
+  },
+  "laissez le mot de passe vide si vous ne souhaitez pas le changer.": {
+    fr: "Laissez le mot de passe vide si vous ne souhaitez pas le changer.",
+    ar: "اترك كلمة المرور فارغة إذا كنت لا ترغب في تغييرها.",
+    en: "Leave the password blank if you do not want to change it."
+  },
+  "modifier l'admin": {
+    fr: "Modifier l'Admin",
+    ar: "تعديل حساب المدير",
+    en: "Edit Admin"
+  },
+  "modifier le sub admin": {
+    fr: "Modifier le Sub Admin",
+    ar: "تعديل حساب المدير المفوّض",
+    en: "Edit Sub Admin"
+  },
 };
 
 // Fast lookup helper
@@ -4846,6 +5266,149 @@ export function translateText(str: string, locale: Locale): string {
   m = trimmed.match(/^Bloc (.+) \((\d+) étages\)$/i);
   if (m) {
     return locale === "ar" ? `العمارة ${m[1]} (${m[2]} طوابق)` : locale === "en" ? `Block ${m[1]} (${m[2]} floors)` : str;
+  }
+
+
+  // Pattern: "Consulter l'historique complet (X encaissements)"
+  m = trimmed.match(/^Consulter l'historique complet \((\d+)\s*encaissements?\)$/i);
+  if (m) {
+    return locale === "ar"
+      ? `الاطلاع على السجل الكامل (${m[1]} عمليات تحصيل)`
+      : locale === "en"
+      ? `View complete history (${m[1]} receipts)`
+      : str;
+  }
+
+  // Pattern: "Voir toutes les alertes (X)"
+  m = trimmed.match(/^Voir toutes les alertes \((\d+)\)$/i);
+  if (m) {
+    return locale === "ar"
+      ? `عرض جميع التنبيهات (${m[1]})`
+      : locale === "en"
+      ? `View all alerts (${m[1]})`
+      : str;
+  }
+
+  // Pattern: "Annuaire complet (X résidents)"
+  m = trimmed.match(/^Annuaire complet \((\d+)\s*résidents?\)$/i);
+  if (m) {
+    return locale === "ar"
+      ? `الدليل الكامل (${m[1]} ساكن)`
+      : locale === "en"
+      ? `Full directory (${m[1]} residents)`
+      : str;
+  }
+
+  // Pattern: "Plan de travail (X à faire)"
+  m = trimmed.match(/^Plan de travail \((\d+)\s*à faire\)$/i);
+  if (m) {
+    return locale === "ar"
+      ? `خطة العمل (${m[1]} قيد الإنجاز)`
+      : locale === "en"
+      ? `Work plan (${m[1]} to do)`
+      : str;
+  }
+
+  // Pattern: "Accéder aux documents & archives (X pièces)"
+  m = trimmed.match(/^Accéder aux documents & archives \((\d+)\s*pièces?\)$/i);
+  if (m) {
+    return locale === "ar"
+      ? `الولوج إلى الوثائق والأرشيف (${m[1]} وثائق)`
+      : locale === "en"
+      ? `Access documents & archives (${m[1]} documents)`
+      : str;
+  }
+
+  // Pattern: "X / Y actifs"
+  m = trimmed.match(/^(\d+)\s*\/\s*(\d+)\s*actifs?$/i);
+  if (m) {
+    return locale === "ar"
+      ? `${m[1]} / ${m[2]} نشط`
+      : locale === "en"
+      ? `${m[1]} / ${m[2]} active`
+      : str;
+  }
+
+  // Pattern: "X étages"
+  m = trimmed.match(/^(\d+)\s*étages?$/i);
+  if (m) {
+    return locale === "ar"
+      ? `${m[1]} طوابق`
+      : locale === "en"
+      ? `${m[1]} floors`
+      : str;
+  }
+
+  // Pattern: "X apts"
+  m = trimmed.match(/^(\d+)\s*apts?$/i);
+  if (m) {
+    return locale === "ar"
+      ? `${m[1]} شقق`
+      : locale === "en"
+      ? `${m[1]} apts`
+      : str;
+  }
+
+  // Pattern: "X déclarés"
+  m = trimmed.match(/^(\d+)\s*déclarés?$/i);
+  if (m) {
+    return locale === "ar"
+      ? `${m[1]} بلاغات`
+      : locale === "en"
+      ? `${m[1]} reported`
+      : str;
+  }
+
+  // Pattern: "X en attente"
+  m = trimmed.match(/^(\d+)\s*en attente$/i);
+  if (m) {
+    return locale === "ar"
+      ? `${m[1]} قيد الانتظار`
+      : locale === "en"
+      ? `${m[1]} pending`
+      : str;
+  }
+
+  // Pattern: "X réglés"
+  m = trimmed.match(/^(\d+)\s*réglés?$/i);
+  if (m) {
+    return locale === "ar"
+      ? `${m[1]} تمت تسويتها`
+      : locale === "en"
+      ? `${m[1]} resolved`
+      : str;
+  }
+
+  // Pattern: "Quorum des tantièmes atteint X / Y (Z%)"
+  m = trimmed.match(/^Quorum des tantièmes atteint\s*(\d+)\s*\/\s*(\d+)\s*\(([\d.]+)%\)$/i);
+  if (m) {
+    return locale === "ar"
+      ? `اكتمل النصاب القانوني للأسهم ${m[1]} / ${m[2]} (${m[3]}%)`
+      : locale === "en"
+      ? `Shares quorum reached ${m[1]} / ${m[2]} (${m[3]}%)`
+      : str;
+  }
+
+  // Pattern: "Bloc X - Apt Y · Mode · Date"
+  m = trimmed.match(/^Bloc (.+) - Apt (.+) · (.+) · (.+)$/i);
+  if (m) {
+    const rawMode = m[3].trim().toLowerCase();
+    const modeTr = TRANSLATIONS_MAP[rawMode] ? (locale === 'ar' ? TRANSLATIONS_MAP[rawMode].ar : locale === 'en' ? TRANSLATIONS_MAP[rawMode].en : m[3]) : m[3];
+    return locale === "ar"
+      ? `العمارة ${m[1]} - شقة ${m[2]} · ${modeTr} · ${m[4]}`
+      : locale === "en"
+      ? `Block ${m[1]} - Apt ${m[2]} · ${modeTr} · ${m[4]}`
+      : str;
+  }
+
+  // Pattern: "Assigné à Personne · Emplacement"
+  m = trimmed.match(/^Assigné à (.+) · (.+)$/i);
+  if (m) {
+    return locale === "ar"
+      ? `معين إلى ${m[1]} · ${m[2]}`
+      : locale === "en"
+      ? `Assigned to ${m[1]} · ${m[2]}`
+      : str;
   }
 
   // 4. Fallback to original
