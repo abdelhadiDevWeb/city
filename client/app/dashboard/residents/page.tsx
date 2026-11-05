@@ -256,8 +256,8 @@ export default function ResidentsPage() {
           isSuperAdmin
             ? tText("Gestion globale des résidents et propriétaires de toutes les résidences.")
             : espace?.residence
-            ? `${isSubAdmin ? `Bâtiment ${espace.batiments[0]?.nom ?? ""} · ` : ""}${espace.residence.nom} — gestion des propriétaires et logements.`
-            : "Gestion des propriétaires et de leurs appartements."
+            ? `${isSubAdmin ? `${tText("Bâtiment")} ${espace.batiments[0]?.nom ?? ""} · ` : ""}${espace.residence.nom} — ${tText("gestion des propriétaires et logements.")}`
+            : tText("Gestion des propriétaires et de leurs appartements.")
         }
         actions={
           <button type="button" disabled={!canAdd} onClick={() => setAdding(true)} className={button("primary")}>
@@ -575,7 +575,7 @@ function ResidentModal({
             >
               {batiments.map((b) => (
                 <option key={b.id} value={b.id}>
-                  {b.nom} ({b.etages} étage{b.etages > 1 ? "s" : ""})
+                  {b.nom} ({b.etages} {tText("étages")})
                 </option>
               ))}
             </SelectField>

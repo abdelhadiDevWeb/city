@@ -128,11 +128,11 @@ export default function PersonnelPage() {
             onClick={() => void handleToggleTache(t)}
             className={button("secondary", "sm")}
           >
-            {t.statut === "Terminée" ? "Réouvrir" : "Marquer terminée"}
+            {t.statut === "Terminée" ? tText("Réouvrir") : tText("Marquer terminée")}
           </button>
           <ActionGroup
-            editLabel="Modifier tâche"
-            deleteLabel="Supprimer tâche"
+            editLabel={tText("Modifier la tâche")}
+            deleteLabel={tText("Supprimer la tâche")}
             onEdit={() => setEditingTache(t)}
             onDelete={() => setConfirmDelete({ kind: "tache", id: t.id, nom: t.titre })}
           />

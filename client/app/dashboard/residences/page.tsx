@@ -301,7 +301,7 @@ export default function ResidencesPage() {
               editLabel="Modifier Bâtiment"
               deleteLabel="Supprimer Bâtiment"
               onEdit={() => setEditingBatiment({ id: b.id, nom: b.nom, etages: b.etages, maxAppartements: b.maxAppartements })}
-              onDelete={() => setDeletingItem({ type: "batiment", id: b.id, name: `le bâtiment « ${b.nom} »` })}
+              onDelete={() => setDeletingItem({ type: "batiment", id: b.id, name: b.nom })}
             />
           )}
         </div>
@@ -650,9 +650,9 @@ export default function ResidencesPage() {
               {isAdmin && (
                 <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-stone-200 bg-stone-50/60 p-4">
                   <div>
-                    <h3 className="text-sm font-bold text-ink">Gestionnaires de Bâtiments (Sous-Admins)</h3>
+                    <h3 className="text-sm font-bold text-ink">{tText("Gestionnaires de Bâtiments (Sous-Admins)")}</h3>
                     <p className="text-xs text-stone-500">
-                      Vous pouvez créer et attribuer un sous-admin pour chaque bâtiment de votre résidence.
+                      {tText("Vous pouvez créer et attribuer un sous-admin pour chaque bâtiment de votre résidence.")}
                     </p>
                   </div>
                   <button
@@ -661,7 +661,7 @@ export default function ResidencesPage() {
                     className={button("primary", "sm")}
                   >
                     <UserPlus className="h-3.5 w-3.5" aria-hidden />
-                    Nouveau Sous-Admin
+                    {tText("Nouveau Sous-Admin")}
                   </button>
                 </div>
               )}
@@ -672,7 +672,7 @@ export default function ResidencesPage() {
                 toolbar={
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <span className="text-xs font-semibold text-stone-600">
-                      {filteredGestionnaires.length} gestionnaire{filteredGestionnaires.length > 1 ? "s" : ""} enregistré{filteredGestionnaires.length > 1 ? "s" : ""}
+                      {filteredGestionnaires.length} {tText(filteredGestionnaires.length > 1 ? "gestionnaires enregistrés" : "gestionnaire enregistré")}
                     </span>
                     <div className="relative min-w-[240px]">
                       <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-stone-400" />
@@ -1016,7 +1016,7 @@ export default function ResidencesPage() {
       <ConfirmModal
         open={Boolean(deletingItem)}
         title="Confirmer la suppression"
-        message={`${tText("Êtes-vous sûr de vouloir supprimer")} ${deletingItem?.name} ? ${tText("Cette action est irréversible.")}`}
+        message={deletingItem?.type === "batiment" ? tText(`Êtes-vous sûr de vouloir supprimer le bâtiment « ${deletingItem.name} » ? Cette action est irréversible.`) : tText(`Êtes-vous sûr de vouloir supprimer « ${deletingItem?.name} » ? Cette action est irréversible.`)}
         confirmLabel="Supprimer"
         onConfirm={async () => {
           if (!deletingItem || !residence) return;

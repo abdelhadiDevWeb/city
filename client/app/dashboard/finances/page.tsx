@@ -380,8 +380,8 @@ export default function FinancesPage() {
         </div>
       ),
     },
-    { header: "Mois impayés", cell: (r) => <Pill tone={monthsTone(r.moisImpayes)}>{r.moisImpayes} Mois de retard</Pill> },
-    { header: "Dernier règlement", cell: (r) => <span className="text-stone-500">{r.dernierReglement}</span> },
+    { header: "Mois impayés", cell: (r) => <Pill tone={monthsTone(r.moisImpayes)}>{r.moisImpayes} {tText(r.moisImpayes > 1 ? "mois de retard" : "mois de retard")}</Pill> },
+    { header: "Dernier règlement", cell: (r) => <span className="text-stone-500">{tText(r.dernierReglement)}</span> },
     { header: "Total dû", cell: (r) => <Mono strong className="font-bold text-red-600">{formatDZD(r.totalDu)}</Mono> },
     {
       header: "Action rapide",
@@ -405,8 +405,8 @@ export default function FinancesPage() {
             {tText("Appeler")}
           </a>
           <ActionGroup
-            editLabel="Modifier créance"
-            deleteLabel="Supprimer créance"
+            editLabel={tText("Modifier la créance")}
+            deleteLabel={tText("Supprimer la créance")}
             onEdit={() => setEditingCharge(r)}
             onDelete={() => setConfirmDelete({ kind: "charge", id: r.id, nom: `Charge ${r.logement}` })}
           />

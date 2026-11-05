@@ -368,7 +368,7 @@ export default function AssembleesPage() {
       header: "Date & Lieu",
       cell: (s) => (
         <div>
-          <span className="block font-medium text-stone-700">{s.date} à {s.heure}</span>
+          <span className="block font-medium text-stone-700">{s.date} {tText("à")} {s.heure}</span>
           <span className="block text-xs text-stone-500">{s.lieu}</span>
         </div>
       ),
@@ -396,7 +396,7 @@ export default function AssembleesPage() {
       header: "Statut",
       cell: (s) => {
         const tone: Tone = s.statut === "Clôturée" ? "success" : s.statut === "En cours" ? "brand" : "warning";
-        return <Pill tone={tone}>{s.statut}</Pill>;
+        return <Pill tone={tone}>{tText(s.statut)}</Pill>;
       },
     },
     {
@@ -410,7 +410,7 @@ export default function AssembleesPage() {
             className="inline-flex items-center gap-1.5 rounded-lg border border-stone-300 bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 shadow-xs hover:bg-stone-50"
           >
             <FileCheck2 className="h-3.5 w-3.5 text-brand" aria-hidden />
-            PV d&apos;AG Officiel
+            {tText("PV d'AG Officiel")}
           </button>
         </div>
       ),
@@ -550,7 +550,7 @@ export default function AssembleesPage() {
             {totalResolutionsApprouvees} / {resolutions.length}
           </p>
           <p className="mt-1 text-xs text-stone-500">
-            {totalResolutionsEnCours} résolution(s) en cours de délibération
+            {totalResolutionsEnCours} {tText(totalResolutionsEnCours > 1 ? "résolutions en cours de délibération" : "résolution en cours de délibération")}
           </p>
         </div>
 
@@ -614,12 +614,12 @@ export default function AssembleesPage() {
                 </div>
                 <h3 className="mt-2 font-extrabold text-base text-ink">{selectedSessionForPv.titre}</h3>
                 <p className="text-xs text-stone-500">
-                  Tenue le {selectedSessionForPv.date} à {selectedSessionForPv.heure} · {selectedSessionForPv.lieu}
+                  {tText("Tenue le")} {selectedSessionForPv.date} {tText("à")} {selectedSessionForPv.heure} · {selectedSessionForPv.lieu}
                 </p>
               </div>
               <div className="text-end">
                 <span className="rounded-md border border-emerald-300 bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-800">
-                  PV OFFICIEL CERTIFIÉ
+                  {tText("PV OFFICIEL CERTIFIÉ")}
                 </span>
                 <p className="mt-1 font-mono text-xs text-stone-400">Réf : PV-AG-{selectedSessionForPv.date.slice(0, 4)}</p>
               </div>

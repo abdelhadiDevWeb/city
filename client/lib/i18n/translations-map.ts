@@ -5159,6 +5159,131 @@ export const TRANSLATIONS_MAP: Record<string, TranslationEntry> = {
     ar: "تعديل حساب المدير المفوّض",
     en: "Edit Sub Admin"
   },
+  "gestionnaires": {
+    fr: "Gestionnaires",
+    ar: "المسيرون",
+    en: "Managers"
+  },
+  "gestionnaires de bâtiments (sous-admins)": {
+    fr: "Gestionnaires de Bâtiments (Sous-Admins)",
+    ar: "مسيرو العمارات (المديرون المفوّضون)",
+    en: "Building Managers (Sub-Admins)"
+  },
+  "vous pouvez créer et attribuer un sous-admin pour chaque bâtiment de votre résidence.": {
+    fr: "Vous pouvez créer et attribuer un sous-admin pour chaque bâtiment de votre résidence.",
+    ar: "يمكنك إنشاء وتعيين مدير مفوّض لكل عمارة في إقامتك.",
+    en: "You can create and assign a sub-admin for each building in your residence."
+  },
+  "nouveau sous-admin": {
+    fr: "Nouveau Sous-Admin",
+    ar: "مدير مفوّض جديد",
+    en: "New Sub-Admin"
+  },
+  "gestionnaires enregistrés": {
+    fr: "gestionnaires enregistrés",
+    ar: "مسيرون مسجلون",
+    en: "registered managers"
+  },
+  "gestionnaire enregistré": {
+    fr: "gestionnaire enregistré",
+    ar: "مسير مسجل",
+    en: "registered manager"
+  },
+  "gestion des propriétaires et logements.": {
+    fr: "gestion des propriétaires et logements.",
+    ar: "إدارة الملاك والشقق.",
+    en: "Management of owners and units."
+  },
+  "mois de retard": {
+    fr: "mois de retard",
+    ar: "أشهر تأخر",
+    en: "months overdue"
+  },
+  "modifier créance": {
+    fr: "Modifier créance",
+    ar: "تعديل المستحق",
+    en: "Edit Due"
+  },
+  "supprimer créance": {
+    fr: "Supprimer créance",
+    ar: "حذف المستحق",
+    en: "Delete Due"
+  },
+  "créer une tâche d'intervention et l'assigner au personnel": {
+    fr: "Créer une tâche d'intervention et l'assigner au personnel",
+    ar: "إنشاء مهمة تدخل وإسنادها للموظف",
+    en: "Create intervention task and assign to staff"
+  },
+  "marquer terminée": {
+    fr: "Marquer terminée",
+    ar: "تعيين كمكتملة",
+    en: "Mark as completed"
+  },
+  "réouvrir": {
+    fr: "Réouvrir",
+    ar: "إعادة الفتح",
+    en: "Reopen"
+  },
+  "résolution en cours de délibération": {
+    fr: "résolution en cours de délibération",
+    ar: "قرار قيد المداولة",
+    en: "resolution under deliberation"
+  },
+  "résolutions en cours de délibération": {
+    fr: "résolutions en cours de délibération",
+    ar: "قرارات قيد المداولة",
+    en: "resolutions under deliberation"
+  },
+  "pv officiel certifié": {
+    fr: "PV OFFICIEL CERTIFIÉ",
+    ar: "محضر رسمي معتمد",
+    en: "CERTIFIED OFFICIAL MINUTES"
+  },
+  "clôturée": {
+    fr: "Clôturée",
+    ar: "مغلقة",
+    en: "Closed"
+  },
+  "tenue le": {
+    fr: "Tenue le",
+    ar: "انعقدت في",
+    en: "Held on"
+  },
+  "à": {
+    fr: "à",
+    ar: "على الساعة",
+    en: "at"
+  },
+  "octobre 2026": {
+    fr: "Octobre 2026",
+    ar: "أكتوبر 2026",
+    en: "October 2026"
+  },
+  "novembre 2026": {
+    fr: "Novembre 2026",
+    ar: "نوفمبر 2026",
+    en: "November 2026"
+  },
+  "décembre 2026": {
+    fr: "Décembre 2026",
+    ar: "ديسمبر 2026",
+    en: "December 2026"
+  },
+  "valider": {
+    fr: "Valider",
+    ar: "تأكيد التحصيل",
+    en: "Confirm"
+  },
+  "valider la réception de la cotisation et débloquer l'accès": {
+    fr: "Valider la réception de la cotisation et débloquer l'accès",
+    ar: "تأكيد استلام الاشتراك وإلغاء الحظر عن الحساب",
+    en: "Confirm receipt of dues and unlock access"
+  },
+  "capacité des résidents": {
+    fr: "Capacité des résidents",
+    ar: "سعة السكان",
+    en: "Residents Capacity"
+  },
 };
 
 // Fast lookup helper
@@ -5408,6 +5533,49 @@ export function translateText(str: string, locale: Locale): string {
       ? `معين إلى ${m[1]} · ${m[2]}`
       : locale === "en"
       ? `Assigned to ${m[1]} · ${m[2]}`
+      : str;
+  }
+
+
+  // Pattern: "Êtes-vous sûr de vouloir supprimer le bâtiment « ... » ? Cette action est irréversible."
+  m = trimmed.match(/^Êtes-vous sûr de vouloir supprimer le bâtiment « (.+) » \? Cette action est irréversible\.?$/i);
+  if (m) {
+    const item = m[1];
+    return locale === "ar"
+      ? `هل أنت متأكد من رغبتك في حذف العمارة « ${item} » ؟ هذا الإجراء نهائي ولا يمكن التراجع عنه.`
+      : locale === "en"
+      ? `Are you sure you want to delete the building "${item}"? This action cannot be undone.`
+      : str;
+  }
+
+  // Pattern: "X résolution(s) en cours de délibération"
+  m = trimmed.match(/^(\d+)\s*résolution\(s\)\s*en cours de délibération$/i);
+  if (m) {
+    return locale === "ar"
+      ? `${m[1]} قرار(ات) قيد المداولة`
+      : locale === "en"
+      ? `${m[1]} resolution(s) under deliberation`
+      : str;
+  }
+
+  // Pattern: "X Mois de retard"
+  m = trimmed.match(/^(\d+)\s*Mois de retard$/i);
+  if (m) {
+    const count = parseInt(m[1], 10);
+    return locale === "ar"
+      ? `تأخر ${count} ${count === 1 ? "شهر" : "أشهر"}`
+      : locale === "en"
+      ? `${count} month${count === 1 ? "" : "s"} overdue`
+      : str;
+  }
+
+  // Pattern: "Capacité des résidents (« ... »)"
+  m = trimmed.match(/^Capacité des résidents \(« (.+) »\)$/i);
+  if (m) {
+    return locale === "ar"
+      ? `سعة السكان (« ${m[1]} »)`
+      : locale === "en"
+      ? `Residents Capacity (« ${m[1]} »)`
       : str;
   }
 

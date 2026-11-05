@@ -558,7 +558,7 @@ function EditAnnonceModal({
       <form onSubmit={onSubmit} className="space-y-4">
         <Field label="Titre de l'annonce" value={titre} onChange={(e) => setTitre(e.target.value)} required autoFocus />
         <div className="space-y-1.5">
-          <label className="block text-xs font-semibold text-ink">Contenu de l&apos;annonce</label>
+          <label className="block text-xs font-semibold text-ink">{tText("Contenu de l'annonce")}</label>
           <textarea
             value={contenu}
             onChange={(e) => setContenu(e.target.value)}
@@ -614,16 +614,16 @@ function NouvelleAnnonceModal({
       <form onSubmit={onSubmit} className="space-y-4">
         <Field label="Titre de l'annonce" name="titre" required placeholder="Ex: Travaux d'ascenseur, AG 2026" autoFocus />
         <div className="space-y-1.5">
-          <label className="block text-xs font-semibold text-ink">Contenu de l&apos;annonce</label>
+          <label className="block text-xs font-semibold text-ink">{tText("Contenu de l'annonce")}</label>
           <textarea
             name="contenu"
             required
             rows={4}
             className="w-full rounded-xl border border-stone-200 bg-white p-3 text-sm text-ink placeholder:text-stone-400 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-            placeholder="Rédigez votre annonce ici..."
+            placeholder={tText("Rédigez votre annonce ici...")}
           />
         </div>
-        <Field label="Audience ciblée" name="audience" defaultValue="Tous les résidents" placeholder="Ex: Tous les résidents, Bloc A" />
+        <Field label="Audience ciblée" name="audience" defaultValue={tText("Tous les résidents")} placeholder={tText("Ex: Tous les résidents, Bloc A")} />
         <label className="flex items-center gap-2 text-sm text-ink cursor-pointer">
           <input
             type="checkbox"
@@ -724,8 +724,8 @@ function NouvelleAlerteModal({
         <Field
           label="Audience ciblée"
           name="audience"
-          defaultValue="Tous les résidents"
-          placeholder="Ex: Tous les résidents, Bâtiment B, Étages 1 à 4"
+          defaultValue={tText("Tous les résidents")}
+          placeholder={tText("Ex: Tous les résidents, Bâtiment B, Étages 1 à 4")}
         />
 
         <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-3 text-xs text-amber-900">
