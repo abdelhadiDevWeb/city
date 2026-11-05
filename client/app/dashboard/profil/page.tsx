@@ -12,6 +12,7 @@ import {
 import { ROLE_BADGE, ROLE_LABELS, displayName, initials, primaryRole } from "@/lib/roles";
 import { ModalActions, PasswordField, formText, useSubmit } from "../forms";
 import { useSession } from "../session";
+import { useI18n } from "@/lib/i18n";
 import {
   ActionGroup,
   ConfirmModal,
@@ -29,9 +30,10 @@ import {
 } from "../ui";
 
 function Field({ label, value }: { label: string; value: string }) {
+  const { tText } = useI18n();
   return (
     <div className="space-y-1">
-      <dt className="text-[11px] font-bold uppercase tracking-wide text-stone-500">{label}</dt>
+      <dt className="text-[11px] font-bold uppercase tracking-wide text-stone-500">{tText(label)}</dt>
       <dd className="text-sm font-medium text-ink">{value}</dd>
     </div>
   );
@@ -39,6 +41,7 @@ function Field({ label, value }: { label: string; value: string }) {
 
 export default function ProfilePage() {
   const { account } = useSession();
+  const { tText } = useI18n();
   const role = primaryRole(account);
 
   return (
@@ -54,7 +57,7 @@ export default function ProfilePage() {
             <p className="truncate text-lg font-bold text-ink">{displayName(account)}</p>
             <p className="truncate text-sm text-stone-500">{account.email}</p>
           </div>
-          <span className={`ml-auto rounded-full px-3 py-1 text-xs font-bold ${ROLE_BADGE[role]}`}>{ROLE_LABELS[role]}</span>
+          <span className={`ml-auto rounded-full px-3 py-1 text-xs font-bold ${ROLE_BADGE[role]}`}>{tText(ROLE_LABELS[role])}</span>
         </div>
 
         <dl className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -87,6 +90,7 @@ export default function ProfilePage() {
 
 function SuperAdminsSection({ currentId }: { currentId: string }) {
   const notify = useToast();
+  const { tText } = useI18n();
   const [superAdmins, setSuperAdmins] = useState<SuperAdminAccount[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [version, setVersion] = useState(0);
@@ -117,7 +121,7 @@ function SuperAdminsSection({ currentId }: { currentId: string }) {
       cell: (s) => (
         <span className="flex items-center gap-2 font-semibold text-ink">
           {s.nomComplet}
-          {s.id === currentId && <Pill tone="brand">Vous</Pill>}
+          {s.id === currentId && <Pill tone="brand">{tText("Vous")}</Pill>}
         </span>
       ),
     },

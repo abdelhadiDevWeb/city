@@ -235,7 +235,7 @@ const INITIAL_RESOLUTIONS: Resolution[] = [
 ];
 
 export default function AssembleesPage() {
-  const { t, locale, isRTL } = useI18n();
+  const { t, tText, locale, isRTL } = useI18n();
   const notify = useToast();
   const [tab, setTab] = useState<TabId>("sessions");
 
@@ -498,11 +498,11 @@ export default function AssembleesPage() {
             </button>
             <button type="button" onClick={() => setAddingSession(true)} className={button("secondary")}>
               <Plus className="h-4 w-4" aria-hidden />
-              Convoquer une AG
+              {tText("Convoquer une AG")}
             </button>
             <button type="button" onClick={() => setAddingResolution(true)} className={button("primary")}>
               <Plus className="h-4 w-4" aria-hidden />
-              Nouvelle Résolution
+              {tText("Nouvelle Résolution")}
             </button>
           </>
         }
@@ -512,36 +512,36 @@ export default function AssembleesPage() {
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <div className={`${card} p-5`}>
           <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wide text-stone-500">
-            <span>Prochaine AG Planifiée</span>
+            <span>{tText("Prochaine AG Planifiée")}</span>
             <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-orange-50 text-brand">
               <CalendarDays className="h-3.5 w-3.5" />
             </span>
           </div>
           <p className="mt-2 text-base font-extrabold tracking-tight text-ink">
-            {activeSession ? `${activeSession.date} · ${activeSession.heure}` : "Aucune AG en cours"}
+            {activeSession ? `${activeSession.date} · ${activeSession.heure}` : tText("Aucune AG en cours")}
           </p>
-          <p className="mt-1 text-xs text-stone-500 truncate">{activeSession?.lieu || "À définir"}</p>
+          <p className="mt-1 text-xs text-stone-500 truncate">{activeSession?.lieu || tText("À définir")}</p>
         </div>
 
         <div className={`${card} p-5`}>
           <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wide text-stone-500">
-            <span>Quorum des Tantièmes</span>
+            <span>{tText("Quorum des Tantièmes")}</span>
             <span className={`flex h-7 w-7 items-center justify-center rounded-lg ${quorumAtteint ? "bg-emerald-50 text-emerald-600" : "bg-red-50 text-red-600"}`}>
               <Percent className="h-3.5 w-3.5" />
             </span>
           </div>
           <p className="mt-2 font-mono text-2xl font-bold tracking-tight text-ink">{quorumPct}%</p>
           <div className="mt-1 flex items-center justify-between text-xs">
-            <span className="font-mono text-stone-500">{activeSession?.quorumTantiemes} / {activeSession?.quorumTotal} Tantièmes</span>
+            <span className="font-mono text-stone-500">{activeSession?.quorumTantiemes} / {activeSession?.quorumTotal} {tText("Tantièmes")}</span>
             <span className={`font-semibold ${quorumAtteint ? "text-emerald-700" : "text-red-700"}`}>
-              {quorumAtteint ? "Quorum Réuni" : "Quorum Non Atteint"}
+              {quorumAtteint ? tText("Quorum Réuni") : tText("Quorum Non Atteint")}
             </span>
           </div>
         </div>
 
         <div className={`${card} p-5`}>
           <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wide text-stone-500">
-            <span>Résolutions Adoptées</span>
+            <span>{tText("Résolutions Adoptées")}</span>
             <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
               <CheckCircle2 className="h-3.5 w-3.5" />
             </span>
@@ -556,13 +556,13 @@ export default function AssembleesPage() {
 
         <div className={`${card} p-5`}>
           <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wide text-stone-500">
-            <span>Feuille d&apos;Émargement</span>
+            <span>{tText("Feuille d'Émargement")}</span>
             <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-stone-100 text-stone-700">
               <Users2 className="h-3.5 w-3.5" />
             </span>
           </div>
-          <p className="mt-2 font-mono text-2xl font-bold tracking-tight text-ink">36 Copropriétaires</p>
-          <p className="mt-1 text-xs text-stone-500">Présents en séance ou avec procuration</p>
+          <p className="mt-2 font-mono text-2xl font-bold tracking-tight text-ink">{tText("36 Copropriétaires")}</p>
+          <p className="mt-1 text-xs text-stone-500">{tText("Présents en séance ou avec procuration")}</p>
         </div>
       </div>
 
@@ -575,7 +575,7 @@ export default function AssembleesPage() {
         }}
         onExportCsv={handleExportCsv}
         onPrint={() => window.print()}
-        title="Période des Assemblées"
+        title={tText("Période des Assemblées")}
       />
 
       <Tabs tabs={tabs} active={tab} onChange={setTab} />
@@ -585,7 +585,7 @@ export default function AssembleesPage() {
           columns={sessionColumns}
           rows={sessions}
           rowKey={(s) => s.id}
-          empty="Aucune session d'Assemblée Générale planifiée."
+          empty={tText("Aucune session d'Assemblée Générale planifiée.")}
         />
       )}
 
@@ -594,7 +594,7 @@ export default function AssembleesPage() {
           columns={resolutionColumns}
           rows={resolutions}
           rowKey={(r) => r.id}
-          empty="Aucune résolution soumise à l'ordre du jour."
+          empty={tText("Aucune résolution soumise à l'ordre du jour.")}
         />
       )}
 

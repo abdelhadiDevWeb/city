@@ -16,6 +16,7 @@ import {
   type Tache,
 } from "@/lib/personnel-api";
 import { ModalActions, SelectField, formText, useSubmit } from "../forms";
+import { useI18n } from "@/lib/i18n";
 import {
   ActionGroup,
   Avatar,
@@ -47,6 +48,7 @@ const TACHE_TONE: Record<Tache["statut"], Tone> = { "À faire": "neutral", "En c
 const EMPLOYE_TONE: Record<Employe["statut"], Tone> = { "En service": "success", Repos: "neutral", Congé: "warning" };
 
 export default function PersonnelPage() {
+  const { tText } = useI18n();
   const notify = useToast();
   const [data, setData] = useState<PersonnelData | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -174,11 +176,11 @@ export default function PersonnelPage() {
           <div className="flex gap-2">
             <button type="button" onClick={() => setAddingEmploye(true)} className={button("secondary")}>
               <Plus className="h-4 w-4" aria-hidden />
-              Nouvel Employé
+              {tText("Nouvel Employé")}
             </button>
             <button type="button" onClick={() => setAddingTache(true)} className={button("primary")}>
               <Plus className="h-4 w-4" aria-hidden />
-              Nouvelle Tâche
+              {tText("Nouvelle Tâche")}
             </button>
           </div>
         }
@@ -201,16 +203,16 @@ export default function PersonnelPage() {
             }}
             onExportCsv={handleExportCsv}
             onPrint={() => window.print()}
-            title="Période des interventions"
+            title={tText("Période des interventions")}
           />
 
           <Tabs tabs={tabs} active={tab} onChange={setTab} />
 
-          {tab === "taches" && <DataTable columns={tacheColumns} rows={taches} rowKey={(t) => t.id} empty="Aucune tâche en cours." />}
+          {tab === "taches" && <DataTable columns={tacheColumns} rows={taches} rowKey={(t) => t.id} empty={tText("Aucune tâche en cours.")} />}
 
           {tab === "personnel" &&
             (personnel.length === 0 ? (
-              <EmptyState icon={UsersRound} title="Aucun membre du personnel" description="Aucun employé n'a encore été enregistré pour cette résidence." />
+              <EmptyState icon={UsersRound} title={tText("Aucun membre du personnel")} description={tText("Aucun employé n'a encore été enregistré pour cette résidence.")} />
             ) : (
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
               {personnel.map((e) => (

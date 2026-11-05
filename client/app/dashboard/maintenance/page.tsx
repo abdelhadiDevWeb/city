@@ -350,13 +350,13 @@ export default function MaintenancePage() {
             {tab === "pannes" && (
               <button type="button" onClick={() => setAddingPanne(true)} className={button("primary")}>
                 <Plus className="h-4 w-4" aria-hidden />
-                Déclarer Panne d&apos;Équipement
+                {tText("Déclarer Panne d'Équipement")}
               </button>
             )}
             {tab === "historique" && (
               <button type="button" onClick={() => setAddingIntervention(true)} className={button("primary")}>
                 <Plus className="h-4 w-4" aria-hidden />
-                Consigner Intervention Réalisée
+                {tText("Consigner Intervention Réalisée")}
               </button>
             )}
           </>
@@ -389,14 +389,14 @@ export default function MaintenancePage() {
             }}
             onExportCsv={handleExportCsv}
             onPrint={() => window.print()}
-            title="Période de maintenance"
+            title={tText("Période de maintenance")}
           />
 
           <Tabs tabs={tabs} active={tab} onChange={setTab} />
 
-          {tab === "incidents" && <DataTable columns={incidentColumns} rows={incidents} rowKey={(i) => i.id} empty="Aucun incident actif." />}
-          {tab === "pannes" && <DataTable columns={panneColumns} rows={pannesEquipement} rowKey={(p) => p.id} empty="Tous les équipements sont opérationnels." />}
-          {tab === "historique" && <DataTable columns={historiqueColumns} rows={historiqueInterventions} rowKey={(h) => h.id} empty="Aucune intervention consignée." />}
+          {tab === "incidents" && <DataTable columns={incidentColumns} rows={incidents} rowKey={(i) => i.id} empty={tText("Aucun incident actif.")} />}
+          {tab === "pannes" && <DataTable columns={panneColumns} rows={pannesEquipement} rowKey={(p) => p.id} empty={tText("Tous les équipements sont opérationnels.")} />}
+          {tab === "historique" && <DataTable columns={historiqueColumns} rows={historiqueInterventions} rowKey={(h) => h.id} empty={tText("Aucune intervention consignée.")} />}
         </>
       )}
 

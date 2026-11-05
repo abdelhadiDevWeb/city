@@ -285,6 +285,7 @@ export function QuotaProgress({
   label?: string;
   unit?: string;
 }) {
+  const { tText } = useI18n();
   const ratio = max > 0 ? current / max : 0;
   const pct = Math.min(100, Math.round(ratio * 100));
   const isFull = current >= max;
@@ -293,13 +294,13 @@ export function QuotaProgress({
   return (
     <div className="space-y-1.5 rounded-xl border border-stone-200/80 bg-stone-50/70 p-3">
       <div className="flex items-center justify-between text-xs">
-        <span className="font-semibold text-stone-700">{label}</span>
+        <span className="font-semibold text-stone-700">{tText(label)}</span>
         <span className="font-mono font-bold text-ink">
-          {current} / {max} {unit}
+          {current} / {max} {unit ? tText(unit) : ""}
           {isFull ? (
-            <span className="ml-2 rounded-md bg-red-100 px-1.5 py-0.5 text-[10px] font-bold text-red-700">Complet</span>
+            <span className="ml-2 rounded-md bg-red-100 px-1.5 py-0.5 text-[10px] font-bold text-red-700">{tText("Complet")}</span>
           ) : isWarning ? (
-            <span className="ml-2 rounded-md bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-700">Proche limite</span>
+            <span className="ml-2 rounded-md bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-700">{tText("Proche limite")}</span>
           ) : null}
         </span>
       </div>

@@ -63,6 +63,7 @@ import {
   useToast,
   type Column,
 } from "../ui";
+import { useI18n } from "@/lib/i18n";
 import { ModalActions, PasswordField, formText as text, useSubmit } from "../forms";
 
 type ModalState =
@@ -99,6 +100,7 @@ export default function AjouterResidencePage() {
 }
 
 function AjouterResidenceContent() {
+  const { tText } = useI18n();
   const notify = useToast();
   const searchParams = useSearchParams();
   const queryId = searchParams.get("id");
@@ -166,12 +168,12 @@ function AjouterResidenceContent() {
     <div className="space-y-6">
       <PageHeader
         icon={Building2}
-        title="Ajouter Résidence"
-        subtitle="Créez les résidences et leurs bâtiments, puis nommez l'Admin responsable de chaque résidence et le Sub Admin de chaque bâtiment."
+        title={tText("Ajouter Résidence")}
+        subtitle={tText("Créez les résidences et leurs bâtiments, puis nommez l'Admin responsable de chaque résidence et le Sub Admin de chaque bâtiment.")}
         actions={
           <button type="button" onClick={() => setModal({ kind: "residence" })} className={button("primary")}>
             <Plus className="h-4 w-4" aria-hidden />
-            Nouvelle Résidence
+            {tText("Nouvelle Résidence")}
           </button>
         }
       />
@@ -326,6 +328,7 @@ function ResidenceList({
   activeId: string | null;
   onSelect: (id: string) => void;
 }) {
+  const { tText } = useI18n();
   const [search, setSearch] = useState("");
   const needle = search.trim().toLowerCase();
   const filtered = residences.filter(
@@ -335,7 +338,7 @@ function ResidenceList({
   return (
     <nav aria-label="Résidences" className="space-y-3">
       <div className="flex items-center justify-between">
-        <p className="text-[11px] font-bold uppercase tracking-wider text-stone-500">Résidences ({residences.length})</p>
+        <p className="text-[11px] font-bold uppercase tracking-wider text-stone-500">{tText("Résidences")} ({residences.length})</p>
       </div>
 
       <div className="relative">
@@ -344,7 +347,7 @@ function ResidenceList({
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Filtrer résidences..."
+          placeholder={tText("Filtrer résidences...")}
           className="w-full rounded-xl border border-stone-200 bg-white py-1.5 pl-9 pr-3 text-xs text-ink placeholder:text-stone-400 focus:outline-none focus:ring-1 focus:ring-brand"
         />
       </div>
@@ -374,12 +377,12 @@ function ResidenceList({
                 </p>
                 <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs">
                   <span className="font-semibold text-stone-600">
-                    {r.batiments} bâtiment{r.batiments > 1 ? "s" : ""}
+                    {r.batiments} {tText("bâtiments")}
                   </span>
                   {r.admin ? (
-                    <Pill tone="success">Admin: {fullName(r.admin)}</Pill>
+                    <Pill tone="success">{tText("Admin")} : {fullName(r.admin)}</Pill>
                   ) : (
-                    <Pill tone="warning">Sans admin</Pill>
+                    <Pill tone="warning">{tText("Sans admin")}</Pill>
                   )}
                 </div>
               </button>
@@ -387,7 +390,7 @@ function ResidenceList({
           );
         })}
         {filtered.length === 0 && (
-          <li className="py-6 text-center text-xs text-stone-400">Aucune résidence trouvée.</li>
+          <li className="py-6 text-center text-xs text-stone-400">{tText("Aucune résidence trouvée.")}</li>
         )}
       </ul>
     </nav>
@@ -407,13 +410,14 @@ function ResponsableCard({
   onEdit?: (person: Responsable) => void;
   onDelete?: (person: Responsable) => void;
 }) {
+  const { tText } = useI18n();
   if (!person) {
     return (
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-dashed border-stone-300 bg-stone-50/60 p-4">
-        <p className="text-sm text-stone-500">{emptyLabel}</p>
+        <p className="text-sm text-stone-500">{tText(emptyLabel)}</p>
         <button type="button" onClick={onCreate} className={button("primary", "sm")}>
           <UserPlus className="h-3.5 w-3.5" aria-hidden />
-          Créer l&apos;admin
+          {tText("Créer l'admin")}
         </button>
       </div>
     );
@@ -469,6 +473,7 @@ function ResidenceDetailsView({
   onEditAccount: (account: Responsable) => void;
   onDeleteAccount: (id: string, nom: string) => void;
 }) {
+  const { tText } = useI18n();
   const { residence, admin, batiments } = details;
   const etages = batiments.reduce((sum, b) => sum + b.etages, 0);
   const appartements = batiments.reduce((sum, b) => sum + b.appartements.length, 0);
@@ -503,7 +508,7 @@ function ResidenceDetailsView({
         <span>
           {b.appartements.length}
           {b.appartements.length > 0 && (
-            <span className="ml-1 text-xs text-stone-500">({b.appartements.filter((a) => a.proprietaire).length} avec propriétaire)</span>
+            <span className="ml-1 text-xs text-stone-500">({b.appartements.filter((a) => a.proprietaire).length} {tText("avec propriétaire")})</span>
           )}
         </span>
       ),
@@ -520,7 +525,7 @@ function ResidenceDetailsView({
         ) : (
           <button type="button" onClick={() => onAddSubAdmin(b)} className={button("secondary", "sm")}>
             <UserPlus className="h-3.5 w-3.5" aria-hidden />
-            Créer le sub admin
+            {tText("Créer le sub admin")}
           </button>
         ),
     },
@@ -538,10 +543,10 @@ function ResidenceDetailsView({
             className={`${button(isSelected ? "primary" : "secondary", "sm")} flex items-center gap-1.5`}
           >
             <Users className="h-3.5 w-3.5" aria-hidden />
-            <span>{isSelected ? "Fermer Détails" : `Voir Résidents (${occupes}/${total})`}</span>
+            <span>{isSelected ? tText("Fermer Détails") : `${tText("Voir Résidents")} (${occupes}/${total})`}</span>
             {impayes > 0 && (
               <span className="rounded-full bg-red-100 px-1.5 py-0.5 text-[10px] font-bold text-red-700">
-                {impayes} impayé{impayes > 1 ? "s" : ""}
+                {impayes} {tText("impayés")}
               </span>
             )}
           </button>
@@ -590,7 +595,7 @@ function ResidenceDetailsView({
             </p>
           </div>
           <div className="flex flex-col items-end gap-2">
-            <span className="text-xs text-stone-400">Créée le {formatDate(residence.createdAt)}</span>
+            <span className="text-xs text-stone-400">{tText("Créée le")} {formatDate(residence.createdAt)}</span>
             <ActionGroup
               editLabel="Modifier Résidence"
               deleteLabel="Supprimer Résidence"
@@ -610,7 +615,7 @@ function ResidenceDetailsView({
             <div key={label} className="rounded-xl border border-stone-200 bg-stone-50/60 p-3">
               <dt className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-stone-500">
                 <Icon className="h-3.5 w-3.5" aria-hidden />
-                {label}
+                {tText(label)}
               </dt>
               <dd className="mt-1 text-lg font-bold text-ink">{value}</dd>
             </div>
@@ -621,7 +626,7 @@ function ResidenceDetailsView({
       <section className={`${card} p-6`}>
         <h3 className="mb-3 flex items-center gap-2 text-sm font-bold text-ink">
           <ShieldCheck className="h-4 w-4 text-brand" aria-hidden />
-          Admin responsable de la résidence
+          {tText("Admin responsable de la résidence")}
         </h3>
         <ResponsableCard
           person={admin}
@@ -641,32 +646,32 @@ function ResidenceDetailsView({
         <QuotaProgress
           current={batiments.length}
           max={residence.maxBatiments || 5}
-          label={`Quota de bâtiments de « ${residence.nom} »`}
-          unit="bâtiments"
+          label={`${tText("Quota de bâtiments de")} « ${residence.nom} »`}
+          unit={tText("bâtiments")}
         />
         <QuotaProgress
           current={appartements}
           max={residence.maxResidents || 100}
-          label={`Capacité maximale de résidents (« ${residence.nom} »)`}
-          unit="résidents"
+          label={`${tText("Capacité maximale de résidents")} (« ${residence.nom} »)`}
+          unit={tText("résidents")}
         />
         <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
           <h3 className="flex items-center gap-2 text-sm font-bold text-ink">
             <Building className="h-4 w-4 text-brand" aria-hidden />
-            Bâtiments ({batiments.length})
+            {tText("Bâtiments")} ({batiments.length})
           </h3>
           {batiments.length >= (residence.maxBatiments || 5) ? (
             <span className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700">
-              Quota atteint ({residence.maxBatiments || 5} max)
+              {tText("Quota atteint")} ({residence.maxBatiments || 5} max)
             </span>
           ) : (
             <button type="button" onClick={onAddBatiment} className={button("primary", "sm")}>
               <Plus className="h-3.5 w-3.5" aria-hidden />
-              Ajouter un bâtiment
+              {tText("Ajouter un bâtiment")}
             </button>
           )}
         </div>
-        <DataTable columns={columns} rows={batiments} rowKey={(b) => b.id} empty="Aucun bâtiment. Ajoutez le premier bâtiment de cette résidence." />
+        <DataTable columns={columns} rows={batiments} rowKey={(b) => b.id} empty={tText("Aucun bâtiment. Ajoutez le premier bâtiment de cette résidence.")} />
 
         {selectedBatiment && (
           <div className="rounded-2xl border-2 border-brand/30 bg-orange-50/20 p-5 space-y-4 animate-in fade-in duration-200">
@@ -706,7 +711,7 @@ function ResidenceDetailsView({
 
             {selectedBatiment.appartements.length === 0 ? (
               <p className="py-6 text-center text-sm text-stone-500">
-                Aucun appartement n&apos;a encore été créé dans ce bâtiment.
+                {tText("Aucun appartement n'a encore été créé dans ce bâtiment.")}
               </p>
             ) : (
               <div className="space-y-3">
@@ -721,7 +726,7 @@ function ResidenceDetailsView({
                     ]}
                   />
                   <span className="text-xs font-semibold text-stone-500">
-                    {drilldownApts.length} appartement{drilldownApts.length > 1 ? "s" : ""}
+                    {drilldownApts.length} {tText("appartements")}
                   </span>
                 </div>
 
@@ -729,12 +734,12 @@ function ResidenceDetailsView({
                   <table className="w-full text-start text-sm">
                     <thead className="border-b border-stone-200 bg-stone-50/70 text-[11px] font-bold uppercase tracking-wider text-stone-500">
                       <tr>
-                        <th className="px-4 py-3">Logement</th>
-                        <th className="px-4 py-3">Étage</th>
-                        <th className="px-4 py-3">Résident / Propriétaire</th>
-                        <th className="px-4 py-3">Contact</th>
-                        <th className="px-4 py-3">Statut Cotisation</th>
-                        <th className="px-4 py-3 text-end">Action</th>
+                        <th className="px-4 py-3">{tText("Logement")}</th>
+                        <th className="px-4 py-3">{tText("Étage")}</th>
+                        <th className="px-4 py-3">{tText("Résident / Propriétaire")}</th>
+                        <th className="px-4 py-3">{tText("Contact")}</th>
+                        <th className="px-4 py-3">{tText("Statut Cotisation")}</th>
+                        <th className="px-4 py-3 text-end">{tText("Action")}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-stone-100">
@@ -845,6 +850,7 @@ function BatimentModal({
   onClose: () => void;
   onCreated: (nom: string) => void;
 }) {
+  const { tText } = useI18n();
   const { submitting, error, run } = useSubmit();
   const [etages, setEtages] = useState(5);
   const [appartementsParEtage, setAppartementsParEtage] = useState(4);
@@ -863,7 +869,7 @@ function BatimentModal({
   }
 
   return (
-    <Modal title="Nouveau bâtiment (Bloc)" description={`Dans la résidence « ${residence.nom} ».`} onClose={onClose}>
+    <Modal title="Nouveau bâtiment (Bloc)" description={`${tText("Dans la résidence")} « ${residence.nom} ».`} onClose={onClose}>
       <form onSubmit={onSubmit} className="space-y-4">
         <Field label="Nom du bâtiment" name="nom" required maxLength={60} placeholder="ex: Bloc B ou Tour 03" autoFocus />
         <div className="grid gap-3 sm:grid-cols-2">
@@ -879,7 +885,7 @@ function BatimentModal({
             onChange={(e) => setEtages(Number(e.target.value))}
           />
           <div className="space-y-1.5">
-            <label className="block text-xs font-semibold text-stone-700">Logements par étage (aide)</label>
+            <label className="block text-xs font-semibold text-stone-700">{tText("Logements par étage (aide)")}</label>
             <input
               type="number"
               min={1}
@@ -899,7 +905,7 @@ function BatimentModal({
           min={1}
           max={2000}
           step={1}
-          hint={`Calcul estimé : ${etages} étages × ${appartementsParEtage} logements = ${totalCalcule} appartements`}
+          hint={`${tText("Calcul estimé :")} ${etages} ${tText("étages")} × ${appartementsParEtage} ${tText("logements")} = ${totalCalcule} ${tText("appartements")}`}
         />
         <FormError error={error} />
         <ModalActions submitting={submitting} label="Ajouter le bâtiment" onCancel={onClose} />
@@ -919,6 +925,7 @@ function AccountModal({
   onClose: () => void;
   onCreated: (email: string) => void;
 }) {
+  const { tText } = useI18n();
   const { submitting, error, run } = useSubmit();
   const [password, setPassword] = useState("City@2026!Sec");
 
@@ -943,8 +950,8 @@ function AccountModal({
 
   return (
     <Modal
-      title={role === "admin" ? "Nouvel Admin (Syndic de Résidence)" : "Nouveau Sous-Admin (Gestionnaire de Bloc)"}
-      description={`${role === "admin" ? "Responsable de la résidence" : "Responsable du bâtiment"} « ${target.nom} ». Il pourra se connecter dès qu'un abonnement payé sera en cours.`}
+      title={role === "admin" ? tText("Nouvel Admin (Syndic de Résidence)") : tText("Nouveau Sous-Admin (Gestionnaire de Bloc)")}
+      description={`${role === "admin" ? tText("Responsable de la résidence") : tText("Responsable du bâtiment")} « ${target.nom} ». ${tText("Il pourra se connecter dès qu'un abonnement payé sera en cours.")}`}
       onClose={onClose}
     >
       <form onSubmit={onSubmit} className="space-y-4">

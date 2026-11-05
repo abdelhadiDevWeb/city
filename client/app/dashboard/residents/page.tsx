@@ -443,6 +443,7 @@ function ResidentCredentialsModal({
   residenceNom: string;
   onClose: () => void;
 }) {
+  const { tText } = useI18n();
   const [copied, setCopied] = useState(false);
   const { resident, password } = credentials;
 
@@ -467,26 +468,26 @@ function ResidentCredentialsModal({
       <div className="space-y-4">
         <div className="rounded-xl border border-stone-200 bg-stone-50/80 p-4 space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-stone-500 uppercase tracking-wide">Email de connexion</span>
+            <span className="text-xs font-semibold text-stone-500 uppercase tracking-wide">{tText("Email de connexion")}</span>
             <Mono className="font-bold text-ink">{resident.email}</Mono>
           </div>
           <div className="flex items-center justify-between border-t border-stone-200/70 pt-2.5">
-            <span className="text-xs font-semibold text-stone-500 uppercase tracking-wide">Mot de passe initial</span>
+            <span className="text-xs font-semibold text-stone-500 uppercase tracking-wide">{tText("Mot de passe initial")}</span>
             <div className="flex items-center gap-2">
               <KeyRound className="h-3.5 w-3.5 text-brand" />
               <Mono className="font-bold text-brand">{password}</Mono>
             </div>
           </div>
           <div className="flex items-center justify-between border-t border-stone-200/70 pt-2.5">
-            <span className="text-xs font-semibold text-stone-500 uppercase tracking-wide">Logement</span>
+            <span className="text-xs font-semibold text-stone-500 uppercase tracking-wide">{tText("Logement")}</span>
             <span className="text-sm font-semibold text-ink">
-              {resident.batiment?.nom ?? "Bâtiment"} · Appt {resident.appartement?.nom ?? "—"}
+              {resident.batiment?.nom ?? tText("Bâtiment")} · {tText("Appt")} {resident.appartement?.nom ?? "—"}
             </span>
           </div>
         </div>
 
         <div className="rounded-xl bg-orange-50/70 border border-orange-200/60 p-3.5 text-xs text-stone-600 leading-relaxed">
-          Le résident peut maintenant ouvrir l&apos;application mobile City sur Android / iOS, saisir cet email et ce mot de passe, et accéder à son espace.
+          {tText("Le résident peut maintenant ouvrir l'application mobile City sur Android / iOS, saisir cet email et ce mot de passe, et accéder à son espace.")}
         </div>
 
         <div className="flex items-center justify-end gap-3 pt-2">
@@ -496,14 +497,14 @@ function ResidentCredentialsModal({
             className="inline-flex items-center gap-2 rounded-xl bg-stone-100 px-4 py-2.5 text-xs font-bold text-ink hover:bg-stone-200 transition"
           >
             {copied ? <Check className="h-4 w-4 text-emerald-600" /> : <Copy className="h-4 w-4 text-stone-500" />}
-            {copied ? "Copié !" : "Copier les identifiants (WhatsApp / SMS)"}
+            {copied ? tText("Copié !") : tText("Copier les identifiants (WhatsApp / SMS)")}
           </button>
           <button
             type="button"
             onClick={onClose}
             className={button("primary")}
           >
-            Terminé
+            {tText("Terminé")}
           </button>
         </div>
       </div>
@@ -522,6 +523,7 @@ function ResidentModal({
   onClose: () => void;
   onCreated: (r: Resident) => void;
 }) {
+  const { tText } = useI18n();
   const { submitting, error, run } = useSubmit();
   const [batimentId, setBatimentId] = useState(batiments[0]?.id ?? "");
   const [etage, setEtage] = useState(0);
@@ -555,9 +557,9 @@ function ResidentModal({
     <Modal title="Ajouter un résident" description="Le résident est enregistré comme propriétaire et reçoit un accès à l'application mobile." onClose={onClose}>
       <form onSubmit={onSubmit} className="space-y-5">
         <fieldset className="space-y-4">
-          <legend className="mb-3 text-[11px] font-bold uppercase tracking-wide text-stone-500">Logement</legend>
+          <legend className="mb-3 text-[11px] font-bold uppercase tracking-wide text-stone-500">{tText("Logement")}</legend>
           <div className="flex items-center justify-between rounded-xl border border-stone-200 bg-stone-50/70 px-4 py-2.5 text-sm">
-            <span className="text-stone-500">Résidence</span>
+            <span className="text-stone-500">{tText("Résidence")}</span>
             <span className="font-semibold text-ink">{residenceNom}</span>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
@@ -609,7 +611,7 @@ function ResidentModal({
         </fieldset>
 
         <fieldset className="space-y-4">
-          <legend className="mb-3 text-[11px] font-bold uppercase tracking-wide text-stone-500">Informations du résident</legend>
+          <legend className="mb-3 text-[11px] font-bold uppercase tracking-wide text-stone-500">{tText("Informations du résident")}</legend>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Prénom" name="prenom" required maxLength={60} autoComplete="off" autoFocus />
             <Field label="Nom" name="nom" required maxLength={60} autoComplete="off" />
@@ -621,7 +623,7 @@ function ResidentModal({
         </fieldset>
 
         <fieldset className="space-y-4">
-          <legend className="mb-3 text-[11px] font-bold uppercase tracking-wide text-stone-500">Accès à l&apos;application mobile</legend>
+          <legend className="mb-3 text-[11px] font-bold uppercase tracking-wide text-stone-500">{tText("Accès à l'application mobile")}</legend>
           <PasswordGeneratorInput
             value={password}
             onChange={setPassword}
@@ -647,6 +649,7 @@ function EditResidentModal({
   onClose: () => void;
   onUpdated: () => void;
 }) {
+  const { tText } = useI18n();
   const { submitting, error, run } = useSubmit();
   const [prenom, setPrenom] = useState(resident.prenom);
   const [nom, setNom] = useState(resident.nom);

@@ -149,9 +149,9 @@ export function MonEspace() {
           <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 text-brand">
             <Building2 className="h-6 w-6" aria-hidden />
           </span>
-          <h2 className="mt-4 text-xl font-bold text-ink">Aucune résidence attribuée</h2>
+          <h2 className="mt-4 text-xl font-bold text-ink">{tText("Aucune résidence attribuée")}</h2>
           <p className="mt-1 max-w-md mx-auto text-sm text-stone-500">
-            Votre compte responsable n&apos;est pas encore lié à une résidence. Veuillez contacter le Super Administrateur pour finaliser votre affectation.
+            {tText("Votre compte responsable n'est pas encore lié à une résidence. Veuillez contacter le Super Administrateur pour finaliser votre affectation.")}
           </p>
         </section>
       </div>
@@ -165,14 +165,13 @@ export function MonEspace() {
           <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-50 text-amber-600">
             <CreditCard className="h-7 w-7" aria-hidden />
           </span>
-          <h2 className="mt-4 text-2xl font-bold text-ink">Abonnement en attente de validation</h2>
+          <h2 className="mt-4 text-2xl font-bold text-ink">{tText("Abonnement en attente de validation")}</h2>
           <p className="mt-2 max-w-lg mx-auto text-sm text-stone-500 leading-relaxed">
-            Votre compte administrateur pour la résidence <span className="font-semibold text-ink">« {residence.nom} »</span> n&apos;a pas d&apos;abonnement actif payé en cours.
-            Le Super Administrateur doit valider votre formule d&apos;abonnement (durée standard 1 an avec paiement flexible) pour débloquer l&apos;accès complet à votre tableau de bord.
+            {tText("Votre compte administrateur pour la résidence")} <span className="font-semibold text-ink">« {residence.nom} »</span> {tText("n'a pas d'abonnement actif payé en cours. Le Super Administrateur doit valider votre formule d'abonnement (durée standard 1 an avec paiement flexible) pour débloquer l'accès complet à votre tableau de bord.")}
           </p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
             <Link href="/dashboard/profil" className={button("secondary")}>
-              Consulter mon profil
+              {tText("Consulter mon profil")}
             </Link>
           </div>
         </section>
@@ -289,8 +288,8 @@ export function MonEspace() {
         title: "Mon Bâtiment & Lots",
         route: "/dashboard/residences",
         icon: Building2,
-        badge: `${myAppartements.length} lots`,
-        meta: `${myBatiment?.etages ?? 0} étages`,
+        badge: `${myAppartements.length} ${tText("lots")}`,
+        meta: `${myBatiment?.etages ?? 0} ${tText("étages")}`,
         description: "Gestion des appartements, étages et répartition des tantièmes de votre bâtiment.",
         color: "bg-orange-50 text-brand border-orange-100",
       },
@@ -298,8 +297,8 @@ export function MonEspace() {
         title: "Mes Résidents & Contacts",
         route: "/dashboard/residents",
         icon: Users,
-        badge: `${myResidents.length} résidents`,
-        meta: `${myOccupes} occupés`,
+        badge: `${myResidents.length} ${tText("résidents")}`,
+        meta: `${myOccupes} ${tText("occupés")}`,
         description: "Annuaire nominatif des occupants de votre bloc, coordonnées téléphoniques et clés temporaires.",
         color: "bg-blue-50 text-blue-600 border-blue-100",
       },
@@ -307,7 +306,7 @@ export function MonEspace() {
         title: "Paiements & Cotisations",
         route: "/dashboard/finances",
         icon: Wallet,
-        badge: `${myTauxRecouvrement}% payé`,
+        badge: `${myTauxRecouvrement}% ${tText("payé")}`,
         meta: formatDZD(myEncaisse),
         description: "Enregistrement des paiements des résidents, suivi de qui a payé et qui est en retard.",
         color: "bg-emerald-50 text-emerald-600 border-emerald-100",
@@ -316,8 +315,8 @@ export function MonEspace() {
         title: "Incidents & Pannes Bloc",
         route: "/dashboard/maintenance",
         icon: Wrench,
-        badge: `${myIncidents.length} signalements`,
-        meta: `${myPannes.length} panne(s)`,
+        badge: `${myIncidents.length} ${tText("signalements")}`,
+        meta: `${myPannes.length} ${tText("panne(s)")}`,
         description: "Signalement des pannes d'ascenseur, éclairage, interphone et plomberie de votre bâtiment.",
         color: "bg-amber-50 text-amber-600 border-amber-100",
       },
@@ -325,8 +324,8 @@ export function MonEspace() {
         title: "Personnel & Entretien Bloc",
         route: "/dashboard/personnel",
         icon: UserCog,
-        badge: `${myTaches.length} tâches`,
-        meta: "Missions assignées",
+        badge: `${myTaches.length} ${tText("tâches")}`,
+        meta: tText("Missions assignées"),
         description: "Suivi des agents d'entretien, techniciens et prestataires intervenant sur votre bâtiment.",
         color: "bg-purple-50 text-purple-600 border-purple-100",
       },
@@ -334,8 +333,8 @@ export function MonEspace() {
         title: "Alertes & Rapports Bloc",
         route: "/dashboard/annonces",
         icon: Megaphone,
-        badge: `${alertes.length} alertes`,
-        meta: "Diffusions & Exports",
+        badge: `${alertes.length} ${tText("alertes")}`,
+        meta: tText("Diffusions & Exports"),
         description: "Diffusion d'avis aux résidents de votre bloc et export du journal de caisse du bâtiment.",
         color: "bg-teal-50 text-teal-600 border-teal-100",
       },
@@ -349,26 +348,26 @@ export function MonEspace() {
             <div className="flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-stone-50 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-stone-600">
                 <span className="h-2 w-2 rounded-full bg-brand" aria-hidden />
-                Responsable de Bâtiment · Périmètre délégué
+                {tText("Responsable de Bâtiment · Périmètre délégué")}
               </span>
               <span className="inline-flex items-center gap-1.5 rounded-full bg-orange-100 px-3 py-1 text-[11px] font-bold text-brand">
                 <Building className="h-3.5 w-3.5" aria-hidden />
-                {myBatiment?.nom ?? "Bâtiment Délégué"}
+                {myBatiment?.nom ?? tText("Bâtiment Délégué")}
               </span>
             </div>
 
             <h1 className="mt-3 text-2xl sm:text-3xl font-bold tracking-tight text-ink">
-              {myBatiment?.nom ?? "Mon Bâtiment"} — {residence.nom}
+              {myBatiment?.nom ?? tText("Mon Bâtiment")} — {residence.nom}
             </h1>
             <p className="mt-1 flex items-center gap-1.5 text-sm text-stone-500">
               <MapPin className="h-4 w-4 shrink-0 text-stone-400" aria-hidden />
-              {residence.localisation} · {myBatiment?.etages ?? 0} étages · {myAppartements.length} appartements sous votre responsabilité
+              {residence.localisation} · {myBatiment?.etages ?? 0} {tText("étages")} · {myAppartements.length} {tText("appartements sous votre responsabilité")}
             </p>
 
             <p className="mt-3 flex flex-wrap items-center gap-2 text-xs text-stone-600">
-              Sous-Admin connecté : <span className="font-semibold text-ink">{displayName(account)}</span>
+              {tText("Sous-Admin connecté :")} <span className="font-semibold text-ink">{displayName(account)}</span>
               <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${ROLE_BADGE.sub_admin}`}>
-                {ROLE_LABELS.sub_admin}
+                {tText(ROLE_LABELS.sub_admin)}
               </span>
             </p>
           </div>
@@ -377,23 +376,23 @@ export function MonEspace() {
           <div className="flex flex-wrap items-center gap-2.5">
             <Link href="/dashboard/finances" className={button("primary", "sm")}>
               <Wallet className="h-3.5 w-3.5" aria-hidden />
-              Encaisser un Résident
+              {tText("Encaisser un Résident")}
             </Link>
             <Link href="/dashboard/residents" className={button("secondary", "sm")}>
               <UserPlus className="h-3.5 w-3.5" aria-hidden />
-              Nouveau Résident
+              {tText("Nouveau Résident")}
             </Link>
             <Link href="/dashboard/maintenance" className={button("secondary", "sm")}>
               <Wrench className="h-3.5 w-3.5" aria-hidden />
-              Signaler Panne Bloc
+              {tText("Signaler Panne Bloc")}
             </Link>
             <Link href="/dashboard/annonces" className={button("secondary", "sm")}>
               <Megaphone className="h-3.5 w-3.5" aria-hidden />
-              Diffuser Alerte
+              {tText("Diffuser Alerte")}
             </Link>
             <Link href="/dashboard/rapports" className={button("secondary", "sm")}>
               <ChartColumn className="h-3.5 w-3.5" aria-hidden />
-              Exporter Registre
+              {tText("Exporter Registre")}
             </Link>
           </div>
         </section>
@@ -405,16 +404,16 @@ export function MonEspace() {
           {/* KPI 1 : Recouvrement Bâtiment */}
           <div className={`${card} p-5`}>
             <div className="flex items-center justify-between gap-3">
-              <span className="text-[11px] font-bold uppercase tracking-wide text-stone-500">Recouvrement Bâtiment</span>
+              <span className="text-[11px] font-bold uppercase tracking-wide text-stone-500">{tText("Recouvrement Bâtiment")}</span>
               <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-50 text-brand">
                 <Receipt className="h-4 w-4" aria-hidden />
               </span>
             </div>
             <p className="mt-2 text-2xl font-bold tracking-tight text-ink">{myTauxRecouvrement}%</p>
             <div className="mt-2 flex items-center justify-between text-xs text-stone-500 border-t border-stone-100 pt-2">
-              <span>Encaissé : {formatDZD(myEncaisse)}</span>
+              <span>{tText("Encaissé :")} {formatDZD(myEncaisse)}</span>
               <span className={myImpayes.length > 0 ? "text-amber-600 font-semibold" : "text-emerald-600 font-semibold"}>
-                {myImpayes.length} en retard
+                {myImpayes.length} {tText("en retard")}
               </span>
             </div>
           </div>
@@ -422,18 +421,18 @@ export function MonEspace() {
           {/* KPI 2 : Logements & Résidents */}
           <div className={`${card} p-5`}>
             <div className="flex items-center justify-between gap-3">
-              <span className="text-[11px] font-bold uppercase tracking-wide text-stone-500">Logements & Résidents</span>
+              <span className="text-[11px] font-bold uppercase tracking-wide text-stone-500">{tText("Logements & Résidents")}</span>
               <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
                 <Users className="h-4 w-4" aria-hidden />
               </span>
             </div>
             <p className="mt-2 text-2xl font-bold tracking-tight text-ink">
-              {myResidents.length} résident{myResidents.length > 1 ? "s" : ""}
+              {myResidents.length} {tText("résidents")}
             </p>
             <div className="mt-2 flex items-center justify-between text-xs text-stone-500 border-t border-stone-100 pt-2">
-              <span>Occupation Bloc</span>
+              <span>{tText("Occupation Bloc")}</span>
               <span className="text-blue-600 font-semibold">
-                {myOccupes} / {myAppartements.length} attribués
+                {myOccupes} / {myAppartements.length} {tText("attribués")}
               </span>
             </div>
           </div>
@@ -441,7 +440,7 @@ export function MonEspace() {
           {/* KPI 3 : Incidents de proximité */}
           <div className={`${card} p-5`}>
             <div className="flex items-center justify-between gap-3">
-              <span className="text-[11px] font-bold uppercase tracking-wide text-stone-500">Maintenance & Pannes Bloc</span>
+              <span className="text-[11px] font-bold uppercase tracking-wide text-stone-500">{tText("Maintenance & Pannes Bloc")}</span>
               <span
                 className={`flex h-8 w-8 items-center justify-center rounded-lg ${
                   myIncidents.length > 0 ? "bg-amber-50 text-amber-600" : "bg-stone-50 text-stone-600"
@@ -451,28 +450,28 @@ export function MonEspace() {
               </span>
             </div>
             <p className="mt-2 text-2xl font-bold tracking-tight text-ink">
-              {myIncidents.length} signalement{myIncidents.length > 1 ? "s" : ""}
+              {myIncidents.length} {tText("signalements")}
             </p>
             <div className="mt-2 flex items-center justify-between text-xs text-stone-500 border-t border-stone-100 pt-2">
-              <span>{myPannes.length} panne(s) ascenseur/bloc</span>
-              <span className="text-stone-500 font-semibold">Suivi actif</span>
+              <span>{myPannes.length} {tText("panne(s) ascenseur/bloc")}</span>
+              <span className="text-stone-500 font-semibold">{tText("Suivi actif")}</span>
             </div>
           </div>
 
           {/* KPI 4 : Tâches d'entretien Bâtiment */}
           <div className={`${card} p-5`}>
             <div className="flex items-center justify-between gap-3">
-              <span className="text-[11px] font-bold uppercase tracking-wide text-stone-500">Entretien & Tâches</span>
+              <span className="text-[11px] font-bold uppercase tracking-wide text-stone-500">{tText("Entretien & Tâches")}</span>
               <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-50 text-purple-600">
                 <ListChecks className="h-4 w-4" aria-hidden />
               </span>
             </div>
             <p className="mt-2 text-2xl font-bold tracking-tight text-ink">
-              {myTaches.length} intervention{myTaches.length > 1 ? "s" : ""}
+              {myTaches.length} {tText("interventions")}
             </p>
             <div className="mt-2 flex items-center justify-between text-xs text-stone-500 border-t border-stone-100 pt-2">
-              <span>Personnel mobilisé</span>
-              <span className="text-emerald-600 font-semibold">Nettoyage & Sécurité</span>
+              <span>{tText("Personnel mobilisé")}</span>
+              <span className="text-emerald-600 font-semibold">{tText("Nettoyage & Sécurité")}</span>
             </div>
           </div>
         </div>
@@ -481,10 +480,10 @@ export function MonEspace() {
         <section className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-bold text-ink">Modules de Gestion du {myBatiment?.nom ?? "Bâtiment"}</h2>
-              <p className="text-xs text-stone-500">Accès direct et données filtrées sur votre périmètre de bâtiment délégué</p>
+              <h2 className="text-lg font-bold text-ink">{tText("Modules de Gestion du")} {myBatiment?.nom ?? tText("Bâtiment")}</h2>
+              <p className="text-xs text-stone-500">{tText("Accès direct et données filtrées sur votre périmètre de bâtiment délégué")}</p>
             </div>
-            <span className="text-xs font-semibold text-stone-400">6 modules délégués</span>
+            <span className="text-xs font-semibold text-stone-400">{tText("6 modules délégués")}</span>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -501,16 +500,16 @@ export function MonEspace() {
                       <span className={`flex h-10 w-10 items-center justify-center rounded-xl border ${m.color}`}>
                         <Icon className="h-5 w-5" aria-hidden />
                       </span>
-                      <Pill tone="brand">{m.badge}</Pill>
+                      <Pill tone="brand">{tText(m.badge)}</Pill>
                     </div>
-                    <h3 className="mt-3 text-base font-bold text-ink group-hover:text-brand transition">{m.title}</h3>
-                    <p className="mt-1 text-xs text-stone-500 line-clamp-2 leading-relaxed">{m.description}</p>
+                    <h3 className="mt-3 text-base font-bold text-ink group-hover:text-brand transition">{tText(m.title)}</h3>
+                    <p className="mt-1 text-xs text-stone-500 line-clamp-2 leading-relaxed">{tText(m.description)}</p>
                   </div>
 
                   <div className="mt-4 flex items-center justify-between border-t border-stone-100 pt-3 text-xs">
-                    <span className="font-semibold text-stone-600">{m.meta}</span>
+                    <span className="font-semibold text-stone-600">{tText(m.meta)}</span>
                     <span className="flex items-center gap-1 font-semibold text-brand group-hover:translate-x-0.5 transition">
-                      Gérer
+                      {tText("Gérer")}
                       <ChevronRight className="h-3.5 w-3.5 rtl:rotate-180" aria-hidden />
                     </span>
                   </div>
@@ -530,27 +529,27 @@ export function MonEspace() {
                   <Users className="h-5 w-5" aria-hidden />
                 </span>
                 <div>
-                  <h2 className="text-base font-bold text-ink">Résidents du {myBatiment?.nom ?? "Bâtiment"}</h2>
-                  <p className="text-xs text-stone-500">{myOccupes} logements occupés sur {myAppartements.length} au total</p>
+                  <h2 className="text-base font-bold text-ink">{tText("Résidents du")} {myBatiment?.nom ?? tText("Bâtiment")}</h2>
+                  <p className="text-xs text-stone-500">{myOccupes} {tText("logements occupés sur")} {myAppartements.length} {tText("au total")}</p>
                 </div>
               </div>
               <Link href="/dashboard/residents" className="text-xs font-semibold text-brand hover:underline">
-                Gérer →
+                {tText("Gérer")} →
               </Link>
             </div>
 
             <div className="my-4 flex-1">
               {myAppartements.length === 0 ? (
-                <p className="py-8 text-center text-xs text-stone-500">Aucun appartement configuré dans ce bâtiment.</p>
+                <p className="py-8 text-center text-xs text-stone-500">{tText("Aucun appartement configuré dans ce bâtiment.")}</p>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-start text-xs">
                     <thead>
                       <tr className="border-b border-stone-200 text-[11px] font-bold uppercase tracking-wider text-stone-500">
-                        <th className="pb-2.5">Logement</th>
-                        <th className="pb-2.5">Étage</th>
-                        <th className="pb-2.5">Occupant / Copropriétaire</th>
-                        <th className="pb-2.5 text-end">Paiement</th>
+                        <th className="pb-2.5">{tText("Logement")}</th>
+                        <th className="pb-2.5">{tText("Étage")}</th>
+                        <th className="pb-2.5">{tText("Occupant / Copropriétaire")}</th>
+                        <th className="pb-2.5 text-end">{tText("Paiement")}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-stone-100">
@@ -565,16 +564,16 @@ export function MonEspace() {
                               {occupant ? (
                                 <span className="font-semibold text-ink">{fullName(occupant)}</span>
                               ) : (
-                                <span className="text-stone-400 italic">Vacant</span>
+                                <span className="text-stone-400 italic">{tText("Vacant")}</span>
                               )}
                             </td>
                             <td className="py-2.5 text-end">
                               {isImpaye ? (
-                                <Pill tone="danger">Impayé</Pill>
+                                <Pill tone="danger">{tText("Impayé")}</Pill>
                               ) : occupant ? (
-                                <Pill tone="success">À jour</Pill>
+                                <Pill tone="success">{tText("À jour")}</Pill>
                               ) : (
-                                <Pill tone="neutral">Non attribué</Pill>
+                                <Pill tone="neutral">{tText("Non attribué")}</Pill>
                               )}
                             </td>
                           </tr>
@@ -591,7 +590,7 @@ export function MonEspace() {
                 href="/dashboard/residents"
                 className="flex items-center justify-between text-xs font-semibold text-stone-600 hover:text-brand"
               >
-                <span>Accéder à l&apos;annuaire complet des résidents ({myResidents.length})</span>
+                <span>{tText("Accéder à l'annuaire complet des résidents")} ({myResidents.length})</span>
                 <ChevronRight className="h-4 w-4 rtl:rotate-180" aria-hidden />
               </Link>
             </div>
@@ -605,19 +604,19 @@ export function MonEspace() {
                   <Receipt className="h-5 w-5" aria-hidden />
                 </span>
                 <div>
-                  <h2 className="text-base font-bold text-ink">Journal des Règlements du Bâtiment</h2>
-                  <p className="text-xs text-stone-500">Recouvrement direct des charges et cotisations</p>
+                  <h2 className="text-base font-bold text-ink">{tText("Journal des Règlements du Bâtiment")}</h2>
+                  <p className="text-xs text-stone-500">{tText("Recouvrement direct des charges et cotisations")}</p>
                 </div>
               </div>
               <Link href="/dashboard/finances" className="text-xs font-semibold text-brand hover:underline">
-                Encaisser →
+                {tText("Encaisser")} →
               </Link>
             </div>
 
             <div className="my-4 flex-1">
-              <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-stone-400">Derniers encaissements enregistrés</p>
+              <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-stone-400">{tText("Derniers encaissements enregistrés")}</p>
               {myPaiements.length === 0 ? (
-                <p className="py-6 text-center text-xs text-stone-500">Aucun paiement récent dans ce bâtiment.</p>
+                <p className="py-6 text-center text-xs text-stone-500">{tText("Aucun paiement récent dans ce bâtiment.")}</p>
               ) : (
                 <ul className="divide-y divide-stone-100 text-xs">
                   {myPaiements.slice(0, 4).map((p) => (
@@ -819,12 +818,12 @@ export function MonEspace() {
           <div className="flex flex-wrap items-center gap-2">
             <span className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-stone-50 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-stone-600">
               <span className="h-2 w-2 rounded-full bg-brand" aria-hidden />
-              Syndic de Copropriété · Espace Administrateur Général
+              {tText("Syndic de Copropriété · Espace Administrateur Général")}
             </span>
             {abonnement && (
               <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-bold text-emerald-700">
                 <BadgeCheck className="h-3.5 w-3.5" aria-hidden />
-                {abonnement.nom ?? "Abonnement"} · 1 an standard · Payé
+                {abonnement.nom ?? tText("Abonnement")} · {tText("1 an standard · Payé")}
               </span>
             )}
           </div>
@@ -832,12 +831,12 @@ export function MonEspace() {
           <h1 className="mt-3 text-2xl sm:text-3xl font-bold tracking-tight text-ink">{residence.nom}</h1>
           <p className="mt-1 flex items-center gap-1.5 text-sm text-stone-500">
             <MapPin className="h-4 w-4 shrink-0 text-stone-400" aria-hidden />
-            {residence.localisation} · {batiments.length} bâtiment{batiments.length > 1 ? "s" : ""} · {appartements.length} appartements au total
+            {residence.localisation} · {batiments.length} {tText("bâtiments")} · {appartements.length} {tText("appartements au total")}
           </p>
 
           <p className="mt-3 flex flex-wrap items-center gap-2 text-xs text-stone-600">
-            Responsable connecté : <span className="font-semibold text-ink">{displayName(account)}</span>
-            <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${ROLE_BADGE[role]}`}>{ROLE_LABELS[role]}</span>
+            {tText("Responsable connecté :")} <span className="font-semibold text-ink">{displayName(account)}</span>
+            <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${ROLE_BADGE[role]}`}>{tText(ROLE_LABELS[role])}</span>
           </p>
         </div>
 
@@ -845,27 +844,27 @@ export function MonEspace() {
         <div className="flex flex-wrap items-center gap-2.5">
           <Link href="/dashboard/finances" className={button("primary", "sm")}>
             <Wallet className="h-3.5 w-3.5" aria-hidden />
-            Encaisser Paiement
+            {tText("Encaisser Paiement")}
           </Link>
           <Link href="/dashboard/residences" className={button("secondary", "sm")}>
             <UserCheck className="h-3.5 w-3.5" aria-hidden />
-            Bâtiments & Sous-Admins
+            {tText("Bâtiments & Sous-Admins")}
           </Link>
           <Link href="/dashboard/maintenance" className={button("secondary", "sm")}>
             <Wrench className="h-3.5 w-3.5" aria-hidden />
-            Signaler Incident
+            {tText("Signaler Incident")}
           </Link>
           <Link href="/dashboard/annonces" className={button("secondary", "sm")}>
             <Megaphone className="h-3.5 w-3.5" aria-hidden />
-            Diffuser Alerte
+            {tText("Diffuser Alerte")}
           </Link>
           <Link href="/dashboard/residents" className={button("secondary", "sm")}>
             <UserPlus className="h-3.5 w-3.5" aria-hidden />
-            Nouveau Résident
+            {tText("Nouveau Résident")}
           </Link>
           <Link href="/dashboard/assemblees" className={button("secondary", "sm")}>
             <ScrollText className="h-3.5 w-3.5" aria-hidden />
-            Assemblées (AG)
+            {tText("Assemblées (AG)")}
           </Link>
         </div>
       </section>
@@ -888,31 +887,31 @@ export function MonEspace() {
         {/* KPI 1 : Trésorerie */}
         <div className={`${card} p-5`}>
           <div className="flex items-center justify-between gap-3">
-            <span className="text-[11px] font-bold uppercase tracking-wide text-stone-500">Trésorerie Disponible</span>
+            <span className="text-[11px] font-bold uppercase tracking-wide text-stone-500">{tText("Trésorerie Disponible")}</span>
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
               <Wallet className="h-4 w-4" aria-hidden />
             </span>
           </div>
           <p className="mt-2 text-2xl font-bold tracking-tight text-ink">{formatDZD(solde)}</p>
           <div className="mt-2 flex items-center justify-between text-xs text-stone-500 border-t border-stone-100 pt-2">
-            <span>Encaissé : {formatDZD(totalEncaisse)}</span>
-            <span className="text-emerald-600 font-semibold">Caisse active</span>
+            <span>{tText("Encaissé :")} {formatDZD(totalEncaisse)}</span>
+            <span className="text-emerald-600 font-semibold">{tText("Caisse active")}</span>
           </div>
         </div>
 
         {/* KPI 2 : Recouvrement */}
         <div className={`${card} p-5`}>
           <div className="flex items-center justify-between gap-3">
-            <span className="text-[11px] font-bold uppercase tracking-wide text-stone-500">Recouvrement Charges</span>
+            <span className="text-[11px] font-bold uppercase tracking-wide text-stone-500">{tText("Recouvrement Charges")}</span>
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-50 text-brand">
               <Receipt className="h-4 w-4" aria-hidden />
             </span>
           </div>
           <p className="mt-2 text-2xl font-bold tracking-tight text-ink">{tauxRecouvrement}%</p>
           <div className="mt-2 flex items-center justify-between text-xs text-stone-500 border-t border-stone-100 pt-2">
-            <span>Impayés : {formatDZD(totalImpayes)}</span>
+            <span>{tText("Impayés :")} {formatDZD(totalImpayes)}</span>
             <span className={impayes.length > 0 ? "text-amber-600 font-semibold" : "text-emerald-600 font-semibold"}>
-              {impayes.length} en retard
+              {impayes.length} {tText("en retard")}
             </span>
           </div>
         </div>
@@ -920,7 +919,7 @@ export function MonEspace() {
         {/* KPI 3 : Incidents & Pannes */}
         <div className={`${card} p-5`}>
           <div className="flex items-center justify-between gap-3">
-            <span className="text-[11px] font-bold uppercase tracking-wide text-stone-500">Urgences & Pannes</span>
+            <span className="text-[11px] font-bold uppercase tracking-wide text-stone-500">{tText("Urgences & Pannes")}</span>
             <span
               className={`flex h-8 w-8 items-center justify-center rounded-lg ${
                 incidentsUrgents.length > 0 ? "bg-red-50 text-red-600" : "bg-stone-50 text-stone-600"
@@ -930,12 +929,12 @@ export function MonEspace() {
             </span>
           </div>
           <p className="mt-2 text-2xl font-bold tracking-tight text-ink">
-            {incidents.length} incident{incidents.length > 1 ? "s" : ""}
+            {incidents.length} {tText("incidents")}
           </p>
           <div className="mt-2 flex items-center justify-between text-xs text-stone-500 border-t border-stone-100 pt-2">
-            <span>{pannes.length} panne(s) équipement</span>
+            <span>{pannes.length} {tText("panne(s) équipement")}</span>
             <span className={incidentsUrgents.length > 0 ? "text-red-600 font-semibold" : "text-stone-500"}>
-              {incidentsUrgents.length} en cours
+              {incidentsUrgents.length} {tText("en cours")}
             </span>
           </div>
         </div>
@@ -943,18 +942,18 @@ export function MonEspace() {
         {/* KPI 4 : Communauté & Logements */}
         <div className={`${card} p-5`}>
           <div className="flex items-center justify-between gap-3">
-            <span className="text-[11px] font-bold uppercase tracking-wide text-stone-500">Résidents & Logements</span>
+            <span className="text-[11px] font-bold uppercase tracking-wide text-stone-500">{tText("Résidents & Logements")}</span>
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
               <Users className="h-4 w-4" aria-hidden />
             </span>
           </div>
           <p className="mt-2 text-2xl font-bold tracking-tight text-ink">
-            {residents.length} résident{residents.length > 1 ? "s" : ""}
+            {residents.length} {tText("résidents")}
           </p>
           <div className="mt-2 flex items-center justify-between text-xs text-stone-500 border-t border-stone-100 pt-2">
-            <span>Occupation</span>
+            <span>{tText("Occupation")}</span>
             <span className="text-blue-600 font-semibold">
-              {occupes} / {appartements.length} attribués
+              {occupes} / {appartements.length} {tText("attribués")}
             </span>
           </div>
         </div>

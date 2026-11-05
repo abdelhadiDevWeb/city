@@ -25,6 +25,7 @@ import {
   type Column,
   type TabItem,
 } from "../ui";
+import { useI18n } from "@/lib/i18n";
 
 type TabId = "rapports" | "exports";
 
@@ -168,6 +169,7 @@ function downloadReportFile(titre: string, format: string, auteur: string) {
 }
 
 export default function RapportsPage() {
+  const { tText } = useI18n();
   const notify = useToast();
   const { account } = useSession();
   const role = primaryRole(account);
@@ -218,7 +220,7 @@ export default function RapportsPage() {
             className={button("secondary", "sm")}
           >
             <Download className="h-3.5 w-3.5" aria-hidden />
-            Télécharger
+            {tText("Télécharger")}
           </button>
           <button
             type="button"
@@ -242,13 +244,13 @@ export default function RapportsPage() {
     <div className="space-y-6">
       <PageHeader
         icon={ChartColumn}
-        title="Rapports & Exports"
+        title={tText("Rapports & Exports")}
         subtitle={
           isSuperAdmin
-            ? "Générez les états consolidés de l'ensemble de la plateforme SaaS en PDF ou Excel."
+            ? tText("Générez les états consolidés de l'ensemble de la plateforme SaaS en PDF ou Excel.")
             : isSubAdmin
-            ? "Générez les rapports d'activité, charges et recouvrement de votre bâtiment."
-            : "Générez les états financiers, administratifs et opérationnels de votre résidence."
+            ? tText("Générez les rapports d'activité, charges et recouvrement de votre bâtiment.")
+            : tText("Générez les états financiers, administratifs et opérationnels de votre résidence.")
         }
       />
 
@@ -266,10 +268,10 @@ export default function RapportsPage() {
                     <FileText className="h-5 w-5" aria-hidden />
                   )}
                 </span>
-                <Pill tone="neutral">{r.categorie}</Pill>
+                <Pill tone="neutral">{tText(r.categorie)}</Pill>
               </div>
-              <h3 className="mt-4 font-bold text-ink">{r.titre}</h3>
-              <p className="mt-1 flex-1 text-sm text-stone-500">{r.description}</p>
+              <h3 className="mt-4 font-bold text-ink">{tText(r.titre)}</h3>
+              <p className="mt-1 flex-1 text-sm text-stone-500">{tText(r.description)}</p>
               <div className="mt-5 flex flex-wrap gap-2 border-t border-stone-100 pt-4">
                 {r.formats.map((format) => (
                   <button
@@ -293,7 +295,7 @@ export default function RapportsPage() {
           columns={exportColumns}
           rows={exportsList}
           rowKey={(x) => x.id}
-          empty="Aucun export récent dans cette session."
+          empty={tText("Aucun export récent dans cette session.")}
         />
       )}
 

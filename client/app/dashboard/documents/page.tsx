@@ -283,7 +283,7 @@ Ce fichier atteste de la validité légale et comptable du document archivé sou
               className={button("primary")}
             >
               <Plus className="h-4 w-4" aria-hidden />
-              Nouveau Contrat Prestataire
+              {tText("Nouveau Contrat Prestataire")}
             </button>
           ) : (
             <button
@@ -292,7 +292,7 @@ Ce fichier atteste de la validité légale et comptable du document archivé sou
               className={button("primary")}
             >
               <Plus className="h-4 w-4" aria-hidden />
-              Déposer Document Résidence
+              {tText("Déposer Document Résidence")}
             </button>
           )
         }
@@ -310,7 +310,7 @@ Ce fichier atteste de la validité légale et comptable du document archivé sou
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <div className={`${card} p-5`}>
               <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wide text-stone-500">
-                <span>Contrats Actifs</span>
+                <span>{tText("Contrats Actifs")}</span>
                 <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
                   <FileSignature className="h-3.5 w-3.5" />
                 </span>
@@ -318,40 +318,40 @@ Ce fichier atteste de la validité légale et comptable du document archivé sou
               <p className="mt-2 font-mono text-2xl font-bold tracking-tight text-ink">
                 {contratsActifsCount} / {contrats.length}
               </p>
-              <p className="mt-1 text-xs text-stone-500">Contrats prestataires en vigueur</p>
+              <p className="mt-1 text-xs text-stone-500">{tText("Contrats prestataires en vigueur")}</p>
             </div>
 
             <div className={`${card} p-5`}>
               <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wide text-stone-500">
-                <span>Budget Annuel Engagé</span>
+                <span>{tText("Budget Annuel Engagé")}</span>
                 <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-orange-50 text-brand">
                   <ShieldCheck className="h-3.5 w-3.5" />
                 </span>
               </div>
               <p className="mt-2 font-mono text-2xl font-bold tracking-tight text-ink">{formatDZD(totalBudgetContrats)}</p>
-              <p className="mt-1 text-xs text-stone-500">Engagements contractuels annuels</p>
+              <p className="mt-1 text-xs text-stone-500">{tText("Engagements contractuels annuels")}</p>
             </div>
 
             <div className={`${card} p-5`}>
               <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wide text-stone-500">
-                <span>Échéances & Renouvellements</span>
+                <span>{tText("Échéances & Renouvellements")}</span>
                 <span className={`flex h-7 w-7 items-center justify-center rounded-lg ${contratsExpireBientotCount > 0 ? "bg-amber-50 text-amber-600" : "bg-stone-100 text-stone-600"}`}>
                   <AlertTriangle className="h-3.5 w-3.5" />
                 </span>
               </div>
               <p className="mt-2 font-mono text-2xl font-bold tracking-tight text-ink">{contratsExpireBientotCount}</p>
-              <p className="mt-1 text-xs text-stone-500">Contrat(s) expirant sous 60 jours ou échus</p>
+              <p className="mt-1 text-xs text-stone-500">{tText("Contrat(s) expirant sous 60 jours ou échus")}</p>
             </div>
 
             <div className={`${card} p-5`}>
               <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wide text-stone-500">
-                <span>Coffre-fort Numérique</span>
+                <span>{tText("Coffre-fort Numérique")}</span>
                 <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
                   <Lock className="h-3.5 w-3.5" />
                 </span>
               </div>
-              <p className="mt-2 font-mono text-2xl font-bold tracking-tight text-ink">{documentsResidence.length} Pièces</p>
-              <p className="mt-1 text-xs text-stone-500">Archives officielles certifiées conformes</p>
+              <p className="mt-2 font-mono text-2xl font-bold tracking-tight text-ink">{documentsResidence.length} {tText("Pièces")}</p>
+              <p className="mt-1 text-xs text-stone-500">{tText("Archives officielles certifiées conformes")}</p>
             </div>
           </div>
 
@@ -364,7 +364,7 @@ Ce fichier atteste de la validité légale et comptable du document archivé sou
             }}
             onExportCsv={handleExportCsv}
             onPrint={() => window.print()}
-            title="Période des Contrats"
+            title={tText("Période des Contrats")}
           />
 
           <Tabs tabs={tabs} active={tab} onChange={setTab} />
@@ -431,7 +431,7 @@ Ce fichier atteste de la validité légale et comptable du document archivé sou
                   </div>
                 </div>
               }
-              empty="Aucun document officiel ne correspond aux critères sélectionnés."
+              empty={tText("Aucun document officiel ne correspond aux critères sélectionnés.")}
             />
           )}
         </>

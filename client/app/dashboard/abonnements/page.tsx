@@ -51,6 +51,7 @@ import {
   type TabItem,
   type Tone,
 } from "../ui";
+import { useI18n } from "@/lib/i18n";
 import { SkeletonKpiGrid, SkeletonHeader, SkeletonTable } from "../skeletons";
 
 type Etat = "Actif" | "À venir" | "Expiré";
@@ -88,6 +89,7 @@ function addMonths(isoDate: string, months: number): Date {
 }
 
 export default function AbonnementsPage() {
+  const { tText } = useI18n();
   const notify = useToast();
   const [formules, setFormules] = useState<Formule[] | null>(null);
   const [admins, setAdmins] = useState<AdminAbonne[] | null>(null);
@@ -210,14 +212,14 @@ export default function AbonnementsPage() {
             className={button("secondary", "sm")}
           >
             <CalendarRange className="h-3.5 w-3.5" aria-hidden />
-            Attribuer
+            {tText("Attribuer")}
           </button>
           <button
             type="button"
             onClick={() => setModal({ kind: "historique", target: { id: a.id, nom: fullName(a), email: a.email, souscriptions: a.souscriptions } })}
             className={button("ghost", "sm")}
           >
-            Historique ({a.souscriptions.length})
+            {tText("Historique")} ({a.souscriptions.length})
           </button>
         </div>
       ),
@@ -240,7 +242,7 @@ export default function AbonnementsPage() {
       cell: (sa) => (
         <span className="flex flex-col text-xs">
           <span className="font-semibold text-ink">{sa.residence?.nom ?? "—"}</span>
-          <span className="text-stone-500">{sa.batiment?.nom ? `Bâtiment ${sa.batiment.nom}` : "Bâtiment non assigné"}</span>
+          <span className="text-stone-500">{sa.batiment?.nom ? `${tText("Bâtiment")} ${sa.batiment.nom}` : tText("Bâtiment non assigné")}</span>
         </span>
       ),
     },
@@ -248,12 +250,12 @@ export default function AbonnementsPage() {
       header: "Abonnement",
       cell: (sa) => {
         const c = current(sa.souscriptions);
-        if (!c) return <Pill tone="neutral">Aucun abonnement</Pill>;
+        if (!c) return <Pill tone="neutral">{tText("Aucun abonnement")}</Pill>;
         return (
           <span className="flex flex-col items-start gap-1">
             <span className="flex items-center gap-1.5">
               <span className="font-semibold text-ink">{c.abonnement?.nom ?? "Formule"}</span>
-              <Pill tone={ETAT_TONE[etat(c)]}>{etat(c)}</Pill>
+              <Pill tone={ETAT_TONE[etat(c)]}>{tText(etat(c))}</Pill>
             </span>
             <span className="text-xs text-stone-500">
               {formatDate(c.debut)} → {formatDate(c.fin)}
@@ -287,7 +289,7 @@ export default function AbonnementsPage() {
             className={button("secondary", "sm")}
           >
             <CalendarRange className="h-3.5 w-3.5" aria-hidden />
-            Attribuer
+            {tText("Attribuer")}
           </button>
           <button
             type="button"
@@ -299,7 +301,7 @@ export default function AbonnementsPage() {
             }
             className={button("ghost", "sm")}
           >
-            Historique ({sa.souscriptions.length})
+            {tText("Historique")} ({sa.souscriptions.length})
           </button>
         </div>
       ),
@@ -320,7 +322,7 @@ export default function AbonnementsPage() {
       header: "Cible",
       cell: (f) => (
         <Pill tone={f.cible === "sub_admin" ? "brand" : "dark"}>
-          {f.cible === "sub_admin" ? "Sous-Admin (Bâtiment)" : "Admin (Résidence)"}
+          {f.cible === "sub_admin" ? tText("Sous-Admin (Bâtiment)") : tText("Admin (Résidence)")}
         </Pill>
       ),
     },
@@ -331,7 +333,7 @@ export default function AbonnementsPage() {
           <span>{dureeLabel(f.duree)}</span>
           {f.duree === 12 && (
             <span className="rounded-md bg-amber-50 px-1.5 py-0.5 text-[10px] font-bold text-amber-700 border border-amber-200">
-              Standard 1 An
+              {tText("Standard 1 An")}
             </span>
           )}
         </span>
@@ -342,7 +344,7 @@ export default function AbonnementsPage() {
       header: "Souscriptions",
       cell: (f) => (
         <span className="text-stone-600">
-          {f.souscriptions} souscription{f.souscriptions > 1 ? "s" : ""}
+          {f.souscriptions} {tText("souscriptions")}
         </span>
       ),
     },
@@ -449,12 +451,12 @@ export default function AbonnementsPage() {
     <div className="space-y-6">
       <PageHeader
         icon={CreditCard}
-        title="Gestion Abonnements (Plateforme)"
-        subtitle="Contrôlez les abonnements et paiements des Administrateurs et Sous-Administrateurs de l'ensemble des résidences."
+        title={tText("Gestion Abonnements (Plateforme)")}
+        subtitle={tText("Contrôlez les abonnements et paiements des Administrateurs et Sous-Administrateurs de l'ensemble des résidences.")}
         actions={
           <button type="button" onClick={() => setModal({ kind: "formule" })} className={button("primary")}>
             <Plus className="h-4 w-4" aria-hidden />
-            Nouvelle formule
+            {tText("Nouvelle formule")}
           </button>
         }
       />
@@ -476,7 +478,7 @@ export default function AbonnementsPage() {
             }}
             onExportCsv={handleExportCsv}
             onPrint={() => window.print()}
-            title="Période souscriptions"
+            title={tText("Période souscriptions")}
           />
 
           <Tabs tabs={tabs} active={tab} onChange={setTab} />
@@ -498,11 +500,11 @@ export default function AbonnementsPage() {
                     ]}
                   />
                   <span className="text-xs font-semibold text-stone-500">
-                    {filteredAdmins.length} administrateur{filteredAdmins.length > 1 ? "s" : ""}
+                    {filteredAdmins.length} {tText("administrateurs")}
                   </span>
                 </div>
               }
-              empty="Aucun administrateur ne correspond aux critères sélectionnés."
+              empty={tText("Aucun administrateur ne correspond aux critères sélectionnés.")}
             />
           )}
 
@@ -523,11 +525,11 @@ export default function AbonnementsPage() {
                     ]}
                   />
                   <span className="text-xs font-semibold text-stone-500">
-                    {filteredSousAdmins.length} sous-administrateur{filteredSousAdmins.length > 1 ? "s" : ""}
+                    {filteredSousAdmins.length} {tText("sous-administrateurs")}
                   </span>
                 </div>
               }
-              empty="Aucun sous-administrateur ne correspond aux critères sélectionnés."
+              empty={tText("Aucun sous-administrateur ne correspond aux critères sélectionnés.")}
             />
           )}
 
@@ -537,7 +539,7 @@ export default function AbonnementsPage() {
                 columns={formuleColumns}
                 rows={formules ?? []}
                 rowKey={(f) => f.id}
-                empty="Aucune formule enregistrée. Créez la première pour commencer à abonner des admins ou sous-admins."
+                empty={tText("Aucune formule enregistrée. Créez la première pour commencer à abonner des admins ou sous-admins.")}
               />
             </div>
           )}

@@ -7,6 +7,7 @@ import { getStats, type Stats } from "@/lib/platform-api";
 import { BarList, ColumnChart, DonutChart, LineChart } from "../charts";
 import { SkeletonKpiGrid, SkeletonBox } from "../skeletons";
 import { FormError, PageHeader, Panel, button, card, describeError } from "../ui";
+import { useI18n } from "@/lib/i18n";
 
 const COLORS = { brand: "#f97316", ink: "#1c1917", stone: "#a8a29e", emerald: "#10b981", red: "#ef4444" };
 
@@ -21,21 +22,23 @@ function cumulative(start: number, values: number[]): number[] {
 }
 
 function Kpi({ icon: Icon, label, value, hint }: { icon: LucideIcon; label: string; value: string | number; hint?: string }) {
+  const { tText } = useI18n();
   return (
     <div className={`${card} p-5`}>
       <div className="flex items-center justify-between gap-3">
-        <p className="text-[11px] font-bold uppercase tracking-wide text-stone-500">{label}</p>
+        <p className="text-[11px] font-bold uppercase tracking-wide text-stone-500">{tText(label)}</p>
         <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-50 text-brand">
           <Icon className="h-4 w-4" aria-hidden />
         </span>
       </div>
       <p className="mt-2 text-2xl font-bold tracking-tight text-ink">{value}</p>
-      {hint && <p className="mt-1 text-xs text-stone-500">{hint}</p>}
+      {hint && <p className="mt-1 text-xs text-stone-500">{typeof hint === "string" ? tText(hint) : hint}</p>}
     </div>
   );
 }
 
 export default function StatistiquesPage() {
+  const { tText } = useI18n();
   const [stats, setStats] = useState<Stats | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [version, setVersion] = useState(0);
@@ -60,12 +63,12 @@ export default function StatistiquesPage() {
     <div className="space-y-6">
       <PageHeader
         icon={ChartLine}
-        title="Statistiques"
-        subtitle="Vue d'ensemble de la plateforme, calculée en temps réel depuis la base de données."
+        title={tText("Statistiques")}
+        subtitle={tText("Vue d'ensemble de la plateforme, calculée en temps réel depuis la base de données.")}
         actions={
           <button type="button" onClick={() => setVersion((v) => v + 1)} className={button("secondary")}>
             <RefreshCw className="h-4 w-4" aria-hidden />
-            Actualiser
+            {tText("Actualiser")}
           </button>
         }
       />
@@ -94,6 +97,7 @@ export default function StatistiquesPage() {
 }
 
 function StatsView({ stats }: { stats: Stats }) {
+  const { tText } = useI18n();
   const { totaux, revenus, baseline, mensuel } = stats;
   const labels = mensuel.map((m) => monthLabel(m.mois));
   const comptes = totaux.admins + totaux.sousAdmins;
@@ -103,60 +107,60 @@ function StatsView({ stats }: { stats: Stats }) {
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Kpi icon={Building2} label="Résidences" value={totaux.residences} />
         <Kpi icon={Building} label="Bâtiments" value={totaux.batiments} />
-        <Kpi icon={KeyRound} label="Appartements" value={totaux.appartements} hint={`${totaux.appartementsAvecProprietaire} avec propriétaire`} />
-        <Kpi icon={ShieldCheck} label="Admins & Sub Admins" value={comptes} hint={`${totaux.admins} admins · ${totaux.sousAdmins} sub admins`} />
+        <Kpi icon={KeyRound} label="Appartements" value={totaux.appartements} hint={`${totaux.appartementsAvecProprietaire} ${tText("avec propriétaire")}`} />
+        <Kpi icon={ShieldCheck} label="Admins & Sub Admins" value={comptes} hint={`${totaux.admins} ${tText("admins")} · ${totaux.sousAdmins} ${tText("sub admins")}`} />
         <Kpi icon={Users} label="Utilisateurs" value={totaux.users} />
-        <Kpi icon={BadgeCheck} label="Abonnements actifs" value={totaux.souscriptionsActives} hint={`${totaux.souscriptions} au total · ${totaux.formules} formules`} />
+        <Kpi icon={BadgeCheck} label="Abonnements actifs" value={totaux.souscriptionsActives} hint={`${totaux.souscriptions} ${tText("au total")} · ${totaux.formules} ${tText("formules")}`} />
         <Kpi icon={CircleDollarSign} label="Revenus encaissés" value={formatDZD(revenus.encaisse)} />
-        <Kpi icon={Receipt} label="En attente de paiement" value={formatDZD(revenus.enAttente)} hint={`${totaux.souscriptionsImpayees} abonnement(s) non payé(s)`} />
+        <Kpi icon={Receipt} label="En attente de paiement" value={formatDZD(revenus.enAttente)} hint={`${totaux.souscriptionsImpayees} ${tText("abonnement(s) non payé(s)")}`} />
       </div>
 
       <Panel title="Croissance de la plateforme (12 derniers mois, cumul)">
         <LineChart
           labels={labels}
           series={[
-            { name: "Résidences", color: COLORS.brand, values: cumulative(baseline.residences, mensuel.map((m) => m.residences)) },
-            { name: "Bâtiments", color: COLORS.ink, values: cumulative(baseline.batiments, mensuel.map((m) => m.batiments)) },
-            { name: "Comptes Admin / Sub Admin", color: COLORS.stone, values: cumulative(baseline.comptes, mensuel.map((m) => m.comptes)) },
+            { name: tText("Résidences"), color: COLORS.brand, values: cumulative(baseline.residences, mensuel.map((m) => m.residences)) },
+            { name: tText("Bâtiments"), color: COLORS.ink, values: cumulative(baseline.batiments, mensuel.map((m) => m.batiments)) },
+            { name: tText("Comptes Admin / Sub Admin"), color: COLORS.stone, values: cumulative(baseline.comptes, mensuel.map((m) => m.comptes)) },
           ]}
         />
       </Panel>
 
       <div className="grid gap-6 xl:grid-cols-2">
         <Panel title="Revenus des abonnements payés, par mois de début (DZD)">
-          <LineChart labels={labels} area unit=" DZD" series={[{ name: "Revenus encaissés", color: COLORS.brand, values: mensuel.map((m) => m.revenus) }]} />
+          <LineChart labels={labels} area unit=" DZD" series={[{ name: tText("Revenus encaissés"), color: COLORS.brand, values: mensuel.map((m) => m.revenus) }]} />
         </Panel>
         <Panel title="Abonnements par mois de début">
-          <ColumnChart labels={labels} values={mensuel.map((m) => m.souscriptions)} color={COLORS.ink} name="Nouveaux abonnements" />
+          <ColumnChart labels={labels} values={mensuel.map((m) => m.souscriptions)} color={COLORS.ink} name={tText("Nouveaux abonnements")} />
         </Panel>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
         <Panel title="Statut de paiement des abonnements">
           <DonutChart
-            centerLabel="abonnements"
+            centerLabel={tText("abonnements")}
             segments={[
-              { label: "Payés", value: totaux.souscriptionsPayees, color: COLORS.emerald },
-              { label: "Non payés", value: totaux.souscriptionsImpayees, color: COLORS.red },
+              { label: tText("Payés"), value: totaux.souscriptionsPayees, color: COLORS.emerald },
+              { label: tText("Non payés"), value: totaux.souscriptionsImpayees, color: COLORS.red },
             ]}
           />
         </Panel>
         <Panel title="Comptes par rôle">
           <DonutChart
-            centerLabel="comptes"
+            centerLabel={tText("comptes")}
             segments={[
-              { label: "Super Admins", value: totaux.superAdmins, color: COLORS.brand },
-              { label: "Admins", value: totaux.admins, color: COLORS.ink },
-              { label: "Sub Admins", value: totaux.sousAdmins, color: COLORS.stone },
+              { label: tText("Super Admins"), value: totaux.superAdmins, color: COLORS.brand },
+              { label: tText("Admins"), value: totaux.admins, color: COLORS.ink },
+              { label: tText("Sub Admins"), value: totaux.sousAdmins, color: COLORS.stone },
             ]}
           />
         </Panel>
         <Panel title="Occupation des appartements">
           <DonutChart
-            centerLabel="appartements"
+            centerLabel={tText("appartements")}
             segments={[
-              { label: "Avec propriétaire", value: totaux.appartementsAvecProprietaire, color: COLORS.brand },
-              { label: "Sans propriétaire", value: totaux.appartements - totaux.appartementsAvecProprietaire, color: COLORS.stone },
+              { label: tText("Avec propriétaire"), value: totaux.appartementsAvecProprietaire, color: COLORS.brand },
+              { label: tText("Sans propriétaire"), value: totaux.appartements - totaux.appartementsAvecProprietaire, color: COLORS.stone },
             ]}
           />
         </Panel>
@@ -164,10 +168,10 @@ function StatsView({ stats }: { stats: Stats }) {
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Panel title="Bâtiments par résidence">
-          <BarList items={stats.batimentsParResidence.map((r) => ({ label: r.nom, value: r.batiments }))} empty="Aucune résidence pour le moment." />
+          <BarList items={stats.batimentsParResidence.map((r) => ({ label: r.nom, value: r.batiments }))} empty={tText("Aucune résidence pour le moment.")} />
         </Panel>
         <Panel title="Abonnements par formule">
-          <BarList items={stats.abonnementsParFormule.map((f) => ({ label: f.nom, value: f.souscriptions }))} empty="Aucune formule d'abonnement pour le moment." />
+          <BarList items={stats.abonnementsParFormule.map((f) => ({ label: f.nom, value: f.souscriptions }))} empty={tText("Aucune formule d'abonnement pour le moment.")} />
         </Panel>
       </div>
     </>

@@ -47,11 +47,12 @@ import { useI18n } from "@/lib/i18n";
 type TabId = "charges" | "incidents" | "paiements";
 
 function StatusPill({ actif }: { actif: boolean }) {
-  return actif ? <Pill tone="success">Actif</Pill> : <Pill tone="neutral">Inactif</Pill>;
+  const { tText } = useI18n();
+  return actif ? <Pill tone="success">{tText("Actif")}</Pill> : <Pill tone="neutral">{tText("Inactif")}</Pill>;
 }
 
 export default function ConfigurationPage() {
-  const { t, locale, isRTL } = useI18n();
+  const { t, locale, isRTL, tText } = useI18n();
   const notify = useToast();
   const [data, setData] = useState<ConfigData | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -197,7 +198,7 @@ export default function ConfigurationPage() {
             onClick={() => void handleTogglePayment(m)}
             className={button("secondary", "sm")}
           >
-            {m.actif ? "Désactiver" : "Activer"}
+            {m.actif ? tText("Désactiver") : tText("Activer")}
           </button>
           <ActionGroup
             onEdit={() => setEditingPayment(m)}
@@ -219,19 +220,19 @@ export default function ConfigurationPage() {
             {tab === "charges" && (
               <button type="button" onClick={() => setAddingCharge(true)} className={button("primary")}>
                 <Plus className="h-4 w-4" aria-hidden />
-                Nouveau Type de Charge
+                {tText("Nouveau Type de Charge")}
               </button>
             )}
             {tab === "incidents" && (
               <button type="button" onClick={() => setAddingIncident(true)} className={button("primary")}>
                 <Plus className="h-4 w-4" aria-hidden />
-                Nouveau Type d&apos;Incident
+                {tText("Nouveau Type d'Incident")}
               </button>
             )}
             {tab === "paiements" && (
               <button type="button" onClick={() => setAddingPayment(true)} className={button("primary")}>
                 <Plus className="h-4 w-4" aria-hidden />
-                Nouveau Mode de Paiement
+                {tText("Nouveau Mode de Paiement")}
               </button>
             )}
           </>
@@ -248,9 +249,9 @@ export default function ConfigurationPage() {
         <>
           <Tabs tabs={tabs} active={tab} onChange={setTab} />
 
-          {tab === "charges" && <DataTable columns={chargeColumns} rows={typesCharges} rowKey={(c) => c.id} empty="Aucun type de charge configuré." />}
-          {tab === "incidents" && <DataTable columns={incidentColumns} rows={typesIncidents} rowKey={(i) => i.id} empty="Aucun type d'incident configuré." />}
-          {tab === "paiements" && <DataTable columns={paiementColumns} rows={modesPaiement} rowKey={(m) => m.id} empty="Aucun moyen de paiement configuré." />}
+          {tab === "charges" && <DataTable columns={chargeColumns} rows={typesCharges} rowKey={(c) => c.id} empty={tText("Aucun type de charge configuré.")} />}
+          {tab === "incidents" && <DataTable columns={incidentColumns} rows={typesIncidents} rowKey={(i) => i.id} empty={tText("Aucun type d'incident configuré.")} />}
+          {tab === "paiements" && <DataTable columns={paiementColumns} rows={modesPaiement} rowKey={(m) => m.id} empty={tText("Aucun moyen de paiement configuré.")} />}
         </>
       )}
 

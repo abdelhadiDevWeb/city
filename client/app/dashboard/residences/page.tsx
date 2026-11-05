@@ -291,10 +291,10 @@ export default function ResidencesPage() {
             type="button"
             onClick={() => showApartments(b.nom)}
             className={button("secondary", "sm")}
-            title="Consulter les appartements de ce bâtiment"
+            title={tText("Consulter les appartements de ce bâtiment")}
           >
             <DoorOpen className="h-3.5 w-3.5" aria-hidden />
-            Appartements ({b.appartements.length})
+            {tText("Appartements")} ({b.appartements.length})
           </button>
           {isAdmin && (
             <ActionGroup
@@ -546,8 +546,8 @@ export default function ResidencesPage() {
         title={t.residences.title}
         subtitle={
           residence
-            ? `${residence.nom} (${residence.localisation}) — Résidence → Bâtiments (${batiments.length}/${maxBatiments}) → Gestionnaires → Appartements`
-            : "Structure organisationnelle : Résidence → Bâtiments → Gestionnaires → Appartements"
+            ? `${residence.nom} (${residence.localisation}) — ${tText("Résidence")} → ${tText("Bâtiments")} (${batiments.length}/${maxBatiments}) → ${tText("Gestionnaires")} → ${tText("Appartements")}`
+            : tText("Structure organisationnelle : Résidence → Bâtiments → Gestionnaires → Appartements")
         }
         actions={
           isAdmin && residence ? (
@@ -608,14 +608,14 @@ export default function ResidencesPage() {
                   <QuotaProgress
                     current={batiments.length}
                     max={maxBatiments}
-                    label={`Capacité des blocs dans « ${residence.nom} »`}
-                    unit="bâtiments"
+                    label={`${tText("Capacité des blocs dans")} « ${residence.nom} »`}
+                    unit={tText("bâtiments")}
                   />
                   <QuotaProgress
                     current={totalOccupes}
                     max={residence.maxResidents || 100}
-                    label={`Capacité des résidents (« ${residence.nom} »)`}
-                    unit="résidents"
+                    label={`${tText("Capacité des résidents")} (« ${residence.nom} »)`}
+                    unit={tText("résidents")}
                   />
                 </div>
 

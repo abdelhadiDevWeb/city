@@ -828,7 +828,7 @@ export default function FinancesPage() {
                     </tbody>
                     <tfoot className="border-t-2 border-stone-200 bg-stone-100/70 font-bold text-ink">
                       <tr>
-                        <td className="px-4 py-3 font-extrabold uppercase" colSpan={2}>Total Général Budgétaire</td>
+                        <td className="px-4 py-3 font-extrabold uppercase" colSpan={2}>{tText("Total Général Budgétaire")}</td>
                         <td className="px-4 py-3 text-end font-mono text-sm">{formatDZD(totalBudgetVote)}</td>
                         <td className="px-4 py-3 text-end font-mono text-sm">{formatDZD(totalDepenseReelleBudget)}</td>
                         <td className="px-4 py-3 text-center text-sm font-extrabold">{tauxConsoGlobal}%</td>
@@ -836,7 +836,7 @@ export default function FinancesPage() {
                           {ecartGlobal >= 0 ? `+${formatDZD(ecartGlobal)}` : formatDZD(ecartGlobal)}
                         </td>
                         <td className="px-4 py-3 text-end font-mono text-sm text-brand">{formatDZD(totalPrevisionnelN1)}</td>
-                        <td className="px-4 py-3 text-xs text-stone-500">Équilibre budgétaire préconisé</td>
+                        <td className="px-4 py-3 text-xs text-stone-500">{tText("Équilibre budgétaire préconisé")}</td>
                       </tr>
                     </tfoot>
                   </table>
@@ -851,14 +851,14 @@ export default function FinancesPage() {
                       <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand text-white font-black text-sm">C</span>
                       <span className="text-base font-extrabold tracking-tight text-ink">CITY SYNDIC</span>
                       <span className="rounded-md border border-stone-200 bg-stone-100 px-2 py-0.5 text-[10px] font-bold uppercase text-stone-600">
-                        Document Officiel d&apos;AG
+                        {tText("Document Officiel d'AG")}
                       </span>
                     </div>
                     <h3 className="mt-2 text-lg font-bold text-ink">
-                      Bilan Financier & Compte de Gestion de l&apos;Exercice
+                      {tText("Bilan Financier & Compte de Gestion de l'Exercice")}
                     </h3>
                     <p className="text-xs text-stone-500">
-                      Rapport certifié pour approbation des comptes par l&apos;Assemblée Générale des Copropriétaires
+                      {tText("Rapport certifié pour approbation des comptes par l'Assemblée Générale des Copropriétaires")}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
@@ -868,7 +868,7 @@ export default function FinancesPage() {
                       className={button("primary")}
                     >
                       <Printer className="h-4 w-4" aria-hidden />
-                      Imprimer le Bilan Officiel pour l&apos;AG
+                      {tText("Imprimer le Bilan Officiel pour l'AG")}
                     </button>
                   </div>
                 </div>
@@ -878,23 +878,23 @@ export default function FinancesPage() {
                   <div className="space-y-3 rounded-xl border border-stone-200 bg-stone-50/50 p-4">
                     <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-800 flex items-center gap-1.5">
                       <ArrowUpRight className="h-4 w-4 text-emerald-600" />
-                      1. Produits de l&apos;Exercice (Recettes)
+                      1. {tText("Produits de l'Exercice (Recettes)")}
                     </h4>
                     <div className="space-y-2 text-xs">
                       <div className="flex justify-between py-1 border-b border-stone-200">
-                        <span className="text-stone-600">Cotisations ordinaires encaissées</span>
+                        <span className="text-stone-600">{tText("Cotisations ordinaires encaissées")}</span>
                         <span className="font-mono font-bold text-ink">{formatDZD(totalEncaisse)}</span>
                       </div>
                       <div className="flex justify-between py-1 border-b border-stone-200">
-                        <span className="text-stone-600">Créances à recouvrer (Impayés)</span>
+                        <span className="text-stone-600">{tText("Créances à recouvrer (Impayés)")}</span>
                         <span className="font-mono font-semibold text-amber-700">{formatDZD(totalImpayes)}</span>
                       </div>
                       <div className="flex justify-between py-1 border-b border-stone-200">
-                        <span className="text-stone-600">Fonds de roulement initial</span>
+                        <span className="text-stone-600">{tText("Fonds de roulement initial")}</span>
                         <span className="font-mono text-stone-600">250 000 DZD</span>
                       </div>
                       <div className="flex justify-between pt-2 font-bold text-sm text-emerald-900 border-t border-stone-300">
-                        <span>Total Produits d&apos;Appels</span>
+                        <span>{tText("Total Produits d'Appels")}</span>
                         <span className="font-mono">{formatDZD(totalEncaisse + totalImpayes + 250000)}</span>
                       </div>
                     </div>
@@ -904,23 +904,23 @@ export default function FinancesPage() {
                   <div className="space-y-3 rounded-xl border border-stone-200 bg-stone-50/50 p-4">
                     <h4 className="text-xs font-bold uppercase tracking-wider text-red-800 flex items-center gap-1.5">
                       <ArrowDownRight className="h-4 w-4 text-red-600" />
-                      2. Charges Réelles Acquittées (Dépenses)
+                      2. {tText("Charges Réelles Acquittées (Dépenses)")}
                     </h4>
                     <div className="space-y-2 text-xs">
                       <div className="flex justify-between py-1 border-b border-stone-200">
-                        <span className="text-stone-600">Charges courantes d&apos;exploitation payées</span>
+                        <span className="text-stone-600">{tText("Charges courantes d'exploitation payées")}</span>
                         <span className="font-mono font-bold text-ink">{formatDZD(totalDepenses)}</span>
                       </div>
                       <div className="flex justify-between py-1 border-b border-stone-200">
-                        <span className="text-stone-600">Factures engagées restant à régler</span>
+                        <span className="text-stone-600">{tText("Factures engagées restant à régler")}</span>
                         <span className="font-mono font-semibold text-stone-700">{formatDZD(totalFacturesReste)}</span>
                       </div>
                       <div className="flex justify-between py-1 border-b border-stone-200">
-                        <span className="text-stone-600">Dotation Fonds de Réserve Travaux (10%)</span>
+                        <span className="text-stone-600">{tText("Dotation Fonds de Réserve Travaux (10%)")}</span>
                         <span className="font-mono text-stone-600">{formatDZD(Math.round(totalBudgetVote * 0.1))}</span>
                       </div>
                       <div className="flex justify-between pt-2 font-bold text-sm text-red-900 border-t border-stone-300">
-                        <span>Total Dépenses Engagées</span>
+                        <span>{tText("Total Dépenses Engagées")}</span>
                         <span className="font-mono">{formatDZD(totalDepenses + totalFacturesReste + Math.round(totalBudgetVote * 0.1))}</span>
                       </div>
                     </div>
@@ -932,16 +932,16 @@ export default function FinancesPage() {
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <p className="font-bold text-emerald-900 text-sm">
-                        Résultat Comptable Net de l&apos;Exercice : {formatDZD(soldeTresorerie)}
+                        {tText("Résultat Comptable Net de l'Exercice :")} {formatDZD(soldeTresorerie)}
                       </p>
                       <p className="text-emerald-700 text-xs">
                         {soldeTresorerie >= 0
-                          ? "Trésorerie positive à reporter à nouveau ou à affecter au fonds travaux sur décision de l'AG."
-                          : "Déficit d'exploitation nécessitant un appel exceptionnel de régularisation lors de l'AG."}
+                          ? tText("Trésorerie positive à reporter à nouveau ou à affecter au fonds travaux sur décision de l'AG.")
+                          : tText("Déficit d'exploitation nécessitant un appel exceptionnel de régularisation lors de l'AG.")}
                       </p>
                     </div>
                     <div className="text-end">
-                      <span className="font-mono text-xs font-bold text-stone-500">Taux de Recouvrement Effectif : </span>
+                      <span className="font-mono text-xs font-bold text-stone-500">{tText("Taux de Recouvrement Effectif :")} </span>
                       <span className="font-mono text-sm font-black text-emerald-800">{tauxRecouvrement}%</span>
                     </div>
                   </div>
@@ -949,17 +949,17 @@ export default function FinancesPage() {
 
                 <div className="grid gap-6 sm:grid-cols-2 border-t border-stone-200 pt-6 text-xs text-stone-600">
                   <div>
-                    <p className="font-bold text-ink">Pour le Syndic de Copropriété</p>
-                    <p className="text-[11px] text-stone-400">Certifié sincère et conforme aux registres de la résidence</p>
+                    <p className="font-bold text-ink">{tText("Pour le Syndic de Copropriété")}</p>
+                    <p className="text-[11px] text-stone-400">{tText("Certifié sincère et conforme aux registres de la résidence")}</p>
                     <div className="mt-2 h-16 w-40 rounded border border-dashed border-stone-300 flex items-center justify-center text-[10px] text-stone-400 italic">
-                      Signature & Cachet Syndic
+                      {tText("Signature & Cachet Syndic")}
                     </div>
                   </div>
                   <div className="sm:text-end">
-                    <p className="font-bold text-ink">Pour le Conseil Syndical</p>
-                    <p className="text-[11px] text-stone-400">Visa d&apos;approbation pour soumission à l&apos;AG</p>
+                    <p className="font-bold text-ink">{tText("Pour le Conseil Syndical")}</p>
+                    <p className="text-[11px] text-stone-400">{tText("Visa d'approbation pour soumission à l'AG")}</p>
                     <div className="mt-2 sm:ml-auto h-16 w-40 rounded border border-dashed border-stone-300 flex items-center justify-center text-[10px] text-stone-400 italic">
-                      Signature Président Conseil
+                      {tText("Signature Président Conseil")}
                     </div>
                   </div>
                 </div>

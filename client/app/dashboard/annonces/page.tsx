@@ -346,7 +346,7 @@ export default function AnnoncesPage() {
             }}
             onExportCsv={handleExportCsv}
             onPrint={() => window.print()}
-            title="Période de communication"
+            title={tText("Période de communication")}
           />
 
           <Tabs tabs={tabs} active={tab} onChange={setTab} />
@@ -365,16 +365,16 @@ export default function AnnoncesPage() {
                         type="text"
                         value={queryAnnonces}
                         onChange={(e) => setQueryAnnonces(e.target.value)}
-                        placeholder="Rechercher une annonce par titre, contenu..."
+                        placeholder={tText("Rechercher une annonce par titre, contenu...")}
                         className="w-full rounded-xl border border-stone-200 bg-white py-1.5 pl-9 pr-3 text-xs text-ink placeholder:text-stone-400 focus:outline-none focus:ring-1 focus:ring-brand"
                       />
                     </div>
                     <span className="text-xs font-semibold text-stone-500">
-                      {filteredAnnonces.length} annonce{filteredAnnonces.length > 1 ? "s" : ""} publiée{filteredAnnonces.length > 1 ? "s" : ""}
+                      {filteredAnnonces.length} {tText("annonces publiées")}
                     </span>
                   </div>
                 }
-                empty="Aucune annonce publiée pour le moment."
+                empty={tText("Aucune annonce publiée pour le moment.")}
               />
             </div>
           )}
@@ -387,9 +387,9 @@ export default function AnnoncesPage() {
                     <BellRing className="h-4 w-4" aria-hidden />
                   </span>
                   <div>
-                    <p className="text-sm font-semibold text-red-950">Diffusion prioritaire d&apos;urgence</p>
+                    <p className="text-sm font-semibold text-red-950">{tText("Diffusion prioritaire d'urgence")}</p>
                     <p className="text-xs text-red-700">
-                      Les alertes sont diffusées en push haute priorité avec sonnerie et bandeau d&apos;urgence visible sur l&apos;application.
+                      {tText("Les alertes sont diffusées en push haute priorité avec sonnerie et bandeau d'urgence visible sur l'application.")}
                     </p>
                   </div>
                 </div>
@@ -399,7 +399,7 @@ export default function AnnoncesPage() {
                   className={button("primary", "sm")}
                 >
                   <Plus className="h-3.5 w-3.5" aria-hidden />
-                  Nouvelle Alerte
+                  {tText("Nouvelle Alerte")}
                 </button>
               </div>
 
@@ -425,13 +425,13 @@ export default function AnnoncesPage() {
                         type="text"
                         value={queryAlertes}
                         onChange={(e) => setQueryAlertes(e.target.value)}
-                        placeholder="Rechercher une alerte..."
+                        placeholder={tText("Rechercher une alerte...")}
                         className="w-full rounded-xl border border-stone-200 bg-white py-1.5 pl-9 pr-3 text-xs text-ink placeholder:text-stone-400 focus:outline-none focus:ring-1 focus:ring-brand"
                       />
                     </div>
                   </div>
                 }
-                empty="Aucune alerte d'urgence enregistrée."
+                empty={tText("Aucune alerte d'urgence enregistrée.")}
               />
             </div>
           )}

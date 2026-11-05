@@ -1,7 +1,7 @@
 "use client";
 
 import { KeyRound } from "lucide-react";
-import { useId, useState, type ReactNode, type SelectHTMLAttributes } from "react";
+import { Children, isValidElement, cloneElement, useId, useState, type ReactNode, type SelectHTMLAttributes } from "react";
 import { Field, button, describeError, inputClass } from "./ui";
 import { useI18n } from "@/lib/i18n";
 
@@ -94,13 +94,21 @@ export function PasswordField({
 export function SelectField({ label, children, ...props }: { label: string; children: ReactNode } & SelectHTMLAttributes<HTMLSelectElement>) {
   const { tText } = useI18n();
   const id = useId();
+
+  const translatedChildren = Children.map(children, (child) => {
+    if (isValidElement(child) && (child as any).props && typeof (child as any).props.children === "string") {
+      return cloneElement(child as any, {}, tText((child as any).props.children));
+    }
+    return child;
+  });
+
   return (
     <div className="space-y-1.5">
       <label htmlFor={id} className="block text-xs font-semibold text-stone-700">
         {tText(label)}
       </label>
       <select id={id} className={inputClass} {...props}>
-        {children}
+        {translatedChildren}
       </select>
     </div>
   );
