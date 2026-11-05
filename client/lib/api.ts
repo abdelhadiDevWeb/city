@@ -1,3 +1,5 @@
+import { clearAllCache } from "./cache";
+
 export type Role = "super_admin" | "admin" | "sub_admin";
 
 type AccountBase = {
@@ -154,6 +156,7 @@ export async function logout(): Promise<void> {
     await apiRequest("/auth/logout", { method: "POST", auth: false });
   } finally {
     accessToken = null;
+    clearAllCache();
   }
 }
 
@@ -162,6 +165,7 @@ export async function logoutAll(): Promise<void> {
     await apiRequest("/auth/logout-all", { method: "POST" });
   } finally {
     accessToken = null;
+    clearAllCache();
   }
 }
 

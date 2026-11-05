@@ -51,6 +51,7 @@ import {
   type TabItem,
   type Tone,
 } from "../ui";
+import { SkeletonKpiGrid, SkeletonHeader, SkeletonTable } from "../skeletons";
 
 type Etat = "Actif" | "À venir" | "Expiré";
 type ModalState =
@@ -126,6 +127,16 @@ export default function AbonnementsPage() {
       active = false;
     };
   }, [version]);
+
+  if (!formules && !error) {
+    return (
+      <div className="space-y-6">
+        <SkeletonHeader titleWidth="w-72" />
+        <SkeletonKpiGrid count={4} />
+        <SkeletonTable columns={5} rows={5} />
+      </div>
+    );
+  }
 
   async function togglePaiement(s: Souscription) {
     setBusyId(s.id);

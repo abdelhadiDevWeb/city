@@ -42,6 +42,7 @@ import { getStats, listFormules, type Formule, type Stats } from "@/lib/platform
 import { listResidences, listResidents, type ResidenceSummary, type Resident } from "@/lib/residences-api";
 import { ROLE_BADGE, ROLE_LABELS, displayName } from "@/lib/roles";
 import { useSession } from "./session";
+import { SkeletonDashboard } from "./skeletons";
 import { FormError, Mono, Panel, Pill, ProgressBar, button, card, describeError } from "./ui";
 
 export function SuperAdminOverview() {
@@ -77,6 +78,10 @@ export function SuperAdminOverview() {
       active = false;
     };
   }, []);
+
+  if (!residences && !stats && !error) {
+    return <SkeletonDashboard />;
+  }
 
   const list = residences ?? [];
   const withoutAdmin = list.filter((r) => !r.admin);

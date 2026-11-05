@@ -65,6 +65,7 @@ import {
   type TabItem,
   type Tone,
 } from "../ui";
+import { SkeletonFinancesPage } from "../skeletons";
 
 type TabId = "impayes" | "journal" | "depenses" | "factures" | "budget";
 
@@ -125,6 +126,10 @@ export default function FinancesPage() {
       active = false;
     };
   }, [version]);
+
+  if (!data && !error) {
+    return <SkeletonFinancesPage />;
+  }
 
   const impayes = data?.impayes ?? [];
   const paiements = data?.paiements ?? [];

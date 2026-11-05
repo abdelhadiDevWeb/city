@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { formatDZD } from "@/lib/format";
 import { getStats, type Stats } from "@/lib/platform-api";
 import { BarList, ColumnChart, DonutChart, LineChart } from "../charts";
+import { SkeletonKpiGrid, SkeletonBox } from "../skeletons";
 import { FormError, PageHeader, Panel, button, card, describeError } from "../ui";
 
 const COLORS = { brand: "#f97316", ink: "#1c1917", stone: "#a8a29e", emerald: "#10b981", red: "#ef4444" };
@@ -72,8 +73,18 @@ export default function StatistiquesPage() {
       {error && <FormError error={{ message: error, details: [] }} />}
 
       {!stats && !error ? (
-        <div className={`${card} flex items-center justify-center p-16`}>
-          <span aria-label="Chargement" className="h-7 w-7 animate-spin rounded-full border-2 border-stone-300 border-t-brand" />
+        <div className="space-y-6">
+          <SkeletonKpiGrid count={4} />
+          <div className="grid gap-6 lg:grid-cols-2">
+            <div className={`${card} p-6 space-y-4`}>
+              <SkeletonBox className="h-5 w-48" />
+              <SkeletonBox className="h-64 w-full rounded-2xl" />
+            </div>
+            <div className={`${card} p-6 space-y-4`}>
+              <SkeletonBox className="h-5 w-48" />
+              <SkeletonBox className="h-64 w-full rounded-2xl" />
+            </div>
+          </div>
         </div>
       ) : stats ? (
         <StatsView stats={stats} />

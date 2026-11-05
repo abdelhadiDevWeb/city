@@ -51,6 +51,7 @@ import {
   type TabItem,
   type Tone,
 } from "../ui";
+import { SkeletonGenericPage } from "../skeletons";
 
 type TabId = "contrats" | "documents";
 
@@ -105,6 +106,10 @@ export default function DocumentsPage() {
       active = false;
     };
   }, [version]);
+
+  if (!data && !error) {
+    return <SkeletonGenericPage titleWidth="w-64" tableColumns={5} />;
+  }
 
   const contrats = data?.contrats ?? [];
   const documentsResidence = data?.documentsResidence ?? [];

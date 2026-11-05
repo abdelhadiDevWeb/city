@@ -1,4 +1,5 @@
 import { apiRequest } from "./api";
+import { cachedFetch, invalidateTags } from "./cache";
 
 export type Contrat = {
   id: string;
@@ -24,8 +25,11 @@ export type DocumentsData = {
   documentsResidence: DocumentResidence[];
 };
 
-export async function getDocuments(): Promise<DocumentsData> {
-  return apiRequest<DocumentsData>("/documents");
+export async function getDocuments(forceRefresh = false): Promise<DocumentsData> {
+  return cachedFetch("/documents", () => apiRequest<DocumentsData>("/documents"), {
+    tags: ["documents", "dashboard"],
+    forceRefresh,
+  });
 }
 
 export async function createDocument(input: {
@@ -41,6 +45,7 @@ export async function createDocument(input: {
   taille?: string;
 }): Promise<void> {
   await apiRequest("/documents", { method: "POST", body: input });
+  invalidateTags(["documents", "dashboard"]);
 }
 
 export async function updateDocument(
@@ -49,18 +54,20 @@ export async function updateDocument(
     nom?: string;
     objet?: string;
     prestataire?: string;
-    statut?: "Actif" | "Expire bientôt" | "Expiré";
     debut?: string;
     fin?: string;
     montantAnnuel?: number;
     categorie?: string;
     format?: string;
     taille?: string;
+    statut?: "Actif" | "Expire bientôt" | "Expiré";
   },
 ): Promise<void> {
   await apiRequest(`/documents/${encodeURIComponent(id)}`, { method: "PUT", body: input });
+  invalidateTags(["documents", "dashboard"]);
 }
 
 export async function deleteDocument(id: string): Promise<void> {
   await apiRequest(`/documents/${encodeURIComponent(id)}`, { method: "DELETE" });
+  invalidateTags(["documents", "dashboard"]);
 }

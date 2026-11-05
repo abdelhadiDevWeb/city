@@ -72,6 +72,7 @@ import {
   type Column,
   type TabItem,
 } from "../ui";
+import { SkeletonResidencesPage } from "../skeletons";
 
 type TabId = "batiments" | "gestionnaires" | "abonnements_sous_admins" | "appartements" | "residence";
 
@@ -147,6 +148,10 @@ export default function ResidencesPage() {
       active = false;
     };
   }, [version, isAdmin, tab]);
+
+  if (!espace && !error) {
+    return <SkeletonResidencesPage />;
+  }
 
   const batiments = espace?.batiments ?? [];
   const residence = espace?.residence;

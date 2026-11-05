@@ -38,6 +38,7 @@ import {
   type TabItem,
   type Tone,
 } from "../ui";
+import { SkeletonMaintenancePage } from "../skeletons";
 
 type TabId = "incidents" | "pannes" | "historique";
 
@@ -82,6 +83,10 @@ export default function MaintenancePage() {
       active = false;
     };
   }, [version]);
+
+  if (!data && !error) {
+    return <SkeletonMaintenancePage />;
+  }
 
   const incidents = data?.incidents ?? [];
   const pannesEquipement = data?.pannesEquipement ?? [];

@@ -1,4 +1,5 @@
 import { apiRequest } from "./api";
+import { cachedFetch, invalidateTags } from "./cache";
 
 export type Impaye = {
   id: string;
@@ -50,12 +51,16 @@ export type FinancesData = {
   factures: Facture[];
 };
 
-export async function getFinances(): Promise<FinancesData> {
-  return apiRequest<FinancesData>("/finances");
+export async function getFinances(forceRefresh = false): Promise<FinancesData> {
+  return cachedFetch("/finances", () => apiRequest<FinancesData>("/finances"), {
+    tags: ["finances", "dashboard"],
+    forceRefresh,
+  });
 }
 
 export async function encaisserCharge(id: string, input?: { modePaiement?: string; reference?: string }): Promise<void> {
   await apiRequest(`/finances/encaisser/${encodeURIComponent(id)}`, { method: "POST", body: input ?? {} });
+  invalidateTags(["finances", "dashboard"]);
 }
 
 export async function createPaiement(input: {
@@ -67,6 +72,7 @@ export async function createPaiement(input: {
   reference?: string;
 }): Promise<void> {
   await apiRequest("/finances/paiements", { method: "POST", body: input });
+  invalidateTags(["finances", "dashboard"]);
 }
 
 export async function createDepense(input: {
@@ -81,28 +87,36 @@ export async function createDepense(input: {
   typeDepense?: "depense" | "facture";
 }): Promise<void> {
   await apiRequest("/finances/depenses", { method: "POST", body: input });
+  invalidateTags(["finances", "dashboard"]);
 }
 
 export async function payerFacture(id: string): Promise<void> {
   await apiRequest(`/finances/factures/${encodeURIComponent(id)}/payer`, { method: "POST" });
+  invalidateTags(["finances", "dashboard"]);
 }
 
 export async function genererCharges(moisNom: string): Promise<{ generated: number }> {
-  return apiRequest<{ generated: number }>("/finances/generer", { method: "POST", body: { moisNom } });
+  const res = await apiRequest<{ generated: number }>("/finances/generer", { method: "POST", body: { moisNom } });
+  invalidateTags(["finances", "dashboard"]);
+  return res;
 }
 
 export async function updateDepense(id: string, input: { categorie?: string; fournisseur?: string; description?: string; montant?: number; statut?: "Payée" | "À payer" | "En retard" | "En attente" }): Promise<void> {
   await apiRequest(`/finances/depenses/${encodeURIComponent(id)}`, { method: "PUT", body: input });
+  invalidateTags(["finances", "dashboard"]);
 }
 
 export async function deleteDepense(id: string): Promise<void> {
   await apiRequest(`/finances/depenses/${encodeURIComponent(id)}`, { method: "DELETE" });
+  invalidateTags(["finances", "dashboard"]);
 }
 
 export async function updateCharge(id: string, input: { statut?: "Payée" | "À payer" | "En retard"; montant?: number }): Promise<void> {
   await apiRequest(`/finances/charges/${encodeURIComponent(id)}`, { method: "PUT", body: input });
+  invalidateTags(["finances", "dashboard"]);
 }
 
 export async function deleteCharge(id: string): Promise<void> {
   await apiRequest(`/finances/charges/${encodeURIComponent(id)}`, { method: "DELETE" });
+  invalidateTags(["finances", "dashboard"]);
 }

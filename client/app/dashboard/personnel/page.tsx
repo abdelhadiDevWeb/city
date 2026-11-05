@@ -39,6 +39,7 @@ import {
   type TabItem,
   type Tone,
 } from "../ui";
+import { SkeletonGenericPage } from "../skeletons";
 
 type TabId = "taches" | "personnel";
 
@@ -77,6 +78,10 @@ export default function PersonnelPage() {
       active = false;
     };
   }, [version]);
+
+  if (!data && !error) {
+    return <SkeletonGenericPage titleWidth="w-64" tableColumns={5} />;
+  }
 
   const taches = data?.taches ?? [];
   const personnel = data?.personnel ?? [];

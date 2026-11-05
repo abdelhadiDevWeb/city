@@ -41,6 +41,7 @@ import {
   type Column,
   type TabItem,
 } from "../ui";
+import { SkeletonGenericPage } from "../skeletons";
 
 type TabId = "charges" | "incidents" | "paiements";
 
@@ -83,6 +84,10 @@ export default function ConfigurationPage() {
       active = false;
     };
   }, [version]);
+
+  if (!data && !error) {
+    return <SkeletonGenericPage titleWidth="w-72" tableColumns={4} />;
+  }
 
   const typesCharges = data?.typesCharges ?? [];
   const typesIncidents = data?.typesIncidents ?? [];

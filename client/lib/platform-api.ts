@@ -1,4 +1,5 @@
 import { apiRequest } from "./api";
+import { cachedFetch, invalidateTags } from "./cache";
 
 export type Stats = {
   totaux: {
@@ -70,25 +71,51 @@ export type SousAdminAbonne = {
 
 export type SuperAdminAccount = { id: string; nomComplet: string; email: string; createdAt: string };
 
-export async function getStats(): Promise<Stats> {
-  return apiRequest<Stats>("/stats");
+export async function getStats(forceRefresh = false): Promise<Stats> {
+  return cachedFetch("/stats", () => apiRequest<Stats>("/stats"), {
+    tags: ["stats", "dashboard"],
+    forceRefresh,
+  });
 }
 
-export async function listFormules(cible?: "admin" | "sub_admin"): Promise<Formule[]> {
+export async function listFormules(cible?: "admin" | "sub_admin", forceRefresh = false): Promise<Formule[]> {
   const query = cible ? `?cible=${encodeURIComponent(cible)}` : "";
-  return (await apiRequest<{ abonnements: Formule[] }>(`/abonnements${query}`)).abonnements;
+  const key = `/abonnements${query}`;
+  return cachedFetch(
+    key,
+    async () => {
+      const res = await apiRequest<{ abonnements: Formule[] }>(key);
+      return res.abonnements;
+    },
+    { tags: ["abonnements", "dashboard"], forceRefresh },
+  );
 }
 
 export async function createFormule(input: { nom: string; prix: number; duree: number; cible?: "admin" | "sub_admin" }): Promise<void> {
   await apiRequest("/abonnements", { method: "POST", body: input });
+  invalidateTags(["abonnements", "stats", "dashboard"]);
 }
 
-export async function listAdminsAbonnes(): Promise<AdminAbonne[]> {
-  return (await apiRequest<{ admins: AdminAbonne[] }>("/abonnements/admins")).admins;
+export async function listAdminsAbonnes(forceRefresh = false): Promise<AdminAbonne[]> {
+  return cachedFetch(
+    "/abonnements/admins",
+    async () => {
+      const res = await apiRequest<{ admins: AdminAbonne[] }>("/abonnements/admins");
+      return res.admins;
+    },
+    { tags: ["abonnements", "dashboard"], forceRefresh },
+  );
 }
 
-export async function listSousAdminsAbonnes(): Promise<SousAdminAbonne[]> {
-  return (await apiRequest<{ sousAdmins: SousAdminAbonne[] }>("/abonnements/sous-admins")).sousAdmins;
+export async function listSousAdminsAbonnes(forceRefresh = false): Promise<SousAdminAbonne[]> {
+  return cachedFetch(
+    "/abonnements/sous-admins",
+    async () => {
+      const res = await apiRequest<{ sousAdmins: SousAdminAbonne[] }>("/abonnements/sous-admins");
+      return res.sousAdmins;
+    },
+    { tags: ["abonnements", "dashboard"], forceRefresh },
+  );
 }
 
 export async function getSousAdminKPIs(): Promise<{ total: number; payes: number; impayes: number }> {
@@ -105,10 +132,12 @@ export async function createSouscription(input: {
   notesPaiement?: string;
 }): Promise<void> {
   await apiRequest("/abonnements/souscriptions", { method: "POST", body: input });
+  invalidateTags(["abonnements", "stats", "dashboard"]);
 }
 
 export async function setStatutPaiement(id: string, statutPaiement: boolean): Promise<void> {
   await apiRequest(`/abonnements/souscriptions/${encodeURIComponent(id)}`, { method: "PATCH", body: { statutPaiement } });
+  invalidateTags(["abonnements", "stats", "dashboard"]);
 }
 
 export async function listSuperAdmins(): Promise<SuperAdminAccount[]> {
@@ -117,24 +146,30 @@ export async function listSuperAdmins(): Promise<SuperAdminAccount[]> {
 
 export async function createSuperAdmin(input: { nomComplet: string; email: string; password: string }): Promise<void> {
   await apiRequest("/super-admins", { method: "POST", body: input });
+  invalidateTags(["super-admins", "stats", "dashboard"]);
 }
 
 export async function updateFormule(id: string, input: { nom?: string; prix?: number; duree?: number; cible?: "admin" | "sub_admin" }): Promise<void> {
   await apiRequest(`/abonnements/${encodeURIComponent(id)}`, { method: "PUT", body: input });
+  invalidateTags(["abonnements", "stats", "dashboard"]);
 }
 
 export async function deleteFormule(id: string): Promise<void> {
   await apiRequest(`/abonnements/${encodeURIComponent(id)}`, { method: "DELETE" });
+  invalidateTags(["abonnements", "stats", "dashboard"]);
 }
 
 export async function deleteSouscription(id: string): Promise<void> {
   await apiRequest(`/abonnements/souscriptions/${encodeURIComponent(id)}`, { method: "DELETE" });
+  invalidateTags(["abonnements", "stats", "dashboard"]);
 }
 
 export async function updateSuperAdmin(id: string, input: { nomComplet?: string; email?: string; password?: string }): Promise<void> {
   await apiRequest(`/super-admins/${encodeURIComponent(id)}`, { method: "PUT", body: input });
+  invalidateTags(["super-admins", "dashboard"]);
 }
 
 export async function deleteSuperAdmin(id: string): Promise<void> {
   await apiRequest(`/super-admins/${encodeURIComponent(id)}`, { method: "DELETE" });
+  invalidateTags(["super-admins", "dashboard"]);
 }

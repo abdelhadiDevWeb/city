@@ -38,6 +38,7 @@ import {
   type Column,
   type TabItem,
 } from "../ui";
+import { SkeletonGenericPage } from "../skeletons";
 
 type TabId = "annonces" | "alertes";
 
@@ -82,6 +83,10 @@ export default function AnnoncesPage() {
       active = false;
     };
   }, [version]);
+
+  if (!data && !error) {
+    return <SkeletonGenericPage titleWidth="w-56" tableColumns={4} />;
+  }
 
   const annonces = data?.annonces ?? [];
   const alertes = data?.alertes ?? [];

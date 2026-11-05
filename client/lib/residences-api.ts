@@ -1,4 +1,5 @@
 import { apiRequest } from "./api";
+import { cachedFetch, invalidateTags } from "./cache";
 
 export type Responsable = {
   id: string;
@@ -58,23 +59,37 @@ export type NewAccount = {
   password: string;
 } & ({ role: "admin"; idResidence: string } | { role: "sub_admin"; idBatiment: string });
 
-export async function listResidences(): Promise<ResidenceSummary[]> {
-  const res = await apiRequest<{ residences: ResidenceSummary[] }>("/residences");
-  return res.residences;
+export async function listResidences(forceRefresh = false): Promise<ResidenceSummary[]> {
+  return cachedFetch(
+    "/residences",
+    async () => {
+      const res = await apiRequest<{ residences: ResidenceSummary[] }>("/residences");
+      return res.residences;
+    },
+    { tags: ["residences", "dashboard"], forceRefresh },
+  );
 }
 
-export async function getResidence(id: string): Promise<ResidenceDetails> {
-  const { residence, admin, batiments } = await apiRequest<ResidenceDetails>(`/residences/${encodeURIComponent(id)}`);
-  return { residence, admin, batiments };
+export async function getResidence(id: string, forceRefresh = false): Promise<ResidenceDetails> {
+  return cachedFetch(
+    `/residences/${id}`,
+    async () => {
+      const { residence, admin, batiments } = await apiRequest<ResidenceDetails>(`/residences/${encodeURIComponent(id)}`);
+      return { residence, admin, batiments };
+    },
+    { tags: ["residences", "dashboard"], forceRefresh },
+  );
 }
 
 export async function createResidence(input: { nom: string; localisation: string; maxBatiments?: number; maxResidents?: number }): Promise<ResidenceSummary> {
   const res = await apiRequest<{ residence: ResidenceSummary }>("/residences", { method: "POST", body: input });
+  invalidateTags(["residences", "dashboard"]);
   return res.residence;
 }
 
 export async function createBatiment(residenceId: string, input: { nom: string; etages: number; maxAppartements?: number }): Promise<void> {
   await apiRequest(`/residences/${encodeURIComponent(residenceId)}/batiments`, { method: "POST", body: input });
+  invalidateTags(["residences", "dashboard"]);
 }
 
 export type MonEspace = {
@@ -85,13 +100,20 @@ export type MonEspace = {
   abonnement: { nom: string | null; debut: string; fin: string } | null;
 };
 
-export async function getMonEspace(): Promise<MonEspace> {
-  const { role, residence, admin, batiments, abonnement } = await apiRequest<MonEspace>("/mon-espace");
-  return { role, residence, admin, batiments, abonnement };
+export async function getMonEspace(forceRefresh = false): Promise<MonEspace> {
+  return cachedFetch(
+    "/mon-espace",
+    async () => {
+      const { role, residence, admin, batiments, abonnement } = await apiRequest<MonEspace>("/mon-espace");
+      return { role, residence, admin, batiments, abonnement };
+    },
+    { tags: ["residences", "dashboard"], forceRefresh },
+  );
 }
 
 export async function createAccount(input: NewAccount): Promise<void> {
   await apiRequest("/admins", { method: "POST", body: input });
+  invalidateTags(["residences", "dashboard"]);
 }
 
 export type Resident = {
@@ -123,14 +145,22 @@ export function etageLabel(etage: number): string {
   return etage === 0 ? "rez-de-chaussée" : etage === 1 ? "1er étage" : `${etage}e étage`;
 }
 
-export async function listResidents(idResidence?: string): Promise<Resident[]> {
+export async function listResidents(idResidence?: string, forceRefresh = false): Promise<Resident[]> {
   const query = idResidence ? `?idResidence=${encodeURIComponent(idResidence)}` : "";
-  const res = await apiRequest<{ residents: Resident[] }>(`/residents${query}`);
-  return res.residents;
+  const key = `/residents${query}`;
+  return cachedFetch(
+    key,
+    async () => {
+      const res = await apiRequest<{ residents: Resident[] }>(key);
+      return res.residents;
+    },
+    { tags: ["residents", "dashboard"], forceRefresh },
+  );
 }
 
 export async function createResident(input: NewResidentInput): Promise<Resident> {
   const res = await apiRequest<{ resident: Resident }>("/residents", { method: "POST", body: input });
+  invalidateTags(["residents", "dashboard"]);
   return res.resident;
 }
 
@@ -139,32 +169,40 @@ export async function updateResidence(
   input: { nom?: string; localisation?: string; maxBatiments?: number; maxResidents?: number },
 ): Promise<void> {
   await apiRequest(`/residences/${encodeURIComponent(id)}`, { method: "PUT", body: input });
+  invalidateTags(["residences", "dashboard"]);
 }
 
 export async function deleteResidence(id: string): Promise<void> {
   await apiRequest(`/residences/${encodeURIComponent(id)}`, { method: "DELETE" });
+  invalidateTags(["residences", "dashboard"]);
 }
 
 export async function updateBatiment(residenceId: string, batimentId: string, input: { nom?: string; etages?: number; maxAppartements?: number }): Promise<void> {
   await apiRequest(`/residences/${encodeURIComponent(residenceId)}/batiments/${encodeURIComponent(batimentId)}`, { method: "PUT", body: input });
+  invalidateTags(["residences", "dashboard"]);
 }
 
 export async function deleteBatiment(residenceId: string, batimentId: string): Promise<void> {
   await apiRequest(`/residences/${encodeURIComponent(residenceId)}/batiments/${encodeURIComponent(batimentId)}`, { method: "DELETE" });
+  invalidateTags(["residences", "dashboard"]);
 }
 
 export async function updateAccount(id: string, input: { prenom?: string; nom?: string; email?: string; telephone?: string; password?: string }): Promise<void> {
   await apiRequest(`/admins/${encodeURIComponent(id)}`, { method: "PUT", body: input });
+  invalidateTags(["residences", "dashboard"]);
 }
 
 export async function deleteAccount(id: string): Promise<void> {
   await apiRequest(`/admins/${encodeURIComponent(id)}`, { method: "DELETE" });
+  invalidateTags(["residences", "dashboard"]);
 }
 
 export async function updateResident(id: string, input: Partial<NewResidentInput>): Promise<void> {
   await apiRequest(`/residents/${encodeURIComponent(id)}`, { method: "PUT", body: input });
+  invalidateTags(["residents", "dashboard"]);
 }
 
 export async function deleteResident(id: string): Promise<void> {
   await apiRequest(`/residents/${encodeURIComponent(id)}`, { method: "DELETE" });
+  invalidateTags(["residents", "dashboard"]);
 }

@@ -43,6 +43,7 @@ import {
   useToast,
   type Column,
 } from "../ui";
+import { SkeletonResidentsPage } from "../skeletons";
 
 const fullName = (p: { prenom: string; nom: string }) => `${p.prenom} ${p.nom}`;
 
@@ -229,6 +230,10 @@ export default function ResidentsPage() {
       ),
     },
   ];
+
+  if (!residents && !error) {
+    return <SkeletonResidentsPage />;
+  }
 
   const canAdd = isSuperAdmin
     ? residencesList.length > 0 && superAdminBatiments.length > 0

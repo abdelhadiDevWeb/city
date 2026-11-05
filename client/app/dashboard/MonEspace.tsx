@@ -63,6 +63,7 @@ import {
 } from "@/lib/residences-api";
 import { ROLE_BADGE, ROLE_LABELS, displayName, primaryRole } from "@/lib/roles";
 import { SmartActionCenter } from "./SmartActionCenter";
+import { SkeletonDashboard } from "./skeletons";
 import { useSession } from "./session";
 import { FormError, Mono, Panel, Pill, ProgressBar, button, card, describeError, type Tone } from "./ui";
 
@@ -134,14 +135,7 @@ export function MonEspace() {
   }, []);
 
   if (loading) {
-    return (
-      <div className={`${card} flex items-center justify-center p-20`}>
-        <div className="flex flex-col items-center gap-3">
-          <span aria-label="Chargement" className="h-8 w-8 animate-spin rounded-full border-2 border-stone-300 border-t-brand" />
-          <p className="text-xs font-semibold text-stone-500">Chargement des données de la résidence...</p>
-        </div>
-      </div>
-    );
+    return <SkeletonDashboard />;
   }
 
   const residence = espace?.residence;
