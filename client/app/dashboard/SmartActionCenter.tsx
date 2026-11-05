@@ -195,7 +195,7 @@ export function SmartActionCenter({
                     className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold shadow-2xs transition ${style.button}`}
                   >
                     <span>{alert.actionLabel}</span>
-                    <ArrowRight className="h-3 w-3" />
+                    <ArrowRight className="h-3 w-3 rtl:rotate-180" />
                   </Link>
                 </div>
               </div>

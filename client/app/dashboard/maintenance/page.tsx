@@ -39,12 +39,14 @@ import {
   type Tone,
 } from "../ui";
 import { SkeletonMaintenancePage } from "../skeletons";
+import { useI18n } from "@/lib/i18n";
 
 type TabId = "incidents" | "pannes" | "historique";
 
 const PRIORITE_TONE: Record<Priorite, Tone> = { Haute: "danger", Moyenne: "warning", Basse: "neutral" };
 
 export default function MaintenancePage() {
+  const { t, locale, isRTL } = useI18n();
   const notify = useToast();
   const [data, setData] = useState<MaintenanceData | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -335,14 +337,14 @@ export default function MaintenancePage() {
     <div className="space-y-6">
       <PageHeader
         icon={Wrench}
-        title="Maintenance & Pannes"
-        subtitle="Incidents signalés, pannes d'équipement et suivi des interventions des prestataires"
+        title={t.maintenance.title}
+        subtitle={t.maintenance.subtitle}
         actions={
           <>
             {tab === "incidents" && (
               <button type="button" onClick={() => setReporting(true)} className={button("primary")}>
                 <Plus className="h-4 w-4" aria-hidden />
-                Signaler Incident
+                {t.maintenance.signalerIncident}
               </button>
             )}
             {tab === "pannes" && (

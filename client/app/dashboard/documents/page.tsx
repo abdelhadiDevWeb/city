@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/lib/i18n";
 import {
   AlertTriangle,
   CalendarDays,
@@ -62,6 +63,7 @@ const CONTRAT_TONE: Record<Contrat["statut"], Tone> = {
 };
 
 export default function DocumentsPage() {
+  const { t, locale, isRTL } = useI18n();
   const notify = useToast();
   const [data, setData] = useState<DocumentsData | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -271,8 +273,8 @@ Ce fichier atteste de la validité légale et comptable du document archivé sou
     <div className="space-y-6">
       <PageHeader
         icon={FolderOpen}
-        title="Documents & Contrats"
-        subtitle="Contrats des prestataires, règlement intérieur, procès-verbaux d'AG et pièces officielles"
+        title={t.documents.title}
+        subtitle={t.documents.subtitle}
         actions={
           tab === "contrats" ? (
             <button

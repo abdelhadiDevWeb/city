@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/lib/i18n";
 import {
   Calendar,
   CalendarDays,
@@ -234,6 +235,7 @@ const INITIAL_RESOLUTIONS: Resolution[] = [
 ];
 
 export default function AssembleesPage() {
+  const { t, locale, isRTL } = useI18n();
   const notify = useToast();
   const [tab, setTab] = useState<TabId>("sessions");
 
@@ -492,7 +494,7 @@ export default function AssembleesPage() {
               title="Lancer le mode projection plein écran pour grand écran ou vidéo-projecteur"
             >
               <Tv className="h-4 w-4 text-indigo-600" aria-hidden />
-              Mode Projection AG
+              {t.assemblees.modeProjection}
             </button>
             <button type="button" onClick={() => setAddingSession(true)} className={button("secondary")}>
               <Plus className="h-4 w-4" aria-hidden />
@@ -615,7 +617,7 @@ export default function AssembleesPage() {
                   Tenue le {selectedSessionForPv.date} à {selectedSessionForPv.heure} · {selectedSessionForPv.lieu}
                 </p>
               </div>
-              <div className="text-right">
+              <div className="text-end">
                 <span className="rounded-md border border-emerald-300 bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-800">
                   PV OFFICIEL CERTIFIÉ
                 </span>
@@ -877,7 +879,7 @@ export default function AssembleesPage() {
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="rounded-xl border border-stone-800 bg-stone-900/90 px-4 py-2 text-right">
+              <div className="rounded-xl border border-stone-800 bg-stone-900/90 px-4 py-2 text-end">
                 <span className="block text-[10px] font-mono uppercase tracking-wider text-stone-400">
                   Quorum Constaté
                 </span>
@@ -1035,7 +1037,7 @@ export default function AssembleesPage() {
                     className="inline-flex items-center gap-2 rounded-xl border border-stone-800 bg-stone-900 px-4 py-2.5 text-xs font-bold text-stone-300 hover:bg-stone-800 disabled:opacity-40 transition"
                   >
                     <span>Résolution Suivante</span>
-                    <ChevronRight className="h-4 w-4" />
+                    <ChevronRight className="h-4 w-4 rtl:rotate-180" />
                   </button>
                 </div>
               </div>

@@ -386,7 +386,7 @@ export function CommandPalette({
                       }
                     }}
                     onMouseEnter={() => setSelectedIndex(index)}
-                    className={`flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-left text-xs transition ${
+                    className={`flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-start text-xs transition ${
                       isSelected ? "bg-stone-100 text-ink" : "text-stone-700 hover:bg-stone-50"
                     }`}
                   >
@@ -418,7 +418,7 @@ export function CommandPalette({
                       <span className="hidden text-[10px] font-medium text-stone-400 sm:inline">
                         {item.category}
                       </span>
-                      {isSelected && <ArrowRight className="h-3.5 w-3.5 text-brand" />}
+                      {isSelected && <ArrowRight className="h-3.5 w-3.5 text-brand rtl:rotate-180" />}
                     </div>
                   </button>
                 );

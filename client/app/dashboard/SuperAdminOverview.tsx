@@ -42,11 +42,13 @@ import { getStats, listFormules, type Formule, type Stats } from "@/lib/platform
 import { listResidences, listResidents, type ResidenceSummary, type Resident } from "@/lib/residences-api";
 import { ROLE_BADGE, ROLE_LABELS, displayName } from "@/lib/roles";
 import { useSession } from "./session";
+import { useI18n } from "@/lib/i18n";
 import { SkeletonDashboard } from "./skeletons";
 import { FormError, Mono, Panel, Pill, ProgressBar, button, card, describeError } from "./ui";
 
 export function SuperAdminOverview() {
   const { account } = useSession();
+  const { t, locale, isRTL } = useI18n();
   const [residences, setResidences] = useState<ResidenceSummary[] | null>(null);
   const [stats, setStats] = useState<Stats | null>(null);
   const [formules, setFormules] = useState<Formule[] | null>(null);
@@ -220,7 +222,7 @@ export function SuperAdminOverview() {
             </span>
           </div>
 
-          <h1 className="mt-4 text-3xl font-bold tracking-tight text-ink">Tableau de bord Super Admin</h1>
+          <h1 className="mt-4 text-2xl sm:text-3xl font-bold tracking-tight text-ink">{t.dashboard.superAdminTitle}</h1>
           <p className="mt-1.5 text-sm text-stone-500 max-w-2xl">
             Supervision 360° du parc multi-résidences, des formules d&apos;abonnement annuelles (1 an standard avec paiement flexible),
             des copropriétaires, du personnel et de la comptabilité générale.
@@ -276,8 +278,8 @@ export function SuperAdminOverview() {
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-bold text-ink">Hub des 8 Modules Plateforme</h2>
-            <p className="text-xs text-stone-500">Vue d&apos;ensemble et accès direct à chacune des pages du Super Administrateur</p>
+            <h2 className="text-lg font-bold text-ink">{t.dashboard.modulesHubTitle}</h2>
+            <p className="text-xs text-stone-500">{t.dashboard.modulesHubSubtitle}</p>
           </div>
           <span className="text-xs font-semibold text-stone-400">8 pages actives</span>
         </div>
@@ -306,7 +308,7 @@ export function SuperAdminOverview() {
                   <span className="font-semibold text-stone-600">{m.meta}</span>
                   <span className="flex items-center gap-1 font-semibold text-brand group-hover:translate-x-0.5 transition">
                     Ouvrir
-                    <ChevronRight className="h-3.5 w-3.5" aria-hidden />
+                    <ChevronRight className="h-3.5 w-3.5 rtl:rotate-180" aria-hidden />
                   </span>
                 </div>
               </Link>
@@ -331,14 +333,14 @@ export function SuperAdminOverview() {
               <p className="py-8 text-center text-sm text-stone-500">Aucune résidence enregistrée pour le moment.</p>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
+                <table className="w-full text-start text-xs">
                   <thead>
                     <tr className="border-b border-stone-200 text-[11px] font-bold uppercase tracking-wider text-stone-500">
                       <th className="pb-3">Résidence</th>
                       <th className="pb-3">Localisation</th>
                       <th className="pb-3">Bâtiments</th>
                       <th className="pb-3">Administrateur</th>
-                      <th className="pb-3 text-right">Action</th>
+                      <th className="pb-3 text-end">Action</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-stone-100">
@@ -363,13 +365,13 @@ export function SuperAdminOverview() {
                             <Pill tone="warning">Sans admin</Pill>
                           )}
                         </td>
-                        <td className="py-3 text-right">
+                        <td className="py-3 text-end">
                           <Link
                             href={`/dashboard/ajouter-residence?id=${r.id}`}
                             className="inline-flex items-center gap-1 font-semibold text-brand hover:underline"
                           >
                             Gérer
-                            <ChevronRight className="h-3.5 w-3.5" aria-hidden />
+                            <ChevronRight className="h-3.5 w-3.5 rtl:rotate-180" aria-hidden />
                           </Link>
                         </td>
                       </tr>
@@ -421,7 +423,7 @@ export function SuperAdminOverview() {
                 className="flex items-center justify-between text-xs font-semibold text-stone-600 hover:text-brand"
               >
                 <span>Valider les abonnements en attente ({totalImpayees})</span>
-                <ChevronRight className="h-3.5 w-3.5" aria-hidden />
+                <ChevronRight className="h-3.5 w-3.5 rtl:rotate-180" aria-hidden />
               </Link>
             </div>
           </Panel>
@@ -513,7 +515,7 @@ export function SuperAdminOverview() {
                 <FileSpreadsheet className="h-4 w-4 text-emerald-600" aria-hidden />
                 Journal Financier Global (.CSV)
               </span>
-              <ChevronRight className="h-3.5 w-3.5 text-stone-400" aria-hidden />
+              <ChevronRight className="h-3.5 w-3.5 text-stone-400 rtl:rotate-180" aria-hidden />
             </Link>
             <Link
               href="/dashboard/rapports"
@@ -523,7 +525,7 @@ export function SuperAdminOverview() {
                 <Users className="h-4 w-4 text-blue-600" aria-hidden />
                 Registre National des Résidents
               </span>
-              <ChevronRight className="h-3.5 w-3.5 text-stone-400" aria-hidden />
+              <ChevronRight className="h-3.5 w-3.5 text-stone-400 rtl:rotate-180" aria-hidden />
             </Link>
           </div>
         </section>

@@ -65,10 +65,11 @@ import { ROLE_BADGE, ROLE_LABELS, displayName, primaryRole } from "@/lib/roles";
 import { SmartActionCenter } from "./SmartActionCenter";
 import { SkeletonDashboard } from "./skeletons";
 import { useSession } from "./session";
+import { useI18n } from "@/lib/i18n";
 import { FormError, Mono, Panel, Pill, ProgressBar, button, card, describeError, type Tone } from "./ui";
 
-const formatDate = (iso: string) => new Date(iso).toLocaleDateString("fr-FR");
-const formatUtcDate = (iso: string) => new Date(iso).toLocaleDateString("fr-FR", { timeZone: "UTC" });
+const formatDate = (iso: string, loc?: string) => new Date(iso).toLocaleDateString(loc === "ar" ? "ar-DZ" : loc === "en" ? "en-US" : "fr-FR");
+const formatUtcDate = (iso: string, loc?: string) => new Date(iso).toLocaleDateString(loc === "ar" ? "ar-DZ" : loc === "en" ? "en-US" : "fr-FR", { timeZone: "UTC" });
 const fullName = (p: { prenom: string; nom: string }) => `${p.prenom} ${p.nom}`;
 
 const PRIORITE_TONE: Record<Priorite, Tone> = {
@@ -85,6 +86,7 @@ const CONTRAT_TONE: Record<Contrat["statut"], Tone> = {
 
 export function MonEspace() {
   const { account } = useSession();
+  const { t, locale, isRTL } = useI18n();
   const role = primaryRole(account);
 
   const [loading, setLoading] = useState(true);
@@ -509,7 +511,7 @@ export function MonEspace() {
                     <span className="font-semibold text-stone-600">{m.meta}</span>
                     <span className="flex items-center gap-1 font-semibold text-brand group-hover:translate-x-0.5 transition">
                       Gérer
-                      <ChevronRight className="h-3.5 w-3.5" aria-hidden />
+                      <ChevronRight className="h-3.5 w-3.5 rtl:rotate-180" aria-hidden />
                     </span>
                   </div>
                 </Link>
@@ -542,13 +544,13 @@ export function MonEspace() {
                 <p className="py-8 text-center text-xs text-stone-500">Aucun appartement configuré dans ce bâtiment.</p>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs">
+                  <table className="w-full text-start text-xs">
                     <thead>
                       <tr className="border-b border-stone-200 text-[11px] font-bold uppercase tracking-wider text-stone-500">
                         <th className="pb-2.5">Logement</th>
                         <th className="pb-2.5">Étage</th>
                         <th className="pb-2.5">Occupant / Copropriétaire</th>
-                        <th className="pb-2.5 text-right">Paiement</th>
+                        <th className="pb-2.5 text-end">Paiement</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-stone-100">
@@ -566,7 +568,7 @@ export function MonEspace() {
                                 <span className="text-stone-400 italic">Vacant</span>
                               )}
                             </td>
-                            <td className="py-2.5 text-right">
+                            <td className="py-2.5 text-end">
                               {isImpaye ? (
                                 <Pill tone="danger">Impayé</Pill>
                               ) : occupant ? (
@@ -590,7 +592,7 @@ export function MonEspace() {
                 className="flex items-center justify-between text-xs font-semibold text-stone-600 hover:text-brand"
               >
                 <span>Accéder à l&apos;annuaire complet des résidents ({myResidents.length})</span>
-                <ChevronRight className="h-4 w-4" aria-hidden />
+                <ChevronRight className="h-4 w-4 rtl:rotate-180" aria-hidden />
               </Link>
             </div>
           </section>
@@ -641,7 +643,7 @@ export function MonEspace() {
                 className="flex items-center justify-between text-xs font-semibold text-stone-600 hover:text-brand"
               >
                 <span>Voir la liste des retards de paiement ({myImpayes.length} impayés)</span>
-                <ChevronRight className="h-4 w-4" aria-hidden />
+                <ChevronRight className="h-4 w-4 rtl:rotate-180" aria-hidden />
               </Link>
             </div>
           </section>
@@ -669,14 +671,14 @@ export function MonEspace() {
               <p className="py-6 text-center text-xs text-stone-500">Aucun incident ouvert sur ce bâtiment. Équipements opérationnels.</p>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
+                <table className="w-full text-start text-xs">
                   <thead>
                     <tr className="border-b border-stone-200 text-[11px] font-bold uppercase tracking-wider text-stone-500">
                       <th className="pb-2.5">Incident</th>
                       <th className="pb-2.5">Emplacement</th>
                       <th className="pb-2.5">Prestataire / Intervenant</th>
                       <th className="pb-2.5">Priorité</th>
-                      <th className="pb-2.5 text-right">Statut</th>
+                      <th className="pb-2.5 text-end">Statut</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-stone-100">
@@ -688,7 +690,7 @@ export function MonEspace() {
                         <td className="py-2.5">
                           <Pill tone={PRIORITE_TONE[i.priorite]}>{i.priorite}</Pill>
                         </td>
-                        <td className="py-2.5 text-right">
+                        <td className="py-2.5 text-end">
                           <Pill tone={i.statut === "En cours" ? "brand" : "neutral"}>{i.statut}</Pill>
                         </td>
                       </tr>
@@ -703,7 +705,7 @@ export function MonEspace() {
             <span className="text-stone-500">{myPannes.length} équipement(s) sous surveillance technique</span>
             <Link href="/dashboard/maintenance" className="font-semibold text-brand hover:underline flex items-center gap-1">
               Ouvrir le registre de maintenance
-              <ChevronRight className="h-3.5 w-3.5" aria-hidden />
+              <ChevronRight className="h-3.5 w-3.5 rtl:rotate-180" aria-hidden />
             </Link>
           </div>
         </section>
@@ -990,7 +992,7 @@ export function MonEspace() {
 
                 <div className="mt-3 flex items-center justify-between border-t border-stone-100 pt-2.5 text-xs">
                   <span className="font-semibold text-stone-600 truncate">{m.meta}</span>
-                  <ChevronRight className="h-3.5 w-3.5 text-stone-400 group-hover:text-brand shrink-0" aria-hidden />
+                  <ChevronRight className="h-3.5 w-3.5 text-stone-400 group-hover:text-brand shrink-0 rtl:rotate-180" aria-hidden />
                 </div>
               </Link>
             );
@@ -1022,14 +1024,14 @@ export function MonEspace() {
               <p className="py-6 text-center text-xs text-stone-500">Aucun bâtiment configuré pour cette résidence.</p>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
+                <table className="w-full text-start text-xs">
                   <thead>
                     <tr className="border-b border-stone-200 text-[11px] font-bold uppercase tracking-wider text-stone-500">
                       <th className="pb-2.5">Bâtiment</th>
                       <th className="pb-2.5">Étages</th>
                       <th className="pb-2.5">Logements</th>
                       <th className="pb-2.5">Sous-Admin Délégué</th>
-                      <th className="pb-2.5 text-right">Action</th>
+                      <th className="pb-2.5 text-end">Action</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-stone-100">
@@ -1045,7 +1047,7 @@ export function MonEspace() {
                             <Pill tone="warning">Non délégué</Pill>
                           )}
                         </td>
-                        <td className="py-2.5 text-right">
+                        <td className="py-2.5 text-end">
                           <Link href="/dashboard/residences" className="font-semibold text-brand hover:underline">
                             Gérer
                           </Link>
@@ -1064,7 +1066,7 @@ export function MonEspace() {
               className="flex items-center justify-between text-xs font-semibold text-stone-600 hover:text-brand transition"
             >
               <span>Accéder aux tableaux détaillés des blocs et appartements</span>
-              <ChevronRight className="h-4 w-4" aria-hidden />
+              <ChevronRight className="h-4 w-4 rtl:rotate-180" aria-hidden />
             </Link>
           </div>
         </section>
@@ -1132,7 +1134,7 @@ export function MonEspace() {
               className="flex items-center justify-between text-xs font-semibold text-stone-600 hover:text-brand transition"
             >
               <span>Consulter l&apos;historique complet ({paiements.length} encaissements)</span>
-              <ChevronRight className="h-4 w-4" aria-hidden />
+              <ChevronRight className="h-4 w-4 rtl:rotate-180" aria-hidden />
             </Link>
           </div>
         </section>
@@ -1195,7 +1197,7 @@ export function MonEspace() {
               className="flex items-center justify-between text-xs font-semibold text-stone-600 hover:text-brand transition"
             >
               <span>Accéder aux résolutions et résultats de vote</span>
-              <ChevronRight className="h-4 w-4" aria-hidden />
+              <ChevronRight className="h-4 w-4 rtl:rotate-180" aria-hidden />
             </Link>
           </div>
         </section>
@@ -1264,7 +1266,7 @@ export function MonEspace() {
               className="flex items-center justify-between text-xs font-semibold text-stone-600 hover:text-brand transition"
             >
               <span>Ouvrir le registre des interventions</span>
-              <ChevronRight className="h-4 w-4" aria-hidden />
+              <ChevronRight className="h-4 w-4 rtl:rotate-180" aria-hidden />
             </Link>
           </div>
         </section>
@@ -1310,7 +1312,7 @@ export function MonEspace() {
           <div className="border-t border-stone-100 pt-2.5">
             <Link href="/dashboard/annonces" className="flex items-center justify-between text-xs text-stone-500 hover:text-brand">
               <span>Voir toutes les alertes ({alertes.length + annoncesList.length})</span>
-              <ChevronRight className="h-3.5 w-3.5" aria-hidden />
+              <ChevronRight className="h-3.5 w-3.5 rtl:rotate-180" aria-hidden />
             </Link>
           </div>
         </section>
@@ -1358,7 +1360,7 @@ export function MonEspace() {
           <div className="border-t border-stone-100 pt-2.5">
             <Link href="/dashboard/residents" className="flex items-center justify-between text-xs text-stone-500 hover:text-brand">
               <span>Annuaire complet ({residents.length} résidents)</span>
-              <ChevronRight className="h-3.5 w-3.5" aria-hidden />
+              <ChevronRight className="h-3.5 w-3.5 rtl:rotate-180" aria-hidden />
             </Link>
           </div>
         </section>
@@ -1409,7 +1411,7 @@ export function MonEspace() {
           <div className="border-t border-stone-100 pt-2.5">
             <Link href="/dashboard/personnel" className="flex items-center justify-between text-xs text-stone-500 hover:text-brand">
               <span>Plan de travail ({tachesEnCours.length} à faire)</span>
-              <ChevronRight className="h-3.5 w-3.5" aria-hidden />
+              <ChevronRight className="h-3.5 w-3.5 rtl:rotate-180" aria-hidden />
             </Link>
           </div>
         </section>
@@ -1447,7 +1449,7 @@ export function MonEspace() {
                         {c.prestataire} · Échéance : {c.fin}
                       </p>
                     </div>
-                    <div className="text-right">
+                    <div className="text-end">
                       <Mono strong className="text-ink">
                         {formatDZD(c.montantAnnuel)}
                       </Mono>
@@ -1467,7 +1469,7 @@ export function MonEspace() {
               className="flex items-center justify-between text-xs font-semibold text-stone-600 hover:text-brand transition"
             >
               <span>Accéder aux documents & archives ({documentsResidence.length} pièces)</span>
-              <ChevronRight className="h-4 w-4" aria-hidden />
+              <ChevronRight className="h-4 w-4 rtl:rotate-180" aria-hidden />
             </Link>
           </div>
         </section>
@@ -1525,7 +1527,7 @@ export function MonEspace() {
                     <FileSpreadsheet className="h-4 w-4 text-emerald-600" aria-hidden />
                     Bilan Financier (CSV)
                   </span>
-                  <ChevronRight className="h-3.5 w-3.5 text-stone-400" aria-hidden />
+                  <ChevronRight className="h-3.5 w-3.5 text-stone-400 rtl:rotate-180" aria-hidden />
                 </Link>
                 <Link
                   href="/dashboard/rapports"
@@ -1535,7 +1537,7 @@ export function MonEspace() {
                     <Users className="h-4 w-4 text-blue-600" aria-hidden />
                     Annuaire Copropriétaires
                   </span>
-                  <ChevronRight className="h-3.5 w-3.5 text-stone-400" aria-hidden />
+                  <ChevronRight className="h-3.5 w-3.5 text-stone-400 rtl:rotate-180" aria-hidden />
                 </Link>
               </div>
             </div>
@@ -1547,7 +1549,7 @@ export function MonEspace() {
               className="flex items-center justify-between text-xs font-semibold text-stone-600 hover:text-brand transition"
             >
               <span>Modifier les types de charges et délais SLA</span>
-              <ChevronRight className="h-4 w-4" aria-hidden />
+              <ChevronRight className="h-4 w-4 rtl:rotate-180" aria-hidden />
             </Link>
           </div>
         </section>

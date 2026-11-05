@@ -21,6 +21,7 @@ import {
 } from "@/lib/residences-api";
 import { ModalActions, SelectField, formText, useSubmit } from "../forms";
 import { useSession } from "../session";
+import { useI18n } from "@/lib/i18n";
 import {
   ActionGroup,
   Avatar,
@@ -48,6 +49,7 @@ import { SkeletonResidentsPage } from "../skeletons";
 const fullName = (p: { prenom: string; nom: string }) => `${p.prenom} ${p.nom}`;
 
 export default function ResidentsPage() {
+  const { t, locale, isRTL } = useI18n();
   const notify = useToast();
   const { account } = useSession();
   const isSuperAdmin = account.type === "SuperAdmin";
@@ -249,7 +251,7 @@ export default function ResidentsPage() {
     <div className="space-y-6">
       <PageHeader
         icon={Users}
-        title="Résidents & Propriétaires"
+        title={t.residents.title}
         subtitle={
           isSuperAdmin
             ? "Gestion globale des résidents et propriétaires de toutes les résidences."
@@ -260,7 +262,7 @@ export default function ResidentsPage() {
         actions={
           <button type="button" disabled={!canAdd} onClick={() => setAdding(true)} className={button("primary")}>
             <UserPlus className="h-4 w-4" aria-hidden />
-            Ajouter un résident
+            {t.residents.ajouterResident}
           </button>
         }
       />

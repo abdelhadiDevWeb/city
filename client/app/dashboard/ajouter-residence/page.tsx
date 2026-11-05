@@ -358,7 +358,7 @@ function ResidenceList({
                 type="button"
                 onClick={() => onSelect(r.id)}
                 aria-current={selected ? "true" : undefined}
-                className={`w-full rounded-2xl border p-4 text-left transition ${
+                className={`w-full rounded-2xl border p-4 text-start transition ${
                   selected
                     ? "border-brand bg-orange-50/20 shadow-md ring-2 ring-brand/30"
                     : "border-stone-200 bg-white hover:border-stone-300 hover:shadow-sm"
@@ -726,7 +726,7 @@ function ResidenceDetailsView({
                 </div>
 
                 <div className="overflow-x-auto rounded-xl border border-stone-200 bg-white">
-                  <table className="w-full text-left text-sm">
+                  <table className="w-full text-start text-sm">
                     <thead className="border-b border-stone-200 bg-stone-50/70 text-[11px] font-bold uppercase tracking-wider text-stone-500">
                       <tr>
                         <th className="px-4 py-3">Logement</th>
@@ -734,7 +734,7 @@ function ResidenceDetailsView({
                         <th className="px-4 py-3">Résident / Propriétaire</th>
                         <th className="px-4 py-3">Contact</th>
                         <th className="px-4 py-3">Statut Cotisation</th>
-                        <th className="px-4 py-3 text-right">Action</th>
+                        <th className="px-4 py-3 text-end">Action</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-stone-100">
@@ -775,7 +775,7 @@ function ResidenceDetailsView({
                                 <Pill tone="success">À jour (Payé)</Pill>
                               )}
                             </td>
-                            <td className="px-4 py-3 text-right">
+                            <td className="px-4 py-3 text-end">
                               {prop && (
                                 <a
                                   href={`tel:${prop.telephone}`}

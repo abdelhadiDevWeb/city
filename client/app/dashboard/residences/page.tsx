@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/lib/i18n";
 import {
   Building2,
   ChevronRight,
@@ -91,6 +92,7 @@ const fullName = (p: { prenom: string; nom: string }) => `${p.prenom} ${p.nom}`;
 const formatDate = (iso: string) => new Date(iso).toLocaleDateString("fr-FR", { timeZone: "UTC" });
 
 export default function ResidencesPage() {
+  const { t, locale, isRTL } = useI18n();
   const notify = useToast();
   const { account } = useSession();
   const isAdmin = (account.type === "Admin" && account.role === "admin") || account.roles?.includes("admin");
@@ -541,7 +543,7 @@ export default function ResidencesPage() {
     <div className="space-y-6">
       <PageHeader
         icon={Building2}
-        title="Patrimoine, Bâtiments & Gestionnaires"
+        title={t.residences.title}
         subtitle={
           residence
             ? `${residence.nom} (${residence.localisation}) — Résidence → Bâtiments (${batiments.length}/${maxBatiments}) → Gestionnaires → Appartements`
@@ -556,7 +558,7 @@ export default function ResidencesPage() {
                 className={button("primary")}
               >
                 <UserPlus className="h-4 w-4" aria-hidden />
-                Nouveau Sous-Admin
+                {t.residences.nommerSousAdmin}
               </button>
               {quotaAtteint ? (
                 <span className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-700">
@@ -565,7 +567,7 @@ export default function ResidencesPage() {
               ) : (
                 <button type="button" onClick={() => setAddingBatiment(true)} className={button("secondary")}>
                   <Plus className="h-4 w-4" aria-hidden />
-                  Nouveau Bâtiment (Bloc)
+                  {t.residences.ajouterBatiment}
                 </button>
               )}
             </div>
@@ -837,7 +839,7 @@ export default function ResidencesPage() {
                 </div>
 
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left text-sm">
+                  <table className="w-full text-start text-sm">
                     <tbody className="divide-y divide-stone-100">
                       <tr className="hover:bg-stone-50/50">
                         <td className="w-1/3 px-6 py-3.5 font-bold text-stone-600">Nom de la résidence</td>

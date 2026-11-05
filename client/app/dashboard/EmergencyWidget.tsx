@@ -117,7 +117,7 @@ export function EmergencyWidget({
   }
 
   return (
-    <aside aria-label="Numéros d'urgence" className="fixed bottom-5 right-5 z-40">
+    <aside aria-label="Numéros d'urgence" className="fixed bottom-5 end-5 rtl:left-5 rtl:right-auto z-40 max-w-[calc(100vw-2rem)]">
       {/* Floating Action Button */}
       {!isOpen && (
         <button
@@ -141,7 +141,7 @@ export function EmergencyWidget({
           role="dialog"
           aria-modal="true"
           aria-label="Numéros d'urgence et astreinte 24/7"
-          className="w-[340px] sm:w-[380px] overflow-hidden rounded-2xl border border-stone-300 bg-white shadow-2xl animate-in zoom-in-95 duration-150"
+          className="w-[320px] sm:w-[380px] max-w-[calc(100vw-2.5rem)] overflow-hidden rounded-2xl border border-stone-300 bg-white shadow-2xl animate-in zoom-in-95 duration-150"
         >
           {/* Header */}
           <div className="flex items-center justify-between border-b border-stone-200 bg-red-600 px-4 py-3 text-white">

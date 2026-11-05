@@ -179,16 +179,16 @@ export function DataTable<T>({
 }) {
   return (
     <div className={`${card} overflow-hidden`}>
-      {toolbar && <div className="border-b border-stone-200 bg-stone-50/50 p-3.5">{toolbar}</div>}
+      {toolbar && <div className="border-b border-stone-200 bg-stone-50/50 p-3 sm:p-3.5 overflow-x-auto">{toolbar}</div>}
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[760px] text-left text-sm">
+        <table className="w-full min-w-[640px] text-start text-sm">
           <thead className="border-b border-stone-200 bg-stone-50/80">
             <tr>
               {columns.map((col) => (
                 <th
                   key={col.header}
                   scope="col"
-                  className={`px-5 py-3.5 text-[11px] font-bold uppercase tracking-wide text-stone-500 ${col.align === "right" ? "text-right" : ""}`}
+                  className={`px-4 sm:px-5 py-3 text-[11px] font-bold uppercase tracking-wide text-stone-500 ${col.align === "right" ? "text-end" : "text-start"}`}
                 >
                   {col.header}
                 </th>
@@ -208,7 +208,7 @@ export function DataTable<T>({
                   {columns.map((col) => (
                     <td
                       key={col.header}
-                      className={`px-5 py-3.5 align-middle text-stone-700 ${col.align === "right" ? "text-right" : ""} ${col.className ?? ""}`}
+                      className={`px-4 sm:px-5 py-3.5 align-middle text-stone-700 ${col.align === "right" ? "text-end" : "text-start"} ${col.className ?? ""}`}
                     >
                       {col.cell(row)}
                     </td>
@@ -353,13 +353,13 @@ export function PasswordGeneratorInput({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder="Entrez ou générez un mot de passe"
-          className={`${inputClass} pr-24 font-mono text-xs`}
+          className={`${inputClass} pe-24 font-mono text-xs`}
         />
         <button
           type="button"
           onClick={copyPassword}
           disabled={!value}
-          className="absolute right-1.5 top-1.5 inline-flex items-center gap-1 rounded-lg border border-stone-200 bg-stone-50 px-2 py-1 text-[11px] font-semibold text-stone-700 transition hover:bg-stone-100 disabled:opacity-40"
+          className="absolute end-1.5 top-1.5 inline-flex items-center gap-1 rounded-lg border border-stone-200 bg-stone-50 px-2 py-1 text-[11px] font-semibold text-stone-700 transition hover:bg-stone-100 disabled:opacity-40"
         >
           {copied ? (
             <>
@@ -388,7 +388,7 @@ export function Breadcrumbs({
         const isLast = idx === items.length - 1;
         return (
           <div key={item.label} className="flex items-center gap-1.5">
-            {idx > 0 && <ChevronRight className="h-3.5 w-3.5 text-stone-400" />}
+            {idx > 0 && <ChevronRight className="h-3.5 w-3.5 text-stone-400 rtl:rotate-180" />}
             {item.onClick ? (
               <button
                 type="button"
@@ -479,7 +479,7 @@ export function Menu({
         <div
           role="menu"
           className={`absolute top-full z-40 mt-2 ${width} overflow-hidden rounded-2xl border border-stone-200 bg-white p-1.5 shadow-xl shadow-stone-900/10 ${
-            align === "right" ? "right-0" : "left-0"
+            align === "right" ? "end-0" : "start-0"
           }`}
         >
           {children(() => setOpen(false))}
@@ -490,7 +490,7 @@ export function Menu({
 }
 
 export const menuItem =
-  "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-stone-700 transition hover:bg-stone-100 hover:text-ink";
+  "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-start text-sm font-medium text-stone-700 transition hover:bg-stone-100 hover:text-ink";
 
 type Toast = { id: number; message: string };
 
@@ -509,7 +509,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={notify}>
       {children}
-      <div aria-live="polite" className="pointer-events-none fixed bottom-5 right-5 z-50 flex flex-col items-end gap-2">
+      <div aria-live="polite" className="pointer-events-none fixed bottom-5 end-5 z-50 flex flex-col items-end gap-2">
         {toasts.map((t) => (
           <div key={t.id} className="pointer-events-auto flex max-w-sm items-start gap-3 rounded-xl bg-ink px-4 py-3 text-sm text-white shadow-xl">
             <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-brand" aria-hidden />
@@ -576,9 +576,11 @@ export function Modal({
   }, [onClose]);
 
   return (
-    <div role="dialog" aria-modal="true" aria-labelledby={titleId} className="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center">
+    <div role="dialog" aria-modal="true" aria-labelledby={titleId} className="fixed inset-0 z-50 flex items-end justify-center p-0 sm:items-center sm:p-4">
       <button type="button" aria-label="Fermer" onClick={onClose} className="absolute inset-0 h-full w-full cursor-default bg-ink/40" />
-      <div className="relative max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl">
+      <div className="relative max-h-[90vh] sm:max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-t-2xl sm:rounded-2xl bg-white p-5 sm:p-6 shadow-2xl transition-all">
+        {/* Mobile handle indicator */}
+        <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-stone-300 sm:hidden" />
         <div className="flex items-start justify-between gap-4">
           <div>
             <h2 id={titleId} className="text-lg font-bold text-ink">

@@ -66,6 +66,7 @@ import {
   type Tone,
 } from "../ui";
 import { SkeletonFinancesPage } from "../skeletons";
+import { useI18n } from "@/lib/i18n";
 
 type TabId = "impayes" | "journal" | "depenses" | "factures" | "budget";
 
@@ -80,6 +81,7 @@ function monthsTone(months: number): Tone {
 const sum = (values: number[]) => values.reduce((total, v) => total + v, 0);
 
 export default function FinancesPage() {
+  const { t, locale, isRTL } = useI18n();
   const notify = useToast();
   const [data, setData] = useState<FinancesData | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -539,7 +541,7 @@ export default function FinancesPage() {
                   className={button("secondary")}
                 >
                   <CalendarDays className="h-4 w-4" aria-hidden />
-                  {generating ? "Génération en cours..." : "Générer Charges"}
+                  {generating ? "Génération en cours..." : "{t.finances.genererCharges}"}
                 </button>
                 <button type="button" onClick={() => setAddingPaiement(true)} className={button("primary")}>
                   <Plus className="h-4 w-4" aria-hidden />
@@ -785,16 +787,16 @@ export default function FinancesPage() {
                 </div>
 
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs">
+                  <table className="w-full text-start text-xs">
                     <thead className="border-b border-stone-200 bg-stone-50 text-stone-600">
                       <tr>
                         <th className="px-4 py-3 font-bold uppercase tracking-wider">Poste de charge</th>
                         <th className="px-4 py-3 font-bold uppercase tracking-wider">Catégorie</th>
-                        <th className="px-4 py-3 text-right font-bold uppercase tracking-wider">Voté N</th>
-                        <th className="px-4 py-3 text-right font-bold uppercase tracking-wider">Réalisé N</th>
+                        <th className="px-4 py-3 text-end font-bold uppercase tracking-wider">Voté N</th>
+                        <th className="px-4 py-3 text-end font-bold uppercase tracking-wider">Réalisé N</th>
                         <th className="px-4 py-3 text-center font-bold uppercase tracking-wider">Conso (%)</th>
-                        <th className="px-4 py-3 text-right font-bold uppercase tracking-wider">Écart (DZD)</th>
-                        <th className="px-4 py-3 text-right font-bold uppercase tracking-wider">Prévisionnel N+1</th>
+                        <th className="px-4 py-3 text-end font-bold uppercase tracking-wider">Écart (DZD)</th>
+                        <th className="px-4 py-3 text-end font-bold uppercase tracking-wider">Prévisionnel N+1</th>
                         <th className="px-4 py-3 font-bold uppercase tracking-wider">Justification & Motivation</th>
                       </tr>
                     </thead>
@@ -806,8 +808,8 @@ export default function FinancesPage() {
                           <tr key={b.id} className="hover:bg-stone-50/70 transition">
                             <td className="px-4 py-3 font-semibold text-ink">{b.poste}</td>
                             <td className="px-4 py-3"><Pill>{b.categorie}</Pill></td>
-                            <td className="px-4 py-3 text-right font-mono font-medium">{formatDZD(b.budgetVote)}</td>
-                            <td className="px-4 py-3 text-right font-mono font-medium">{formatDZD(b.depenseReelle)}</td>
+                            <td className="px-4 py-3 text-end font-mono font-medium">{formatDZD(b.budgetVote)}</td>
+                            <td className="px-4 py-3 text-end font-mono font-medium">{formatDZD(b.depenseReelle)}</td>
                             <td className="px-4 py-3 text-center">
                               <span className={`inline-block px-2 py-0.5 rounded text-[11px] font-bold ${
                                 pct > 100 ? "bg-red-100 text-red-800" : pct > 85 ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800"
@@ -815,10 +817,10 @@ export default function FinancesPage() {
                                 {pct}%
                               </span>
                             </td>
-                            <td className={`px-4 py-3 text-right font-mono font-bold ${variance >= 0 ? "text-emerald-700" : "text-red-700"}`}>
+                            <td className={`px-4 py-3 text-end font-mono font-bold ${variance >= 0 ? "text-emerald-700" : "text-red-700"}`}>
                               {variance >= 0 ? `+${formatDZD(variance)}` : formatDZD(variance)}
                             </td>
-                            <td className="px-4 py-3 text-right font-mono font-bold text-ink">{formatDZD(b.previsionnelN1)}</td>
+                            <td className="px-4 py-3 text-end font-mono font-bold text-ink">{formatDZD(b.previsionnelN1)}</td>
                             <td className="px-4 py-3 text-stone-500 max-w-xs">{b.justification}</td>
                           </tr>
                         );
@@ -827,13 +829,13 @@ export default function FinancesPage() {
                     <tfoot className="border-t-2 border-stone-200 bg-stone-100/70 font-bold text-ink">
                       <tr>
                         <td className="px-4 py-3 font-extrabold uppercase" colSpan={2}>Total Général Budgétaire</td>
-                        <td className="px-4 py-3 text-right font-mono text-sm">{formatDZD(totalBudgetVote)}</td>
-                        <td className="px-4 py-3 text-right font-mono text-sm">{formatDZD(totalDepenseReelleBudget)}</td>
+                        <td className="px-4 py-3 text-end font-mono text-sm">{formatDZD(totalBudgetVote)}</td>
+                        <td className="px-4 py-3 text-end font-mono text-sm">{formatDZD(totalDepenseReelleBudget)}</td>
                         <td className="px-4 py-3 text-center text-sm font-extrabold">{tauxConsoGlobal}%</td>
-                        <td className={`px-4 py-3 text-right font-mono text-sm ${ecartGlobal >= 0 ? "text-emerald-800" : "text-red-800"}`}>
+                        <td className={`px-4 py-3 text-end font-mono text-sm ${ecartGlobal >= 0 ? "text-emerald-800" : "text-red-800"}`}>
                           {ecartGlobal >= 0 ? `+${formatDZD(ecartGlobal)}` : formatDZD(ecartGlobal)}
                         </td>
-                        <td className="px-4 py-3 text-right font-mono text-sm text-brand">{formatDZD(totalPrevisionnelN1)}</td>
+                        <td className="px-4 py-3 text-end font-mono text-sm text-brand">{formatDZD(totalPrevisionnelN1)}</td>
                         <td className="px-4 py-3 text-xs text-stone-500">Équilibre budgétaire préconisé</td>
                       </tr>
                     </tfoot>
@@ -938,7 +940,7 @@ export default function FinancesPage() {
                           : "Déficit d'exploitation nécessitant un appel exceptionnel de régularisation lors de l'AG."}
                       </p>
                     </div>
-                    <div className="text-right">
+                    <div className="text-end">
                       <span className="font-mono text-xs font-bold text-stone-500">Taux de Recouvrement Effectif : </span>
                       <span className="font-mono text-sm font-black text-emerald-800">{tauxRecouvrement}%</span>
                     </div>
@@ -953,7 +955,7 @@ export default function FinancesPage() {
                       Signature & Cachet Syndic
                     </div>
                   </div>
-                  <div className="sm:text-right">
+                  <div className="sm:text-end">
                     <p className="font-bold text-ink">Pour le Conseil Syndical</p>
                     <p className="text-[11px] text-stone-400">Visa d&apos;approbation pour soumission à l&apos;AG</p>
                     <div className="mt-2 sm:ml-auto h-16 w-40 rounded border border-dashed border-stone-300 flex items-center justify-center text-[10px] text-stone-400 italic">
@@ -1090,7 +1092,7 @@ function SummaryStrip({ label, value, hint }: { label: string; value: string; hi
   return (
     <div className={`${card} flex flex-wrap items-center justify-between gap-3 px-5 py-4`}>
       <p className="text-xs text-stone-500">{hint}</p>
-      <p className="text-right">
+      <p className="text-end">
         <span className="block text-[10px] font-bold uppercase tracking-wide text-stone-500">{label}</span>
         <span className="font-mono text-lg font-bold text-ink">{value}</span>
       </p>

@@ -42,6 +42,7 @@ import {
   type TabItem,
 } from "../ui";
 import { SkeletonGenericPage } from "../skeletons";
+import { useI18n } from "@/lib/i18n";
 
 type TabId = "charges" | "incidents" | "paiements";
 
@@ -50,6 +51,7 @@ function StatusPill({ actif }: { actif: boolean }) {
 }
 
 export default function ConfigurationPage() {
+  const { t, locale, isRTL } = useI18n();
   const notify = useToast();
   const [data, setData] = useState<ConfigData | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -210,8 +212,8 @@ export default function ConfigurationPage() {
     <div className="space-y-6">
       <PageHeader
         icon={SlidersHorizontal}
-        title="Configuration & Types"
-        subtitle="Paramètres de la résidence : charges, catégories d'incidents et moyens de paiement acceptés"
+        title={t.configuration.title}
+        subtitle={t.configuration.subtitle}
         actions={
           <>
             {tab === "charges" && (

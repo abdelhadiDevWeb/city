@@ -1,5 +1,6 @@
 "use client";
 
+import { useI18n } from "@/lib/i18n";
 import { AlertTriangle, BellRing, CalendarDays, Megaphone, Pin, Plus, Search, Send, UsersRound } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 import {
@@ -43,6 +44,7 @@ import { SkeletonGenericPage } from "../skeletons";
 type TabId = "annonces" | "alertes";
 
 export default function AnnoncesPage() {
+  const { t, locale, isRTL } = useI18n();
   const notify = useToast();
   const [data, setData] = useState<AnnoncesData | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -303,8 +305,8 @@ export default function AnnoncesPage() {
     <div className="space-y-6">
       <PageHeader
         icon={Megaphone}
-        title="Annonces & Alertes"
-        subtitle="Communication en direct avec les résidents par notification push, application et affichage"
+        title={t.annonces.title}
+        subtitle={t.annonces.subtitle}
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <button
@@ -313,7 +315,7 @@ export default function AnnoncesPage() {
               className={button("secondary")}
             >
               <Megaphone className="h-4 w-4" aria-hidden />
-              Nouvelle Annonce
+              {t.annonces.publierAnnonce}
             </button>
             <button
               type="button"
@@ -321,7 +323,7 @@ export default function AnnoncesPage() {
               className={button("primary")}
             >
               <AlertTriangle className="h-4 w-4 text-amber-200" aria-hidden />
-              Créer une Alerte
+              {t.annonces.diffuserAlerte}
             </button>
           </div>
         }
@@ -680,7 +682,7 @@ function NouvelleAlerteModal({
                 key={lvl.id}
                 type="button"
                 onClick={() => setNiveau(lvl.id)}
-                className={`flex flex-col items-start rounded-xl border p-2.5 text-left transition ${
+                className={`flex flex-col items-start rounded-xl border p-2.5 text-start transition ${
                   niveau === lvl.id
                     ? lvl.id === "critique"
                       ? "border-red-500 bg-red-50 text-red-900 ring-2 ring-red-500/20"
