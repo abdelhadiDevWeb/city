@@ -466,7 +466,7 @@ export default function AnnoncesPage() {
         <ConfirmModal
           isOpen={true}
           title="Supprimer l'annonce"
-          message={`Êtes-vous sûr de vouloir supprimer l'annonce « ${deletingAnnonce.titre} » ?`}
+          message={`${tText("Êtes-vous sûr de vouloir supprimer l'annonce")} « ${deletingAnnonce.titre} » ?`}
           confirmLabel="Supprimer définitivement"
           onCancel={() => setDeletingAnnonce(null)}
           onConfirm={async () => {
@@ -538,6 +538,7 @@ function EditAnnonceModal({
   onClose: () => void;
   onUpdated: () => void;
 }) {
+  const { tText } = useI18n();
   const { submitting, error, run } = useSubmit();
   const [titre, setTitre] = useState(annonce.titre);
   const [contenu, setContenu] = useState(annonce.contenu);
@@ -574,7 +575,7 @@ function EditAnnonceModal({
             onChange={(e) => setEpinglee(e.target.checked)}
             className="rounded border-stone-300 text-brand focus:ring-brand"
           />
-          <span>Épingler en haut de l&apos;application</span>
+          <span>{tText("Épingler en haut de l'application")}</span>
         </label>
         <FormError error={error} />
         <ModalActions submitting={submitting} label="Enregistrer les modifications" onCancel={onClose} />
@@ -590,6 +591,7 @@ function NouvelleAnnonceModal({
   onClose: () => void;
   onCreated: () => void;
 }) {
+  const { tText } = useI18n();
   const { submitting, error, run } = useSubmit();
   const [epinglee, setEpinglee] = useState(false);
 
@@ -629,7 +631,7 @@ function NouvelleAnnonceModal({
             onChange={(e) => setEpinglee(e.target.checked)}
             className="rounded border-stone-300 text-brand focus:ring-brand"
           />
-          <span>Épingler en haut de l&apos;application</span>
+          <span>{tText("Épingler en haut de l'application")}</span>
         </label>
         <FormError error={error} />
         <ModalActions submitting={submitting} label="Publier l'annonce" onCancel={onClose} />
@@ -645,6 +647,7 @@ function NouvelleAlerteModal({
   onClose: () => void;
   onCreated: () => void;
 }) {
+  const { tText } = useI18n();
   const { submitting, error, run } = useSubmit();
   const [niveau, setNiveau] = useState<"critique" | "attention" | "info">("critique");
 
@@ -671,7 +674,7 @@ function NouvelleAlerteModal({
       <form onSubmit={onSubmit} className="space-y-4">
         {/* Urgency Level Selector */}
         <div className="space-y-1.5">
-          <label className="block text-xs font-semibold text-ink">Niveau d&apos;urgence</label>
+          <label className="block text-xs font-semibold text-ink">{tText("Niveau d'urgence")}</label>
           <div className="grid grid-cols-3 gap-2">
             {[
               { id: "critique" as const, label: "🚨 Critique", desc: "Urgence immédiate (coupure, panne, danger)" },
@@ -692,8 +695,8 @@ function NouvelleAlerteModal({
                     : "border-stone-200 bg-white hover:border-stone-300"
                 }`}
               >
-                <span className="text-xs font-bold">{lvl.label}</span>
-                <span className="mt-0.5 text-[11px] text-stone-500 line-clamp-2 leading-tight">{lvl.desc}</span>
+                <span className="text-xs font-bold">{tText(lvl.label)}</span>
+                <span className="mt-0.5 text-[11px] text-stone-500 line-clamp-2 leading-tight">{tText(lvl.desc)}</span>
               </button>
             ))}
           </div>
@@ -708,13 +711,13 @@ function NouvelleAlerteModal({
         />
 
         <div className="space-y-1.5">
-          <label className="block text-xs font-semibold text-ink">Détails et consignes pour les résidents</label>
+          <label className="block text-xs font-semibold text-ink">{tText("Détails et consignes pour les résidents")}</label>
           <textarea
             name="detail"
             required
             rows={4}
             className="w-full rounded-xl border border-stone-200 bg-white p-3 text-sm text-ink placeholder:text-stone-400 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-            placeholder="Expliquez la situation, la conduite à tenir et la durée estimée de résolution..."
+            placeholder={tText("Expliquez la situation, la conduite à tenir et la durée estimée de résolution...")}
           />
         </div>
 
@@ -726,9 +729,9 @@ function NouvelleAlerteModal({
         />
 
         <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-3 text-xs text-amber-900">
-          <p className="font-semibold">⚡ Diffusion instantanée</p>
+          <p className="font-semibold">{tText("⚡ Diffusion instantanée")}</p>
           <p className="mt-0.5 text-amber-700">
-            Cette alerte sera envoyée en notification push prioritaire sur les téléphones mobiles de tous les résidents et apparaîtra en haut du tableau de bord.
+            {tText("Cette alerte sera envoyée en notification push prioritaire sur les téléphones mobiles de tous les résidents et apparaîtra en haut du tableau de bord.")}
           </p>
         </div>
 

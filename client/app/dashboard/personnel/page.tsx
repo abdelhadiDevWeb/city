@@ -297,8 +297,8 @@ export default function PersonnelPage() {
       {confirmDelete && (
         <ConfirmModal
           isOpen={true}
-          title={`Supprimer ${confirmDelete.kind === "personnel" ? "l'employé" : "la tâche"}`}
-          message={`Êtes-vous sûr de vouloir supprimer « ${confirmDelete.nom} » ? Cette action est irréversible.`}
+          title={`${tText("Supprimer")} ${confirmDelete.kind === "personnel" ? tText("l'employé") : tText("la tâche")}`}
+          message={`${tText("Êtes-vous sûr de vouloir supprimer")} « ${confirmDelete.nom} » ? ${tText("Cette action est irréversible.")}`}
           confirmLabel="Supprimer définitivement"
           onCancel={() => setConfirmDelete(null)}
           onConfirm={async () => {
@@ -329,6 +329,7 @@ function NouvelleTacheModal({
   onClose: () => void;
   onCreated: () => void;
 }) {
+  const { tText } = useI18n();
   const { submitting, error, run } = useSubmit();
   const [urgente, setUrgente] = useState(false);
 
@@ -363,7 +364,7 @@ function NouvelleTacheModal({
             onChange={(e) => setUrgente(e.target.checked)}
             className="rounded border-stone-300 text-brand focus:ring-brand"
           />
-          <span>Tâche urgente</span>
+          <span>{tText("Tâche urgente")}</span>
         </label>
         <FormError error={error} />
         <ModalActions submitting={submitting} label="Créer la tâche" onCancel={onClose} />
@@ -476,6 +477,7 @@ function EditTacheModal({
   onClose: () => void;
   onUpdated: () => void;
 }) {
+  const { tText } = useI18n();
   const { submitting, error, run } = useSubmit();
   const [titre, setTitre] = useState(tache.titre);
   const [assigneA, setAssigneA] = useState(tache.assigneA);
@@ -515,7 +517,7 @@ function EditTacheModal({
             onChange={(e) => setUrgente(e.target.checked)}
             className="rounded border-stone-300 text-brand focus:ring-brand"
           />
-          <span>Tâche urgente</span>
+          <span>{tText("Tâche urgente")}</span>
         </label>
         <FormError error={error} />
         <ModalActions submitting={submitting} label="Enregistrer les modifications" onCancel={onClose} />

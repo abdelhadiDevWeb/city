@@ -467,7 +467,7 @@ export default function MaintenancePage() {
         <ConfirmModal
           isOpen={true}
           title="Supprimer l'incident"
-          message={`Êtes-vous sûr de vouloir supprimer ${deletingIncident.titre ? `« ${deletingIncident.titre} »` : "cet incident"} ?`}
+          message={`${tText("Êtes-vous sûr de vouloir supprimer")} ${deletingIncident.titre ? `« ${deletingIncident.titre} »` : tText("cet incident")} ?`}
           confirmLabel="Supprimer définitivement"
           onCancel={() => setDeletingIncident(null)}
           onConfirm={async () => {
@@ -527,6 +527,7 @@ function SignalerIncidentModal({
   onClose: () => void;
   onCreated: () => void;
 }) {
+  const { tText } = useI18n();
   const { submitting, error, run } = useSubmit();
   const [priorite, setPriorite] = useState<Priorite>("Moyenne");
   const [photoUrl, setPhotoUrl] = useState("");
@@ -572,27 +573,27 @@ function SignalerIncidentModal({
             placeholder="Ex: https://images.unsplash.com/... ou lien de photo"
           />
           <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-stone-500">
-            <span>Photos d&apos;exemple rapides :</span>
+            <span>{tText("Photos d'exemple rapides :")}</span>
             <button
               type="button"
               onClick={() => setPhotoUrl("https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=600&auto=format&fit=crop&q=80")}
               className="rounded border border-stone-200 bg-stone-50 px-2 py-0.5 hover:bg-stone-100 font-medium"
             >
-              Fuite d&apos;eau
+              {tText("Fuite d'eau")}
             </button>
             <button
               type="button"
               onClick={() => setPhotoUrl("https://images.unsplash.com/photo-1513694203232-719a280e022f?w=600&auto=format&fit=crop&q=80")}
               className="rounded border border-stone-200 bg-stone-50 px-2 py-0.5 hover:bg-stone-100 font-medium"
             >
-              Éclairage palier
+              {tText("Éclairage palier")}
             </button>
             <button
               type="button"
               onClick={() => setPhotoUrl("https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&auto=format&fit=crop&q=80")}
               className="rounded border border-stone-200 bg-stone-50 px-2 py-0.5 hover:bg-stone-100 font-medium"
             >
-              Câbles / Tableau
+              {tText("Câbles / Tableau")}
             </button>
           </div>
           {photoUrl && (
@@ -616,6 +617,7 @@ function DeclarerPanneModal({
   onClose: () => void;
   onCreated: () => void;
 }) {
+  const { tText } = useI18n();
   const { submitting, error, run } = useSubmit();
   const [equipement, setEquipement] = useState("Ascenseur Bloc A");
   const [priorite, setPriorite] = useState<Priorite>("Haute");
@@ -686,6 +688,7 @@ function ConsignerInterventionModal({
   onClose: () => void;
   onCreated: () => void;
 }) {
+  const { tText } = useI18n();
   const { submitting, error, run } = useSubmit();
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {

@@ -1016,7 +1016,7 @@ export default function ResidencesPage() {
       <ConfirmModal
         open={Boolean(deletingItem)}
         title="Confirmer la suppression"
-        message={`Êtes-vous sûr de vouloir supprimer ${deletingItem?.name} ? Cette action est irréversible.`}
+        message={`${tText("Êtes-vous sûr de vouloir supprimer")} ${deletingItem?.name} ? ${tText("Cette action est irréversible.")}`}
         confirmLabel="Supprimer"
         onConfirm={async () => {
           if (!deletingItem || !residence) return;
@@ -1050,6 +1050,7 @@ function BatimentModal({
   onClose: () => void;
   onCreated: (nom: string) => void;
 }) {
+  const { tText } = useI18n();
   const { submitting, error, run } = useSubmit();
   const [etages, setEtages] = useState(5);
   const [appartementsParEtage, setAppartementsParEtage] = useState(4);
@@ -1069,7 +1070,7 @@ function BatimentModal({
   }
 
   return (
-    <Modal title="Nouveau Bâtiment (Bloc)" description={`Ajout d'un bloc dans « ${residenceNom} ».`} onClose={onClose}>
+    <Modal title="Nouveau Bâtiment (Bloc)" description={`${tText("Ajout d'un bloc dans")} « ${residenceNom} ».`} onClose={onClose}>
       {maxBatiments !== undefined && currentBatiments !== undefined && (
         <div className="mb-4">
           <QuotaProgress current={currentBatiments} max={maxBatiments} label="Quota de la résidence" unit="bâtiments" />
@@ -1089,7 +1090,7 @@ function BatimentModal({
             onChange={(e) => setEtages(Number(e.target.value))}
           />
           <div className="space-y-1.5">
-            <label className="block text-xs font-semibold text-stone-700">Logements par étage (aide)</label>
+            <label className="block text-xs font-semibold text-stone-700">{tText("Logements par étage (aide)")}</label>
             <input
               type="number"
               min={1}
@@ -1107,7 +1108,7 @@ function BatimentModal({
           value={totalCalcule}
           min={1}
           max={2000}
-          hint={`Calcul automatique : ${etages} étages × ${appartementsParEtage} logements = ${totalCalcule} appartements`}
+          hint={`${tText("Calcul automatique :")} ${etages} ${tText("étages")} × ${appartementsParEtage} ${tText("logements")} = ${totalCalcule} ${tText("appartements")}`}
         />
         <FormError error={error} />
         <ModalActions submitting={submitting} label="Créer le bâtiment" onCancel={onClose} />
@@ -1127,6 +1128,7 @@ function EditBatimentModal({
   onClose: () => void;
   onUpdated: () => void;
 }) {
+  const { tText } = useI18n();
   const { submitting, error, run } = useSubmit();
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
@@ -1143,7 +1145,7 @@ function EditBatimentModal({
   }
 
   return (
-    <Modal title="Modifier le Bâtiment" description={`Modification de « ${batiment.nom} »`} onClose={onClose}>
+    <Modal title="Modifier le Bâtiment" description={`${tText("Modification de")} « ${batiment.nom} »`} onClose={onClose}>
       <form onSubmit={onSubmit} className="space-y-4">
         <Field label="Nom ou lettre du bâtiment" name="nom" defaultValue={batiment.nom} required autoFocus />
         <Field label="Nombre d'étages" name="etages" type="number" defaultValue={batiment.etages} required min={0} max={200} />
@@ -1166,6 +1168,7 @@ function SubAdminModal({
   onClose: () => void;
   onCreated: (email: string) => void;
 }) {
+  const { tText } = useI18n();
   const { submitting, error, run } = useSubmit();
   const defaultBatimentId = preselectedBatiment?.id || batiments.find((b) => !b.sousAdmin)?.id || batiments[0]?.id || "";
   const [selectedBatimentId, setSelectedBatimentId] = useState(defaultBatimentId);
@@ -1217,7 +1220,7 @@ function SubAdminModal({
             >
               {batiments.map((b) => (
                 <option key={b.id} value={b.id}>
-                  Bâtiment {b.nom} {b.sousAdmin ? `(Gestionnaire actuel : ${fullName(b.sousAdmin)})` : "— [DISPONIBLE]"}
+                  {tText("Bâtiment")} {b.nom} {b.sousAdmin ? `(${tText("Gestionnaire actuel :")} ${fullName(b.sousAdmin)})` : `— [${tText("DISPONIBLE")}]`}
                 </option>
               ))}
             </SelectField>
@@ -1225,18 +1228,18 @@ function SubAdminModal({
             {selectedBuilding && (
               <div className="flex items-center justify-between rounded-xl border border-stone-200 bg-stone-50/70 p-3 text-xs">
                 <div>
-                  <span className="font-bold text-ink">Bâtiment {selectedBuilding.nom}</span>
+                  <span className="font-bold text-ink">{tText("Bâtiment")} {selectedBuilding.nom}</span>
                   <span className="ml-2 text-stone-500">
-                    {selectedBuilding.appartements.length} / {selectedBuilding.maxAppartements ?? 50} logements
+                    {selectedBuilding.appartements.length} / {selectedBuilding.maxAppartements ?? 50} {tText("logements")}
                   </span>
                 </div>
                 {selectedBuilding.sousAdmin ? (
                   <span className="rounded-md border border-amber-200 bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-700">
-                    Remplacera {fullName(selectedBuilding.sousAdmin)}
+                    {tText("Remplacera")} {fullName(selectedBuilding.sousAdmin)}
                   </span>
                 ) : (
                   <span className="rounded-md border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
-                    Disponible
+                    {tText("Disponible")}
                   </span>
                 )}
               </div>

@@ -407,7 +407,7 @@ export default function ResidentsPage() {
         <ConfirmModal
           isOpen={true}
           title="Supprimer le résident"
-          message={`Êtes-vous sûr de vouloir supprimer « ${fullName(deletingResident)} » ? Cela révoquera son accès et libérera l'appartement.`}
+          message={`${tText("Êtes-vous sûr de vouloir supprimer")} « ${fullName(deletingResident)} » ? ${tText("Cela révoquera son accès et libérera l'appartement.")}`}
           confirmLabel="Supprimer définitivement"
           onCancel={() => setDeletingResident(null)}
           onConfirm={async () => {
@@ -686,7 +686,7 @@ function EditResidentModal({
     <Modal title="Modifier le résident" description="Modifiez les informations personnelles ou le logement du propriétaire." onClose={onClose}>
       <form onSubmit={onSubmit} className="space-y-5">
         <fieldset className="space-y-4">
-          <legend className="mb-3 text-[11px] font-bold uppercase tracking-wide text-stone-500">Identité du propriétaire</legend>
+          <legend className="mb-3 text-[11px] font-bold uppercase tracking-wide text-stone-500">{tText("Identité du propriétaire")}</legend>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Prénom" value={prenom} onChange={(e) => setPrenom(e.target.value)} required maxLength={60} autoFocus />
             <Field label="Nom" value={nom} onChange={(e) => setNom(e.target.value)} required maxLength={60} />
@@ -705,7 +705,7 @@ function EditResidentModal({
         </fieldset>
 
         <fieldset className="space-y-4">
-          <legend className="mb-3 text-[11px] font-bold uppercase tracking-wide text-stone-500">Logement</legend>
+          <legend className="mb-3 text-[11px] font-bold uppercase tracking-wide text-stone-500">{tText("Logement")}</legend>
           <div className="grid gap-4 sm:grid-cols-2">
             <SelectField
               label="Bâtiment"
@@ -718,7 +718,7 @@ function EditResidentModal({
             >
               {batiments.map((b) => (
                 <option key={b.id} value={b.id}>
-                  {b.nom} ({b.etages} étages)
+                  {b.nom} ({b.etages} {tText("étages")})
                 </option>
               ))}
             </SelectField>
@@ -743,7 +743,7 @@ function EditResidentModal({
         </fieldset>
 
         <fieldset className="space-y-4">
-          <legend className="mb-3 text-[11px] font-bold uppercase tracking-wide text-stone-500">Changer le mot de passe (facultatif)</legend>
+          <legend className="mb-3 text-[11px] font-bold uppercase tracking-wide text-stone-500">{tText("Changer le mot de passe (facultatif)")}</legend>
           <Field
             label="Nouveau mot de passe"
             type="text"

@@ -795,13 +795,13 @@ export default function AssembleesPage() {
             }}
             className="space-y-4"
           >
-            <Field label="Titre de l'Assemblée Générale" name="titre" required defaultValue="Assemblée Générale Extraordinaire" autoFocus />
+            <Field label="Titre de l'Assemblée Générale" name="titre" required defaultValue={tText("Assemblée Générale Extraordinaire")} autoFocus />
             <div className="grid gap-4 sm:grid-cols-2">
               <SelectField label="Type d'Assemblée" name="type" defaultValue="AGO">
-                <option value="AGO">AGO · Assemblée Générale Ordinaire Annuelle</option>
-                <option value="AGE">AGE · Assemblée Générale Extraordinaire</option>
+                <option value="AGO">{tText("AGO · Assemblée Générale Ordinaire Annuelle")}</option>
+                <option value="AGE">{tText("AGE · Assemblée Générale Extraordinaire")}</option>
               </SelectField>
-              <Field label="Lieu de tenue" name="lieu" required defaultValue="Salle de réunion / Hall principal" />
+              <Field label="Lieu de tenue" name="lieu" required defaultValue={tText("Salle de réunion / Hall principal")} />
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Date de l'AG" name="date" type="date" required defaultValue="2026-12-10" />
@@ -848,9 +848,9 @@ export default function AssembleesPage() {
             <Field label="Titre de la résolution" name="titre" required placeholder="Ex: Travaux d'étanchéité terrasse Bloc B" autoFocus />
             <Field label="Description détaillée & Motivation" name="description" placeholder="Ex: Remplacement du complexe d'étanchéité suite à infiltration..." />
             <SelectField label="Majorité requise par la Loi" name="majorite" defaultValue="Art. 24 (Majorité simple)">
-              <option value="Art. 24 (Majorité simple)">Art. 24 · Majorité simple (Entretien courant, budget)</option>
-              <option value="Art. 25 (Majorité absolue)">Art. 25 · Majorité absolue (Travaux importants, contrats)</option>
-              <option value="Art. 26 (Double majorité)">Art. 26 · Double majorité (Modification du règlement)</option>
+              <option value="Art. 24 (Majorité simple)">{tText("Art. 24 · Majorité simple (Entretien courant, budget)")}</option>
+              <option value="Art. 25 (Majorité absolue)">{tText("Art. 25 · Majorité absolue (Travaux importants, contrats)")}</option>
+              <option value="Art. 26 (Double majorité)">{tText("Art. 26 · Double majorité (Modification du règlement)")}</option>
             </SelectField>
             <ModalActions submitting={false} label="Inscrire la Résolution" onCancel={() => setAddingResolution(false)} />
           </form>

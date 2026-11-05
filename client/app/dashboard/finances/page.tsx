@@ -389,20 +389,20 @@ export default function FinancesPage() {
       cell: (r) => (
         <span className="inline-flex items-center gap-2">
           <button type="button" onClick={() => setEncaissantCharge(r)} className={button("primary", "sm")}>
-            Encaisser
+            {tText("Encaisser")}
           </button>
           <button
             type="button"
             onClick={() => setRelancantCharge(r)}
             className="inline-flex items-center gap-1 rounded-lg border border-amber-300 bg-amber-50 px-2.5 py-1.5 text-xs font-semibold text-amber-900 hover:bg-amber-100"
-            title="Relancer & Mise en demeure officielle"
+            title={tText("Relancer & Mise en demeure officielle")}
           >
             <ShieldAlert className="h-3.5 w-3.5 text-amber-700" aria-hidden />
-            Relancer
+            {tText("Relancer")}
           </button>
-          <a href={`tel:${r.telephone}`} className={button("secondary", "sm")} title={`Appeler ${r.resident}`}>
+          <a href={`tel:${r.telephone}`} className={button("secondary", "sm")} title={`${tText("Appeler")} ${r.resident}`}>
             <Phone className="h-3.5 w-3.5" aria-hidden />
-            Appeler
+            {tText("Appeler")}
           </a>
           <ActionGroup
             editLabel="Modifier créance"
@@ -1049,8 +1049,8 @@ export default function FinancesPage() {
       {confirmDelete && (
         <ConfirmModal
           isOpen={true}
-          title={`Supprimer ${confirmDelete.nom.startsWith("Paiement") ? "le paiement" : confirmDelete.kind === "charge" ? "la créance" : confirmDelete.kind === "depense" ? "la dépense" : "la facture"}`}
-          message={`Êtes-vous sûr de vouloir supprimer « ${confirmDelete.nom} » ? Cette action est irréversible.`}
+          title={`${tText("Supprimer")} ${confirmDelete.nom.startsWith("Paiement") ? tText("le paiement") : confirmDelete.kind === "charge" ? tText("la créance") : confirmDelete.kind === "depense" ? tText("la dépense") : tText("la facture")}`}
+          message={`${tText("Êtes-vous sûr de vouloir supprimer")} « ${confirmDelete.nom} » ? ${tText("Cette action est irréversible.")}`}
           confirmLabel="Supprimer définitivement"
           onCancel={() => setConfirmDelete(null)}
           onConfirm={async () => {

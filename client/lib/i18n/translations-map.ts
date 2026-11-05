@@ -2985,9 +2985,972 @@ export const TRANSLATIONS_MAP: Record<string, TranslationEntry> = {
     ar: "سنة واحدة قياسي · مدفوع",
     en: "1 year standard · Paid"
   },
+
+  // === MODAL DIALOGS, DRAWERS, FORMS & REPORTS COMPLETE DICTIONARY ===
+  "créez le compte d'accès pour le responsable de bâtiment.": {
+    fr: "Créez le compte d'accès pour le responsable de bâtiment.",
+    ar: "أنشئ حساب الوصول للمسؤول عن العمارة.",
+    en: "Create access account for the building manager."
+  },
+  "bâtiment assigné": {
+    fr: "Bâtiment assigné",
+    ar: "العمارة المخصصة",
+    en: "Assigned building"
+  },
+  "disponible": {
+    fr: "Disponible",
+    ar: "متاح",
+    en: "Available"
+  },
+  "gestionnaire actuel :": {
+    fr: "Gestionnaire actuel :",
+    ar: "المسير الحالي :",
+    en: "Current manager:"
+  },
+  "remplacera": {
+    fr: "Remplacera",
+    ar: "سيستبدل",
+    en: "Will replace"
+  },
+  "email professionnel": {
+    fr: "Email professionnel",
+    ar: "البريد الإلكتروني المهني",
+    en: "Professional email"
+  },
+  "téléphone mobile": {
+    fr: "Téléphone mobile",
+    ar: "الهاتف المحمول",
+    en: "Mobile phone"
+  },
+  "wilaya": {
+    fr: "Wilaya",
+    ar: "الولاية",
+    en: "Province / Wilaya"
+  },
+  "daïra": {
+    fr: "Daïra",
+    ar: "الدائرة",
+    en: "District / Daira"
+  },
+  "baladia": {
+    fr: "Baladia",
+    ar: "البلدية",
+    en: "Municipality / Baladia"
+  },
+  "copiez ce mot de passe pour le transmettre directement au gestionnaire avec son identifiant.": {
+    fr: "Copiez ce mot de passe pour le transmettre directement au gestionnaire avec son identifiant.",
+    ar: "انسخ كلمة المرور هذه لتسليمها مباشرة إلى المسير مع بيانات الدخول.",
+    en: "Copy this password to give it directly to the manager with their login ID."
+  },
+  "créer et affecter le sous-admin": {
+    fr: "Créer et affecter le sous-admin",
+    ar: "إنشاء وتعيين المسؤول المفوّض",
+    en: "Create and assign sub-admin"
+  },
+  "nouveau bâtiment (bloc)": {
+    fr: "Nouveau Bâtiment (Bloc)",
+    ar: "عمارة جديدة (كتلة)",
+    en: "New Building (Block)"
+  },
+  "ajout d'un bloc dans": {
+    fr: "Ajout d'un bloc dans",
+    ar: "إضافة عمارة في",
+    en: "Adding a block in"
+  },
+  "quota de la résidence": {
+    fr: "Quota de la résidence",
+    ar: "الحد الأقصى للإقامة",
+    en: "Residence quota"
+  },
+  "nom ou lettre du bâtiment": {
+    fr: "Nom ou lettre du bâtiment",
+    ar: "اسم أو رمز العمارة",
+    en: "Building name or letter"
+  },
+  "ex: bloc b ou tour 03": {
+    fr: "ex: Bloc B ou Tour 03",
+    ar: "مثال: العمارة B أو البرج 03",
+    en: "e.g.: Block B or Tower 03"
+  },
+  "capacité max d'appartements": {
+    fr: "Capacité max d'appartements",
+    ar: "السعة القصوى للشقق",
+    en: "Max apartment capacity"
+  },
+  "calcul automatique :": {
+    fr: "Calcul automatique :",
+    ar: "حساب تلقائي :",
+    en: "Automatic calculation:"
+  },
+  "créer le bâtiment": {
+    fr: "Créer le bâtiment",
+    ar: "إنشاء العمارة",
+    en: "Create building"
+  },
+  "confirmer la suppression": {
+    fr: "Confirmer la suppression",
+    ar: "تأكيد الحذف",
+    en: "Confirm deletion"
+  },
+  "cette action est irréversible.": {
+    fr: "Cette action est irréversible.",
+    ar: "هذا الإجراء نهائي ولا يمكن التراجع عنه.",
+    en: "This action cannot be undone."
+  },
+  "êtes-vous sûr de vouloir supprimer": {
+    fr: "Êtes-vous sûr de vouloir supprimer",
+    ar: "هل أنت متأكد من رغبتك في حذف",
+    en: "Are you sure you want to delete"
+  },
+  "modifier le bâtiment": {
+    fr: "Modifier le Bâtiment",
+    ar: "تعديل العمارة",
+    en: "Edit Building"
+  },
+  "modification de": {
+    fr: "Modification de",
+    ar: "تعديل",
+    en: "Editing"
+  },
+  "enregistrer les modifications": {
+    fr: "Enregistrer les modifications",
+    ar: "حفظ التعديلات",
+    en: "Save changes"
+  },
+  "modifier le résident": {
+    fr: "Modifier le résident",
+    ar: "تعديل بيانات الساكن",
+    en: "Edit resident"
+  },
+  "modifiez les informations personnelles ou le logement du propriétaire.": {
+    fr: "Modifiez les informations personnelles ou le logement du propriétaire.",
+    ar: "تعديل المعلومات الشخصية أو الشقة الخاصة بالمالك.",
+    en: "Edit personal information or apartment of the owner."
+  },
+  "identité du propriétaire": {
+    fr: "Identité du propriétaire",
+    ar: "بيانات المالك",
+    en: "Owner Identity"
+  },
+  "nin (numéro d'identification nationale) — optionnel": {
+    fr: "NIN (numéro d'identification nationale) — Optionnel",
+    ar: "رقم التعريف الوطني (NIN) — اختياري",
+    en: "NIN (National ID Number) — Optional"
+  },
+  "numéro / nom de l'appartement": {
+    fr: "Numéro / Nom de l'appartement",
+    ar: "رقم / تسمية الشقة",
+    en: "Apartment number / name"
+  },
+  "changer le mot de passe (facultatif)": {
+    fr: "Changer le mot de passe (facultatif)",
+    ar: "تغيير كلمة المرور (اختياري)",
+    en: "Change password (optional)"
+  },
+  "nouveau mot de passe": {
+    fr: "Nouveau mot de passe",
+    ar: "كلمة مرور جديدة",
+    en: "New password"
+  },
+  "laissez vide pour conserver l'actuel": {
+    fr: "Laissez vide pour conserver l'actuel",
+    ar: "اتركه فارغاً للحفاظ على الحالي",
+    en: "Leave empty to keep current"
+  },
+  "laissez vide si vous ne souhaitez pas modifier le mot de passe.": {
+    fr: "Laissez vide si vous ne souhaitez pas modifier le mot de passe.",
+    ar: "اتركه فارغاً إذا كنت لا ترغب في تغيير كلمة المرور.",
+    en: "Leave blank if you do not wish to change password."
+  },
+  "supprimer le résident": {
+    fr: "Supprimer le résident",
+    ar: "حذف الساكن",
+    en: "Delete resident"
+  },
+  "cela révoquera son accès et libérera l'appartement.": {
+    fr: "Cela révoquera son accès et libérera l'appartement.",
+    ar: "سيؤدي هذا إلى إلغاء حسابه وتحرير الشقة.",
+    en: "This will revoke their access and free up the unit."
+  },
+  "enregistrer un paiement": {
+    fr: "Enregistrer un paiement",
+    ar: "تسجيل دفعة جديدة",
+    en: "Record payment"
+  },
+  "enregistrement d'un règlement de charges": {
+    fr: "Enregistrement d'un règlement de charges",
+    ar: "تسجيل تسديد أعباء الإقامة",
+    en: "Recording dues payment"
+  },
+  "logement a12": {
+    fr: "Logement A12",
+    ar: "شقة A12",
+    en: "Unit A12"
+  },
+  "nom du résident": {
+    fr: "Nom du résident",
+    ar: "اسم الساكن",
+    en: "Resident name"
+  },
+  "montant (dzd)": {
+    fr: "Montant (DZD)",
+    ar: "المبلغ (د.ج)",
+    en: "Amount (DZD)"
+  },
+  "référence reçu / chèque": {
+    fr: "Référence reçu / chèque",
+    ar: "مرجع الوصل / الشيك",
+    en: "Receipt / Check reference"
+  },
+  "optionnel": {
+    fr: "Optionnel",
+    ar: "اختياري",
+    en: "Optional"
+  },
+  "enregistrer le paiement": {
+    fr: "Enregistrer le paiement",
+    ar: "تسجيل الدفعة",
+    en: "Record payment"
+  },
+  "encaisser": {
+    fr: "Encaisser",
+    ar: "تحصيل",
+    en: "Collect"
+  },
+  "relancer": {
+    fr: "Relancer",
+    ar: "تذكير / إعذار",
+    en: "Remind / Notice"
+  },
+  "relancer & mise en demeure officielle": {
+    fr: "Relancer & Mise en demeure officielle",
+    ar: "تذكير وإعذار رسمي بالسداد",
+    en: "Remind & Official formal notice"
+  },
+  "modifier la créance": {
+    fr: "Modifier la créance",
+    ar: "تعديل المستحق المالي",
+    en: "Edit debt / claim"
+  },
+  "montant total dû (dzd)": {
+    fr: "Montant total dû (DZD)",
+    ar: "المبلغ الإجمالي المستحق (د.ج)",
+    en: "Total amount due (DZD)"
+  },
+  "statut de la créance": {
+    fr: "Statut de la créance",
+    ar: "حالة المستحق",
+    en: "Claim status"
+  },
+  "supprimer la créance": {
+    fr: "Supprimer la créance",
+    ar: "حذف المستحق",
+    en: "Delete claim"
+  },
+  "le paiement": {
+    fr: "le paiement",
+    ar: "الدفعة",
+    en: "payment"
+  },
+  "la créance": {
+    fr: "la créance",
+    ar: "المستحق المالي",
+    en: "claim"
+  },
+  "la dépense": {
+    fr: "la dépense",
+    ar: "المصروف",
+    en: "expense"
+  },
+  "la facture": {
+    fr: "la facture",
+    ar: "الفاتورة",
+    en: "invoice"
+  },
+  "l'employé": {
+    fr: "l'employé",
+    ar: "الموظف",
+    en: "employee"
+  },
+  "la tâche": {
+    fr: "la tâche",
+    ar: "المهمة",
+    en: "task"
+  },
+  "enregistrement d'un incident ou d'une anomalie générale avec preuve visuelle": {
+    fr: "Enregistrement d'un incident ou d'une anomalie générale avec preuve visuelle",
+    ar: "تسجيل عطل أو خلل عام مع إرفاق دليل مرئي أو صورة",
+    en: "Recording an incident or breakdown with visual evidence"
+  },
+  "titre de l'incident": {
+    fr: "Titre de l'incident",
+    ar: "عنوان العطل",
+    en: "Incident title"
+  },
+  "ex: fuite d'eau colonne générale, ampoules grillées": {
+    fr: "Ex: Fuite d'eau colonne générale, ampoules grillées",
+    ar: "مثال: تسرب مياه في العمود الرئيسي، مصابيح محترقة",
+    en: "e.g.: Main water leak, blown light bulbs"
+  },
+  "signalé par": {
+    fr: "Signalé par",
+    ar: "تم الإبلاغ بواسطة",
+    en: "Reported by"
+  },
+  "syndic / gardien": {
+    fr: "Syndic / Gardien",
+    ar: "وكيل العمارة / الحارس",
+    en: "Syndic / Concierge"
+  },
+  "prestataire assigné": {
+    fr: "Prestataire assigné",
+    ar: "مقدم الخدمة المكلف",
+    en: "Assigned contractor"
+  },
+  "ex: plomberie express (facultatif)": {
+    fr: "Ex: Plomberie Express (facultatif)",
+    ar: "مثال: ترصيص سريع (اختياري)",
+    en: "e.g.: Plumbing Express (optional)"
+  },
+  "preuve visuelle / photo de l'incident (url)": {
+    fr: "Preuve Visuelle / Photo de l'incident (URL)",
+    ar: "دليل مرئي / رابط صورة العطل",
+    en: "Visual proof / Incident photo (URL)"
+  },
+  "ex: https://images.unsplash.com/... ou lien de photo": {
+    fr: "Ex: https://images.unsplash.com/... ou lien de photo",
+    ar: "مثال: رابط صورة العطل أو إثبات التدخل",
+    en: "e.g.: https://images.unsplash.com/... or photo link"
+  },
+  "photos d'exemple rapides :": {
+    fr: "Photos d'exemple rapides :",
+    ar: "صور توضيحية سريعة :",
+    en: "Quick sample photos:"
+  },
+  "fuite d'eau": {
+    fr: "Fuite d'eau",
+    ar: "تسرب مياه",
+    en: "Water leak"
+  },
+  "éclairage palier": {
+    fr: "Éclairage palier",
+    ar: "إنارة الطابق",
+    en: "Landing lights"
+  },
+  "câbles / tableau": {
+    fr: "Câbles / Tableau",
+    ar: "كوابل / لوحة كهربائية",
+    en: "Cables / Electrical panel"
+  },
+  "enregistrer l'incident": {
+    fr: "Enregistrer l'incident",
+    ar: "تسجيل العطل",
+    en: "Record incident"
+  },
+  "modifier l'incident / panne": {
+    fr: "Modifier l'incident / panne",
+    ar: "تعديل العطل / المشكلة",
+    en: "Edit incident / breakdown"
+  },
+  "mettre à jour les informations d'intervention": {
+    fr: "Mettre à jour les informations d'intervention",
+    ar: "تحديث معلومات التدخل التقني",
+    en: "Update intervention details"
+  },
+  "titre / équipement": {
+    fr: "Titre / Équipement",
+    ar: "العنوان / التجهيز المعطل",
+    en: "Title / Equipment"
+  },
+  "supprimer l'incident": {
+    fr: "Supprimer l'incident",
+    ar: "حذف العطل",
+    en: "Delete incident"
+  },
+  "cet incident": {
+    fr: "cet incident",
+    ar: "هذا العطل",
+    en: "this incident"
+  },
+  "ajouter un membre à l'équipe de la copropriété": {
+    fr: "Ajouter un membre à l'équipe de la copropriété",
+    ar: "إضافة عامل إلى فريق الملكية المشتركة",
+    en: "Add a member to the residence staff"
+  },
+  "nom complet": {
+    fr: "Nom complet",
+    ar: "الاسم الكامل",
+    en: "Full name"
+  },
+  "ex: karim hadj": {
+    fr: "Ex: Karim Hadj",
+    ar: "مثال: كريم حاج",
+    en: "e.g.: Karim Hadj"
+  },
+  "poste / rôle": {
+    fr: "Poste / Rôle",
+    ar: "المنصب / الدور",
+    en: "Position / Role"
+  },
+  "ex: agent de sécurité, agent d'entretien": {
+    fr: "Ex: Agent de sécurité, Agent d'entretien",
+    ar: "مثال: عون أمن، عامل نظافة وصيانة",
+    en: "e.g.: Security guard, Maintenance worker"
+  },
+  "horaire de travail": {
+    fr: "Horaire de travail",
+    ar: "ساعات العمل",
+    en: "Work schedule"
+  },
+  "ex: 08:00 - 16:00": {
+    fr: "Ex: 08:00 - 16:00",
+    ar: "مثال: 08:00 - 16:00",
+    en: "e.g.: 08:00 - 16:00"
+  },
+  "en service": {
+    fr: "En service",
+    ar: "في الخدمة",
+    en: "On duty"
+  },
+  "ajouter l'employé": {
+    fr: "Ajouter l'employé",
+    ar: "إضافة الموظف",
+    en: "Add employee"
+  },
+  "assigner une tâche à l'équipe de la résidence": {
+    fr: "Assigner une tâche à l'équipe de la résidence",
+    ar: "توكيل مهمة لفريق العمل بالإقامة",
+    en: "Assign a task to the residence staff"
+  },
+  "description de la tâche": {
+    fr: "Description de la tâche",
+    ar: "وصف المهمة",
+    en: "Task description"
+  },
+  "ex: nettoyage des escaliers": {
+    fr: "Ex: Nettoyage des escaliers",
+    ar: "مثال: تنظيف السلالم والبهو",
+    en: "e.g.: Stairwell cleaning"
+  },
+  "tâche urgente": {
+    fr: "Tâche urgente",
+    ar: "مهمة عاجلة",
+    en: "Urgent task"
+  },
+  "créer la tâche": {
+    fr: "Créer la tâche",
+    ar: "إنشاء المهمة",
+    en: "Create task"
+  },
+  "modifier la tâche": {
+    fr: "Modifier la tâche",
+    ar: "تعديل المهمة",
+    en: "Edit task"
+  },
+  "mettre à jour les détails de la tâche": {
+    fr: "Mettre à jour les détails de la tâche",
+    ar: "تحديث تفاصيل المهمة",
+    en: "Update task details"
+  },
+  "supprimer la tâche": {
+    fr: "Supprimer la tâche",
+    ar: "حذف المهمة",
+    en: "Delete task"
+  },
+  "diffuser un message aux résidents de la copropriété": {
+    fr: "Diffuser un message aux résidents de la copropriété",
+    ar: "نشر رسالة وإشعار لسكان الإقامة المشتركة",
+    en: "Broadcast a message to residence co-owners"
+  },
+  "titre de l'annonce": {
+    fr: "Titre de l'annonce",
+    ar: "عنوان الإعلان",
+    en: "Announcement title"
+  },
+  "ex: travaux d'ascenseur, ag 2026": {
+    fr: "Ex: Travaux d'ascenseur, AG 2026",
+    ar: "مثال: أشغال صيانة المصعد، الجمعية العامة 2026",
+    en: "e.g.: Elevator maintenance, GA 2026"
+  },
+  "contenu de l'annonce": {
+    fr: "Contenu de l'annonce",
+    ar: "نص الإعلان",
+    en: "Announcement content"
+  },
+  "rédigez votre annonce ici...": {
+    fr: "Rédigez votre annonce ici...",
+    ar: "اكتب نص الإعلان هنا بالتفصيل...",
+    en: "Write your announcement here..."
+  },
+  "audience ciblée": {
+    fr: "Audience ciblée",
+    ar: "الفئة المستهدفة",
+    en: "Target audience"
+  },
+  "épingler en haut de l'application": {
+    fr: "Épingler en haut de l'application",
+    ar: "تثبيت في أعلى التطبيق",
+    en: "Pin to top of app"
+  },
+  "publier l'annonce": {
+    fr: "Publier l'annonce",
+    ar: "نشر الإعلان",
+    en: "Publish announcement"
+  },
+  "créer une alerte d'urgence": {
+    fr: "Créer une Alerte d'Urgence",
+    ar: "إنشاء تنبيه طوارئ",
+    en: "Create Emergency Alert"
+  },
+  "diffuser immédiatement une alerte prioritaire avec notification push et bandeau en direct": {
+    fr: "Diffuser immédiatement une alerte prioritaire avec notification push et bandeau en direct",
+    ar: "نشر تنبيه عاجل وفوري مع إشعار مباشر وشريط علوي في لوحة التحكم",
+    en: "Immediately broadcast a priority alert with push notifications and live banner"
+  },
+  "niveau d'urgence": {
+    fr: "Niveau d'urgence",
+    ar: "مستوى الخطورة",
+    en: "Urgency level"
+  },
+  "🚨 critique": {
+    fr: "🚨 Critique",
+    ar: "🚨 حرج",
+    en: "🚨 Critical"
+  },
+  "urgence immédiate (coupure, panne, danger)": {
+    fr: "Urgence immédiate (coupure, panne, danger)",
+    ar: "طوارئ فورية (انقطاع، عطل جسيم، خطر)",
+    en: "Immediate emergency (outage, hazard, breakdown)"
+  },
+  "⚠️ attention": {
+    fr: "⚠️ Attention",
+    ar: "⚠️ انتباه",
+    en: "⚠️ Warning"
+  },
+  "perturbation importante": {
+    fr: "Perturbation importante",
+    ar: "اضطراب ملحوظ في الخدمات",
+    en: "Significant disruption"
+  },
+  "ℹ️ information": {
+    fr: "ℹ️ Information",
+    ar: "ℹ️ معلومة",
+    en: "ℹ️ Information"
+  },
+  "consigne générale": {
+    fr: "Consigne générale",
+    ar: "توجيه عام",
+    en: "General notice"
+  },
+  "titre de l'alerte": {
+    fr: "Titre de l'alerte",
+    ar: "عنوان التنبيه",
+    en: "Alert title"
+  },
+  "ex: coupure d'eau générale, fuite de gaz, panne ascenseur": {
+    fr: "Ex: Coupure d'eau générale, Fuite de gaz, Panne ascenseur",
+    ar: "مثال: انقطاع عام للمياه، تسرب غاز، توقف المصعد",
+    en: "e.g.: General water outage, gas leak, elevator stop"
+  },
+  "détails et consignes pour les résidents": {
+    fr: "Détails et consignes pour les résidents",
+    ar: "التفاصيل والتعليمات الموجهة للسكان",
+    en: "Details and instructions for residents"
+  },
+  "détails et consignes": {
+    fr: "Détails et consignes",
+    ar: "التفاصيل والتعليمات",
+    en: "Details and instructions"
+  },
+  "expliquez la situation, la conduite à tenir et la durée estimée de résolution...": {
+    fr: "Expliquez la situation, la conduite à tenir et la durée estimée de résolution...",
+    ar: "اشرح الحالة الحالية، السلوك الواجب اتباعه والمدة المتوقعة للحل...",
+    en: "Explain the situation, steps to take and estimated resolution time..."
+  },
+  "⚡ diffusion instantanée": {
+    fr: "⚡ Diffusion instantanée",
+    ar: "⚡ بث فوري ومباشر",
+    en: "⚡ Instant broadcast"
+  },
+  "cette alerte sera envoyée en notification push prioritaire sur les téléphones mobiles de tous les résidents et apparaîtra en haut du tableau de bord.": {
+    fr: "Cette alerte sera envoyée en notification push prioritaire sur les téléphones mobiles de tous les résidents et apparaîtra en haut du tableau de bord.",
+    ar: "سيتم إرسال هذا التنبيه كإشعار فوري ذي أولوية قصوى على هواتف جميع السكان وسيظهر في أعلى لوحة التحكم.",
+    en: "This alert will be delivered as a priority push notification to all resident mobiles and appear atop the dashboard."
+  },
+  "diffuser l'alerte immédiatement": {
+    fr: "Diffuser l'alerte immédiatement",
+    ar: "نشر التنبيه فوراً",
+    en: "Broadcast alert immediately"
+  },
+  "modifier l'annonce": {
+    fr: "Modifier l'Annonce",
+    ar: "تعديل الإعلان",
+    en: "Edit Announcement"
+  },
+  "mettre à jour les informations de l'annonce": {
+    fr: "Mettre à jour les informations de l'annonce",
+    ar: "تحديث بيانات وتفاصيل الإعلان",
+    en: "Update announcement information"
+  },
+  "supprimer l'annonce": {
+    fr: "Supprimer l'annonce",
+    ar: "حذف الإعلان",
+    en: "Delete announcement"
+  },
+  "fermeture temporaire de la terrasse bloc t": {
+    fr: "Fermeture temporaire de la terrasse Bloc T",
+    ar: "غلق مؤقت لسطح العمارة T",
+    en: "Temporary closure of Block T terrace"
+  },
+  "pour des raisons de maintenance d'étanchéité, la terrasse du bloc t sera inaccessible ce samedi.": {
+    fr: "Pour des raisons de maintenance d'étanchéité, la terrasse du Bloc T sera inaccessible ce samedi.",
+    ar: "لأسباب تتعلق بأشغال العزل المائي، لن يكون بالإمكان الوصول إلى سطح العمارة T هذا السبت.",
+    en: "Due to waterproofing maintenance, the Block T roof terrace will be inaccessible this Saturday."
+  },
+  "convoquer une assemblée générale": {
+    fr: "Convoquer une Assemblée Générale",
+    ar: "الدعوة لعقد جمعية عامة",
+    en: "Convene General Assembly"
+  },
+  "planification de la session d'ag et convocation des copropriétaires avec ordre du jour": {
+    fr: "Planification de la session d'AG et convocation des copropriétaires avec ordre du jour",
+    ar: "جدولة جلسة الجمعية العامة واستدعاء الملاك مع جدول الأعمال",
+    en: "Scheduling the GA session and convening co-owners with agenda"
+  },
+  "titre de l'assemblée générale": {
+    fr: "Titre de l'Assemblée Générale",
+    ar: "عنوان الجمعية العامة",
+    en: "General Assembly title"
+  },
+  "assemblée générale extraordinaire": {
+    fr: "Assemblée Générale Extraordinaire",
+    ar: "جمعية عامة استثنائية",
+    en: "Extraordinary General Assembly"
+  },
+  "type d'assemblée": {
+    fr: "Type d'Assemblée",
+    ar: "نوع الجمعية العامة",
+    en: "Assembly type"
+  },
+  "ago · assemblée générale ordinaire annuelle": {
+    fr: "AGO · Assemblée Générale Ordinaire Annuelle",
+    ar: "عادية · الجمعية العامة العادية السنوية",
+    en: "Annual Ordinary General Assembly"
+  },
+  "age · assemblée générale extraordinaire": {
+    fr: "AGE · Assemblée Générale Extraordinaire",
+    ar: "استثنائية · الجمعية العامة غير العادية",
+    en: "Extraordinary General Assembly"
+  },
+  "lieu de tenue": {
+    fr: "Lieu de tenue",
+    ar: "مكان الانعقاد",
+    en: "Venue / Location"
+  },
+  "salle de réunion / hall principal": {
+    fr: "Salle de réunion / Hall principal",
+    ar: "قاعة الاجتماعات / البهو الرئيسي",
+    en: "Meeting room / Main hall"
+  },
+  "date de l'ag": {
+    fr: "Date de l'AG",
+    ar: "تاريخ الجمعية العامة",
+    en: "GA Date"
+  },
+  "heure de convocation": {
+    fr: "Heure de convocation",
+    ar: "وقت الاستدعاء",
+    en: "Convening time"
+  },
+  "envoyer les convocations": {
+    fr: "Envoyer les Convocations",
+    ar: "إرسال الاستدعاءات",
+    en: "Send Convocations"
+  },
+  "soumettre une résolution à l'ordre du jour": {
+    fr: "Soumettre une Résolution à l'Ordre du Jour",
+    ar: "إدراج قرار في جدول الأعمال",
+    en: "Submit Resolution to Agenda"
+  },
+  "création d'un projet de résolution à soumettre au vote des copropriétaires": {
+    fr: "Création d'un projet de résolution à soumettre au vote des copropriétaires",
+    ar: "صياغة مشروع قرار لطرحه على تصويت الملاك المشتركين",
+    en: "Drafting a proposed resolution to submit to co-owners vote"
+  },
+  "titre de la résolution": {
+    fr: "Titre de la résolution",
+    ar: "عنوان القرار",
+    en: "Resolution title"
+  },
+  "ex: travaux d'étanchéité terrasse bloc b": {
+    fr: "Ex: Travaux d'étanchéité terrasse Bloc B",
+    ar: "مثال: أشغال العزل المائي لسطح العمارة B",
+    en: "e.g.: Block B roof waterproofing works"
+  },
+  "description détaillée & motivation": {
+    fr: "Description détaillée & Motivation",
+    ar: "الوصف التفصيلي والأسباب",
+    en: "Detailed description & justification"
+  },
+  "ex: remplacement du complexe d'étanchéité suite à infiltration...": {
+    fr: "Ex: Remplacement du complexe d'étanchéité suite à infiltration...",
+    ar: "مثال: تجديد نظام العزل المائي إثر تسربات مياه الأمطار...",
+    en: "e.g.: Replacement of waterproofing layers following leaks..."
+  },
+  "majorité requise par la loi": {
+    fr: "Majorité requise par la Loi",
+    ar: "الأغلبية القانونية المطلوبة",
+    en: "Majority required by law"
+  },
+  "art. 24 · majorité simple (entretien courant, budget)": {
+    fr: "Art. 24 · Majorité simple (Entretien courant, budget)",
+    ar: "المادة 24 · الأغلبية البسيطة (الصيانة الدورية والميزانية)",
+    en: "Art. 24 · Simple majority (Regular upkeep, budget)"
+  },
+  "art. 25 · majorité absolue (travaux importants, contrats)": {
+    fr: "Art. 25 · Majorité absolue (Travaux importants, contrats)",
+    ar: "المادة 25 · الأغلبية المطلقة (الأشغال الهامة والعقود)",
+    en: "Art. 25 · Absolute majority (Major works, contracts)"
+  },
+  "art. 26 · double majorité (modification du règlement)": {
+    fr: "Art. 26 · Double majorité (Modification du règlement)",
+    ar: "المادة 26 · الأغلبية المزدوجة (تعديل نظام الملكية)",
+    en: "Art. 26 · Two-thirds majority (Bylaw amendments)"
+  },
+  "inscrire la résolution": {
+    fr: "Inscrire la Résolution",
+    ar: "تسجيل القرار",
+    en: "Register Resolution"
+  },
+  "contrat partenaire": {
+    fr: "Contrat partenaire",
+    ar: "عقد شريك",
+    en: "Partner contract"
+  },
+  "enregistrement d'un contrat de maintenance ou de service pour la résidence": {
+    fr: "Enregistrement d'un contrat de maintenance ou de service pour la résidence",
+    ar: "تسجيل عقد صيانة أو خدمات خاص بالإقامة",
+    en: "Recording a maintenance or service contract for the residence"
+  },
+  "ex: maintenance ascenseurs schindler & otis": {
+    fr: "Ex: Maintenance ascenseurs Schindler & Otis",
+    ar: "مثال: صيانة مصاعد شيندلر وأوتيس",
+    en: "e.g.: Schindler & Otis elevator upkeep"
+  },
+  "nom du prestataire / entreprise": {
+    fr: "Nom du prestataire / Entreprise",
+    ar: "اسم مقدم الخدمة / الشركة",
+    en: "Contractor name / Company"
+  },
+  "ex: otis algérie sarl": {
+    fr: "Ex: Otis Algérie SARL",
+    ar: "مثال: أوتيس الجزائر ش.ذ.م.م",
+    en: "e.g.: Otis Algeria LLC"
+  },
+  "montant annuel (dzd)": {
+    fr: "Montant annuel (DZD)",
+    ar: "المبلغ السنوي (د.ج)",
+    en: "Annual amount (DZD)"
+  },
+  "date de prise d'effet (début)": {
+    fr: "Date de prise d'effet (Début)",
+    ar: "تاريخ السريان (البداية)",
+    en: "Effective start date"
+  },
+  "date d'échéance (fin)": {
+    fr: "Date d'échéance (Fin)",
+    ar: "تاريخ الانتهاء (الختام)",
+    en: "Expiration end date"
+  },
+  "enregistrer le contrat": {
+    fr: "Enregistrer le contrat",
+    ar: "حفظ العقد",
+    en: "Save contract"
+  },
+  "déposer un document de la résidence": {
+    fr: "Déposer un Document de la Résidence",
+    ar: "إيداع وثيقة خاصة بالإقامة",
+    en: "Upload Residence Document"
+  },
+  "archivage de procès-verbaux d'ag, règlements de copropriété, diagnostics et bilans": {
+    fr: "Archivage de procès-verbaux d'AG, règlements de copropriété, diagnostics et bilans",
+    ar: "أرشفة محاضر الجمعيات العامة، أنظمة الملكية، التقارير والتشخيصات",
+    en: "Archiving of GA minutes, bylaws, audits and financial balances"
+  },
+  "titre / nom du document": {
+    fr: "Titre / Nom du document",
+    ar: "عنوان / اسم الوثيقة",
+    en: "Document title / name"
+  },
+  "ex: procès-verbal ag ordinaire 2025": {
+    fr: "Ex: Procès-Verbal AG Ordinaire 2025",
+    ar: "مثال: محضر الجمعية العامة العادية 2025",
+    en: "e.g.: Ordinary GA Minutes 2025"
+  },
+  "catégorie du document": {
+    fr: "Catégorie du document",
+    ar: "تصنيف الوثيقة",
+    en: "Document category"
+  },
+  "règlement de copropriété": {
+    fr: "Règlement de copropriété",
+    ar: "نظام الملكية المشتركة",
+    en: "Co-ownership bylaws"
+  },
+  "format du fichier": {
+    fr: "Format du fichier",
+    ar: "صيغة الملف",
+    en: "File format"
+  },
+  "document pdf (.pdf)": {
+    fr: "Document PDF (.pdf)",
+    ar: "ملف PDF (.pdf)",
+    en: "PDF Document (.pdf)"
+  },
+  "taille estimée du fichier": {
+    fr: "Taille estimée du fichier",
+    ar: "الحجم التقديري للملف",
+    en: "Estimated file size"
+  },
+  "déposer le document": {
+    fr: "Déposer le document",
+    ar: "إيداع الوثيقة",
+    en: "Upload document"
+  },
+  "cotisations des sous-admins": {
+    fr: "Cotisations des Sous-Admins",
+    ar: "اشتراكات المسؤولين المفوّضين",
+    en: "Sub-Admins Subscriptions"
+  },
+  "suivi des abonnements des gestionnaires de bloc de la résidence.": {
+    fr: "Suivi des abonnements des gestionnaires de bloc de la résidence.",
+    ar: "متابعة اشتراكات مسيري العمارات التابعة للإقامة.",
+    en: "Monitoring subscriptions of residence block managers."
+  },
+  "registre des résidents de la résidence": {
+    fr: "Registre des résidents de la résidence",
+    ar: "سجل سكان الإقامة",
+    en: "Residence residents registry"
+  },
+  "propriétaires, locataires et coordonnées par logement et par bloc.": {
+    fr: "Propriétaires, locataires et coordonnées par logement et par bloc.",
+    ar: "الملاك والمستأجرون وبيانات الاتصال لكل شقة ولكل عمارة.",
+    en: "Owners, tenants and contact info per unit and per block."
+  },
+  "bilan annuel d'assemblée générale": {
+    fr: "Bilan annuel d'Assemblée Générale",
+    ar: "الحصيلة السنوية للجمعية العامة",
+    en: "Annual General Assembly Balance"
+  },
+  "synthèse financière et opérationnelle globale pour la réunion annuelle.": {
+    fr: "Synthèse financière et opérationnelle globale pour la réunion annuelle.",
+    ar: "ملخص مالي وتشغيلي شامل للجلسة السنوية.",
+    en: "Comprehensive financial and operational summary for annual meeting."
+  },
+  "recouvrement": {
+    fr: "Recouvrement",
+    ar: "التحصيل",
+    en: "Recovery"
+  },
+  "comptabilité": {
+    fr: "Comptabilité",
+    ar: "المحاسبة",
+    en: "Accounting"
+  },
+  "gestion": {
+    fr: "Gestion",
+    ar: "التسيير",
+    en: "Management"
+  },
+  "registre": {
+    fr: "Registre",
+    ar: "السجل",
+    en: "Registry"
+  },
+  "bilan": {
+    fr: "Bilan",
+    ar: "الحصيلة",
+    en: "Balance"
+  },
+  "recouvrement des charges du bâtiment": {
+    fr: "Recouvrement des charges du Bâtiment",
+    ar: "تحصيل أعباء العمارة",
+    en: "Block dues collection"
+  },
+  "charges encaissées et restant dues pour votre bâtiment uniquement.": {
+    fr: "Charges encaissées et restant dues pour votre bâtiment uniquement.",
+    ar: "الأعباء المحصلة والمتبقية الخاصة بعمارتك فقط.",
+    en: "Collected and outstanding charges for your building only."
+  },
+  "état des impayés du bâtiment": {
+    fr: "État des impayés du Bâtiment",
+    ar: "كشف متأخرات العمارة",
+    en: "Block overdue debts report"
+  },
+  "liste nominative des logements en retard de paiement dans votre bloc.": {
+    fr: "Liste nominative des logements en retard de paiement dans votre bloc.",
+    ar: "قائمة اسمية بالشقق المتأخرة عن الدفع في عمارتك.",
+    en: "Nominal list of units with overdue payments in your block."
+  },
+  "registre des résidents du bâtiment": {
+    fr: "Registre des résidents du Bâtiment",
+    ar: "سجل سكان العمارة",
+    en: "Block residents registry"
+  },
+  "occupants, numéros d'étage et portes de votre bloc assigné.": {
+    fr: "Occupants, numéros d'étage et portes de votre bloc assigné.",
+    ar: "الشاغلون، أرقام الطوابق والأبواب في عمارتك المخصصة.",
+    en: "Occupants, floor numbers and doors of your assigned block."
+  },
+  "rapport d'incidents & pannes du bloc": {
+    fr: "Rapport d'incidents & pannes du bloc",
+    ar: "تقرير أعطال ومشاكل العمارة",
+    en: "Block incidents & breakdowns report"
+  },
+  "historique des pannes signalées, délais d'intervention et travaux du bâtiment.": {
+    fr: "Historique des pannes signalées, délais d'intervention et travaux du bâtiment.",
+    ar: "سجل الأعطال المسجلة، آجال التدخل وأشغال العمارة.",
+    en: "History of reported breakdowns, response times and building repairs."
+  },
+  "définir une charge de copropriété récurrente": {
+    fr: "Définir une charge de copropriété récurrente",
+    ar: "تحديد اشتراك دوري للملكية المشتركة",
+    en: "Define recurring co-ownership dues"
+  },
+  "nom de la charge": {
+    fr: "Nom de la charge",
+    ar: "تسمية العبء",
+    en: "Charge name"
+  },
+  "ex: charges générales de copropriété": {
+    fr: "Ex: Charges générales de copropriété",
+    ar: "مثال: أعباء الملكية المشتركة العامة",
+    en: "e.g.: General co-ownership charges"
+  },
+  "montant mensuel (dzd)": {
+    fr: "Montant mensuel (DZD)",
+    ar: "المبلغ الشهري (د.ج)",
+    en: "Monthly amount (DZD)"
+  },
+  "ex: 3500": {
+    fr: "Ex: 3500",
+    ar: "مثال: 3500",
+    en: "e.g.: 3500"
+  },
+  "tous les logements": {
+    fr: "Tous les logements",
+    ar: "جميع الشقق",
+    en: "All units"
+  },
+  "ajouter la charge": {
+    fr: "Ajouter la charge",
+    ar: "إضافة العبء",
+    en: "Add charge"
+  },
 };
 
 // Fast lookup helper
+// Fast lookup helper with smart dynamic pattern fallbacks
 export function translateText(str: string, locale: Locale): string {
   if (!str || typeof str !== "string") return str || "";
   const trimmed = str.trim();
@@ -2999,7 +3962,7 @@ export function translateText(str: string, locale: Locale): string {
     return entry[locale] || entry.fr || str;
   }
 
-  // 2. Exact match with colon or punctuation
+  // 2. Exact match without trailing colons / whitespace
   const withoutColon = lower.replace(/[\s:]+$/, "");
   const entryWithoutColon = TRANSLATIONS_MAP[withoutColon];
   if (entryWithoutColon) {
@@ -3008,7 +3971,91 @@ export function translateText(str: string, locale: Locale): string {
     return hasColon ? `${translated} :` : translated;
   }
 
-  // 3. Fallback to original
+  // 3. Smart dynamic pattern matchers
+  // Pattern: "Êtes-vous sûr de vouloir supprimer ... ? Cette action est irréversible."
+  let m = trimmed.match(/^Êtes-vous sûr de vouloir supprimer(?: l'annonce)? « (.+) » \? Cette action est irréversible\.?$/i);
+  if (m) {
+    const item = m[1];
+    return locale === "ar"
+      ? `هل أنت متأكد من رغبتك في حذف « ${item} » ؟ هذا الإجراء نهائي ولا يمكن التراجع عنه.`
+      : locale === "en"
+      ? `Are you sure you want to delete "${item}"? This action cannot be undone.`
+      : str;
+  }
+
+  m = trimmed.match(/^Êtes-vous sûr de vouloir supprimer(?: le bâtiment)? « (.+) » \? Cette action est irréversible\.?$/i);
+  if (m) {
+    const item = m[1];
+    return locale === "ar"
+      ? `هل أنت متأكد من رغبتك في حذف « ${item} » ؟ هذا الإجراء نهائي ولا يمكن التراجع عنه.`
+      : locale === "en"
+      ? `Are you sure you want to delete "${item}"? This action cannot be undone.`
+      : str;
+  }
+
+  m = trimmed.match(/^Êtes-vous sûr de vouloir supprimer(?: le résident)? « (.+) » \? Cela révoquera son accès et libérera l'appartement\.?$/i);
+  if (m) {
+    const item = m[1];
+    return locale === "ar"
+      ? `هل أنت متأكد من رغبتك في حذف « ${item} » ؟ سيؤدي هذا إلى إلغاء حسابه وتحرير الشقة.`
+      : locale === "en"
+      ? `Are you sure you want to delete "${item}"? This will revoke their access and free up the unit.`
+      : str;
+  }
+
+  m = trimmed.match(/^Êtes-vous sûr de vouloir supprimer(?: l'annonce)? « (.+) » \?$/i);
+  if (m) {
+    const item = m[1];
+    return locale === "ar"
+      ? `هل أنت متأكد من رغبتك في حذف « ${item} » ؟`
+      : locale === "en"
+      ? `Are you sure you want to delete "${item}"?`
+      : str;
+  }
+
+  // Pattern: "Modification de « ... »"
+  m = trimmed.match(/^Modification de « (.+) »$/i);
+  if (m) {
+    const item = m[1];
+    return locale === "ar" ? `تعديل « ${item} »` : locale === "en" ? `Editing "${item}"` : str;
+  }
+
+  // Pattern: "Ajout d'un bloc dans « ... »."
+  m = trimmed.match(/^Ajout d'un bloc dans « (.+) »\.?$/i);
+  if (m) {
+    const item = m[1];
+    return locale === "ar" ? `إضافة عمارة في « ${item} ».` : locale === "en" ? `Adding a block in "${item}".` : str;
+  }
+
+  // Pattern: "Calcul automatique : X étages × Y logements = Z appartements"
+  m = trimmed.match(/^Calcul automatique : (\d+) étages × (\d+) logements = (\d+) appartements$/i);
+  if (m) {
+    const [, et, log, tot] = m;
+    return locale === "ar"
+      ? `حساب تلقائي : ${et} طوابق × ${log} شقق = ${tot} شقة`
+      : locale === "en"
+      ? `Automatic calculation: ${et} floors × ${log} units = ${tot} apartments`
+      : str;
+  }
+
+  // Pattern: "Bâtiment X — [DISPONIBLE]"
+  m = trimmed.match(/^Bâtiment (.+) — \[DISPONIBLE\]$/i);
+  if (m) {
+    return locale === "ar" ? `العمارة ${m[1]} — [متاح]` : locale === "en" ? `Building ${m[1]} — [AVAILABLE]` : str;
+  }
+
+  // Pattern: "Bâtiment X (Y étages)"
+  m = trimmed.match(/^Bâtiment (.+) \((\d+) étages\)$/i);
+  if (m) {
+    return locale === "ar" ? `العمارة ${m[1]} (${m[2]} طوابق)` : locale === "en" ? `Building ${m[1]} (${m[2]} floors)` : str;
+  }
+
+  // Pattern: "Bloc X (Y étages)"
+  m = trimmed.match(/^Bloc (.+) \((\d+) étages\)$/i);
+  if (m) {
+    return locale === "ar" ? `العمارة ${m[1]} (${m[2]} طوابق)` : locale === "en" ? `Block ${m[1]} (${m[2]} floors)` : str;
+  }
+
+  // 4. Fallback to original
   return str;
 }
-
