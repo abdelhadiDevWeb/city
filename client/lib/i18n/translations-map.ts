@@ -546,7 +546,40 @@ export const TRANSLATIONS_MAP: Record<string, TranslationEntry> = {
     fr: "Serveur injoignable. Vérifiez votre connexion.",
     ar: "تعذر الوصول إلى الخادم. تحقق من اتصالك بالإنترنت.",
     en: "Server unreachable. Check your connection."
-  }
+  },
+
+  // === SEARCH PLACEHOLDERS & EMPTY STATES ===
+  "abonnements admins": { fr: "Abonnements Admins", ar: "اشتراكات المديرين", en: "Admin Subscriptions" },
+  "formules": { fr: "Formules", ar: "باقات الاشتراكات", en: "Subscription Plans" },
+  "aucun impayé : tous les logements sont à jour de leurs cotisations.": {
+    fr: "Aucun impayé : tous les logements sont à jour de leurs cotisations.",
+    ar: "لا توجد أي متأخرات : جميع الشقق مسددة لاشتراكاتها بانتظام.",
+    en: "No unpaid dues: all units are up to date with their fees."
+  },
+  "aucun bâtiment ne correspond à votre recherche.": {
+    fr: "Aucun bâtiment ne correspond à votre recherche.",
+    ar: "لا توجد أي عمارة تطابق معايير البحث.",
+    en: "No buildings match your search."
+  },
+  "rechercher un bâtiment ou sous-admin...": {
+    fr: "Rechercher un bâtiment ou sous-admin...",
+    ar: "البحث عن عمارة أو مسؤول مفوّض...",
+    en: "Search building or sub-admin..."
+  },
+  "rechercher contrat, prestataire...": {
+    fr: "Rechercher contrat, prestataire...",
+    ar: "البحث عن عقد، شريك...",
+    en: "Search contract, contractor..."
+  },
+  "rechercher document, catégorie...": {
+    fr: "Rechercher document, catégorie...",
+    ar: "البحث عن وثيقة، فئة...",
+    en: "Search document, category..."
+  },
+  "modifier incident": { fr: "Modifier incident", ar: "تعديل العطل", en: "Edit incident" },
+  "supprimer incident": { fr: "Supprimer incident", ar: "حذف العطل", en: "Delete incident" },
+  "modifier tâche": { fr: "Modifier tâche", ar: "تعديل المهمة", en: "Edit task" },
+  "supprimer tâche": { fr: "Supprimer tâche", ar: "حذف المهمة", en: "Delete task" }
 };
 
 // Fast lookup helper

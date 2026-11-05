@@ -63,7 +63,7 @@ const CONTRAT_TONE: Record<Contrat["statut"], Tone> = {
 };
 
 export default function DocumentsPage() {
-  const { t, locale, isRTL } = useI18n();
+  const { t, locale, isRTL, tText } = useI18n();
   const notify = useToast();
   const [data, setData] = useState<DocumentsData | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -392,13 +392,13 @@ Ce fichier atteste de la validité légale et comptable du document archivé sou
                       type="text"
                       value={queryContrats}
                       onChange={(e) => setQueryContrats(e.target.value)}
-                      placeholder="Rechercher contrat, prestataire..."
+                      placeholder={tText("Rechercher contrat, prestataire...")}
                       className="w-full rounded-xl border border-stone-200 bg-white py-1.5 pl-9 pr-3 text-xs text-ink placeholder:text-stone-400 focus:outline-none focus:ring-1 focus:ring-brand"
                     />
                   </div>
                 </div>
               }
-              empty="Aucun contrat de prestataire ne correspond aux critères sélectionnés."
+              empty={tText("Aucun contrat de prestataire ne correspond aux critères sélectionnés.")}
             />
           )}
 
@@ -425,7 +425,7 @@ Ce fichier atteste de la validité légale et comptable du document archivé sou
                       type="text"
                       value={queryDocs}
                       onChange={(e) => setQueryDocs(e.target.value)}
-                      placeholder="Rechercher document, catégorie..."
+                      placeholder={tText("Rechercher document, catégorie...")}
                       className="w-full rounded-xl border border-stone-200 bg-white py-1.5 pl-9 pr-3 text-xs text-ink placeholder:text-stone-400 focus:outline-none focus:ring-1 focus:ring-brand"
                     />
                   </div>

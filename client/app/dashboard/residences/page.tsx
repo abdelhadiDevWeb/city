@@ -631,16 +631,16 @@ export default function ResidencesPage() {
                           type="text"
                           value={queryBatiments}
                           onChange={(e) => setQueryBatiments(e.target.value)}
-                          placeholder="Rechercher un bâtiment ou sous-admin..."
+                          placeholder={tText("Rechercher un bâtiment ou sous-admin...")}
                           className="w-full rounded-xl border border-stone-200 bg-white py-1.5 pl-9 pr-3 text-xs text-ink placeholder:text-stone-400 focus:outline-none focus:ring-1 focus:ring-brand"
                         />
                       </div>
                       <span className="text-xs font-semibold text-stone-500">
-                        {filteredBatiments.length} bâtiment{filteredBatiments.length > 1 ? "s" : ""} enregistré{filteredBatiments.length > 1 ? "s" : ""}
+                        {filteredBatiments.length} {tText("bâtiments")}
                       </span>
                     </div>
                   }
-                  empty="Aucun bâtiment ne correspond à votre recherche."
+                  empty={tText("Aucun bâtiment ne correspond à votre recherche.")}
                 />
               </div>
             ))}

@@ -665,7 +665,7 @@ export default function FinancesPage() {
                     </div>
                   </div>
                 }
-                empty="Aucun impayé : tous les logements sont à jour de leurs cotisations."
+                empty={tText("Aucun impayé : tous les logements sont à jour de leurs cotisations.")}
               />
             </div>
           )}
